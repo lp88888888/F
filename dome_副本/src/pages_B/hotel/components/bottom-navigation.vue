@@ -1,0 +1,155 @@
+<template>
+  <view class="bottom-navigation" :data-theme="pageTheme" >
+    <view 
+      v-for="item in navItems"
+      :key="item.page"
+      class="navigation-item"
+      :class="{ active: currentPage === item.page }"
+      @click="handleTap(item)"
+    >
+      <image 
+        class="icon"
+        :src="getIconSrc(item)"
+        mode="aspectFit"
+      />
+      <text>{{ item.text }}</text>
+    </view>
+  </view>
+</template>
+
+<script setup lang="ts">
+import { computed } from 'vue'
+import { imgUrl } from '@/config'
+import {
+		useTheme
+	} from '@/composables/useTheme';
+	const {
+		themeStore,
+		pageTheme
+	} = useTheme();
+// 定义导航项类型
+interface NavItem {
+  page: string
+  text: string
+  activeIcon: string
+  inactiveIcon: string
+  route: string
+  isTabBar?: boolean  // 是否是 tabBar 页面
+}
+
+// Props 类型定义
+interface Props {
+  currentPage?: string
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  currentPage: 'hotellist'
+})
+
+// 定义 emit 事件
+const emit = defineEmits<{
+  (e: 'change', value: { page: string; route: string }): void
+}>()
+
+// 导航项配置
+const navItems: NavItem[] = [
+  {
+    page: 'hotellist',
+    text: '推荐',
+    activeIcon: 'hotel/tab1-icon.png',
+    inactiveIcon: 'hotel/tab11.png',
+    route: '/pages_B/hotel/hotelist',
+    isTabBar: true
+  },
+  {
+    page: 'collect',
+    text: '收藏',
+    activeIcon: 'hotel/tab2-icon.png',
+    inactiveIcon: 'hotel/tab22-icon.png',
+    route: '/pages_B/hotel/collect',
+    isTabBar: true
+  },
+  {
+    page: 'order',
+    text: '订单',
+    activeIcon: 'hotel/tab3-icon.png',
+    inactiveIcon: 'hotel/tab33-icon.png',
+    route: '/pages_B/hotel/order',
+    isTabBar: true
+  }
+]
+
+// 计算图标地址
+const getIconSrc = (item: NavItem) => {
+  const icon = props.currentPage === item.page ? item.activeIcon : item.inactiveIcon
+  return `${imgUrl}${icon}`
+}
+
+// 处理点击事件
+const handleTap = (item: NavItem) => {
+  if (props.currentPage === item.page) return
+  
+  // 触发 change 事件
+  emit('change', { 
+    page: item.page,
+    route: item.route
+  })
+  
+}
+</script>
+
+<style lang="scss" scoped>
+.bottom-navigation {
+  width: 100%;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  background-color: #fff;
+  box-shadow: 0 -4rpx 8rpx rgba(0, 0, 0, 0.1);
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 20rpx 0;
+  z-index: 99;
+  // 添加安全区域适配
+  padding-bottom: calc(20rpx + constant(safe-area-inset-bottom));
+  padding-bottom: calc(20rpx + env(safe-area-inset-bottom));
+}
+
+.navigation-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  color: #666;
+  transition: color 0.3s ease;
+  
+  &.active {
+    color: var(--primary-color);
+  }
+  
+  // 添加点击效果
+  &:active {
+    transform: scale(0.95);
+    opacity: 0.8;
+  }
+}
+
+.icon {
+  width: 48rpx;
+  height: 48rpx;
+  margin-bottom: 10rpx;
+  transition: transform 0.3s ease;
+  
+  // 添加图标动画效果
+  .navigation-item.active & {
+    transform: scale(1.1);
+  }
+}
+
+// 文字样式
+text {
+  font-size: 24rpx;
+  line-height: 1;
+}
+</style>

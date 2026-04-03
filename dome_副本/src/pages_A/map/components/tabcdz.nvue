@@ -1,0 +1,379 @@
+<template>
+	<view class="container" :data-theme="pageTheme" style="height: 800rpx;  box-sizing: border-box;">
+		<!-- 标题区域 -->
+		<view class="header">
+			<view class="title">
+				<view style="flex-direction: row;align-items: center;">
+					<text class="title-text">沿途共计</text>
+					<text class="count" :style="{color:themeStore.themeColors.$color}" >{{total}}</text>
+					<text class="title-text">个充电桩</text>
+				</view>
+				<u-icon name="close" color="#000" size="20" @click="onClose"></u-icon>
+			</view>
+
+			<!-- 状态标签列表 -->
+			<view class="tag-list">
+				<text v-for="item in invoiceList " :key="item.id" class="tag" :class="{ active: item.id === activeTag }"
+					@click="activeTag = item.id">
+					{{ item.rkname }}
+				</text>
+			</view>
+		</view>
+		<scroll-view scroll-y="true" style="flex: 1;background-color:  #EFF1F6;" :show-scrollbar="false">
+			<view v-for="item in fwqlist " :key="item.id" class="service-card"  @click="goStation(item.stationId)" >
+				<view class="info-block">
+					<text class="name">{{item.stationName}}</text>
+					<view class="distance">
+						<image class="icon" :src="imgUrl+'img/daohang.png'" mode="aspectFit"></image>
+						<text class="distance-text">距您{{item.distance}}km</text>
+					</view>
+					<view class="price">
+						<text class="price-text1" :style="{color:themeStore.themeColors.$color}" >¥</text>
+						<text class="price-text" :style="{color:themeStore.themeColors.$color}" >{{item.minPrice}}/度</text>
+						<text class="price-text2">起</text>
+					</view>
+				</view>
+				<!-- 状态与充电信息 -->
+				<view class="status-block">
+					<text class="operating-status">营业中</text>
+					<view class="charge-status-fast">
+						<text class="type">快</text>
+						<text class="availability">{{item.fastFree || 0}}/{{ item.fastTotal }}</text>
+					</view>
+					<view class="charge-status-slow">
+						<text class="type">慢</text>
+						<text class="availability">{{item.slowFree || 0}}/{{ item.slowTotal }}</text>
+					</view>
+				</view>
+			</view>
+		</scroll-view>
+	</view>
+</template>
+
+<script setup lang="ts">
+	import { ref, reactive, onMounted } from 'vue'
+	import { imgUrl } from '../../../config';
+	import {
+		getStationByLngLatlist
+	} from '@/api/map';
+	import {
+		useTheme
+	} from '@/composables/useTheme';
+	const {
+		themeStore,
+		pageTheme
+	} = useTheme();
+	const props = defineProps({
+		fromcurrentLat: {
+			type: String,
+			default: '',
+		},
+		fromcurrentLng: {
+			type: String,
+			default: '',
+		},
+		tolatitude: {
+			type: String,
+			default: '',
+		},
+		tolongitude: {
+			type: String,
+			default: '',
+		}
+	});
+	// 标签列表
+	const invoiceList = ref([
+		{ id: '', rkname: '全部' },
+		{ id: '50', rkname: '营业中' },
+		{ id: '5', rkname: '关闭' }
+	])
+	
+	// 收费站列表
+	const fwqlist = ref([
+
+	])
+	const triggerParentMethod = () => {
+
+	}
+	// 当前选中标签
+	const activeTag = ref('')
+	const chengtags = (id) => {
+		activeTag.value = id
+		getlist()
+	}
+	const pageNum = ref(1)
+	const total = ref(0)
+	const emit = defineEmits<{
+		(e : 'call-parent', data : string) : void
+	}>()
+	onMounted(() => {
+		getlist()
+	})
+	const goStation = (id : any) => {
+		uni.navigateTo({
+			url: '/pages_A/chargingPiles/queryDetail?id=' + id
+		})
+	}
+	const getlist = () => {
+		getStationByLngLatlist({
+			pageNum: pageNum.value,
+			pageSize: 100,
+			startLatitude: props.fromcurrentLat,
+			startLongitude: props.fromcurrentLng,
+			endLatitude: props.tolatitude,
+			endLongitude: props.tolongitude,
+			stationStatus: activeTag.value
+		}).then(res => {
+
+			fwqlist.value = res.data.list
+			total.value = res.data.total
+			const arr = res.data.list.map((shop, index) => ({
+				id: index + 1, // 确保id唯一且不为0（0用于用户位置）
+				delid: shop.id,
+				latitude: Number(shop.stationLat),
+				longitude: Number(shop.stationLng),
+				title: shop.stationName,
+				iconPath: imgUrl + 'static/oil-map-icon.png',// 可替换为自己的图标
+				width: 20,
+				height: 20,
+				type: 'cdz',
+				callout: {
+					content: shop.stationName,
+					color: '#333',
+					fontSize: 12,
+					borderRadius: 4,
+					bgColor: '#fff',
+					padding: 5,
+					display: 'BYCLICK'
+				}
+			}));
+			emit('maptq', arr) // 触发事件并传值
+		})
+	}
+	// 关闭事件
+	const onClose = () => {
+		emit('closetab')
+	}
+</script>
+
+<style scoped lang="scss">
+	.container {
+		height: 800rpx;
+		position: relative;
+		background: #EFF1F6;
+		border-radius: 36rpx 36rpx 0rpx 0rpx;
+		border: 3px solid #FFFFFF;
+	}
+
+	.header {
+		flex-shrink: 0;
+		/* 防止收缩 */
+		padding: 20rpx;
+		background: #fff;
+		border-radius: 16rpx;
+		box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.1);
+	}
+
+	.title {
+		flex-direction: row;
+		justify-content: space-between;
+		align-items: center;
+		font-weight: bold;
+		font-size: 28rpx;
+		color: #000000;
+		margin-bottom: 20rpx;
+	}
+
+	.title-text {
+		font-weight: bold;
+		font-size: 28rpx;
+		color: #000000;
+	}
+
+	.count {
+		color: var(--primary-color);
+		font-weight: bold;
+		margin: 0 8rpx;
+	}
+
+	.tag-list {
+		flex-direction: row;
+		gap: 20rpx;
+		flex-wrap: wrap;
+	}
+
+	.tag {
+		margin-right: 20rpx;
+		text-align: center;
+		line-height: 56rpx;
+		width: 126rpx;
+		height: 56rpx;
+		background: #F7F8FA;
+		border-radius: 16rpx;
+		font-weight: bold;
+		font-size: 24rpx;
+		color: #000000;
+
+		&.active {
+			width: 126rpx;
+			height: 56rpx;
+			background: #FFFAF2;
+			border-radius: 16rpx;
+			border: 1px solid #FFA011;
+			font-weight: bold;
+			font-size: 24rpx;
+			color: #FFA011;
+		}
+	}
+
+	.service-card {
+		box-sizing: border-box;
+		background-color: #fff;
+		border-radius: 16rpx;
+		padding: 32rpx;
+		box-shadow: 0 4rpx 8rpx rgba(0, 0, 0, 0.1);
+		margin: 30rpx;
+		flex-direction: row;
+		align-items: center;
+		justify-content: space-between;
+	}
+
+
+	.info-block {
+		height: 200rpx;
+		margin-bottom: 10px;
+		display: flex;
+		justify-content: space-between;
+		flex-direction: column;
+	}
+
+	.status-block {
+		height: 200rpx;
+		margin-bottom: 10px;
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		flex-direction: column;
+	}
+
+	.name {
+		font-weight: bold;
+		font-size: 30rpx;
+		color: #333333;
+		line-height: 60rpx;
+	}
+
+	.distance {
+		flex-direction: row;
+		align-items: center;
+	}
+
+	.distance-text {
+		font-weight: 500;
+		font-size: 24rpx;
+		color: #999999;
+	}
+
+	.price {
+		flex-direction: row;
+		align-items: flex-end;
+
+	}
+
+	.price-text {
+		font-weight: 500;
+		font-size: 38rpx;
+		line-height: 38rpx;
+		color: var(--primary-color);
+	}
+
+	.price-text1 {
+		color: var(--primary-color);
+		font-size: 24rpx;
+		line-height: 24rpx;
+	}
+
+	.price-text2 {
+		font-size: 24rpx;
+		line-height: 24rpx;
+		color: #999999;
+	}
+
+	.operating-status {
+		width: 100rpx;
+		height: 42rpx;
+		background: #F0F8F4;
+		border-radius: 21rpx;
+		font-weight: 500;
+		font-size: 22rpx;
+		color: #00964E;
+		text-align: center;
+		line-height: 42rpx;
+	}
+
+	.icon {
+		width: 16px;
+		height: 16px;
+		margin-right: 4px;
+		vertical-align: middle;
+	}
+
+	.charge-status-slow {
+		flex-direction: row;
+		width: 158rpx;
+		height: 56rpx;
+		background: #FFFFFF;
+		border-radius: 12rpx;
+		border: 1px solid #00ACA6;
+
+		.type {
+			width: 56rpx;
+			height: 56rpx;
+			background: #00ACA6;
+			text-align: center;
+			line-height: 56rpx;
+			color: #fff;
+
+		}
+
+		.availability {
+			width: 102rpx;
+			height: 56rpx;
+			font-weight: 500;
+			font-size: 24rpx;
+			color: #00ACA6;
+			text-align: center;
+			line-height: 56rpx;
+		}
+	}
+
+	.charge-status-fast {
+		flex-direction: row;
+		width: 158rpx;
+		height: 56rpx;
+		background: #FFFFFF;
+		border-radius: 12rpx;
+		border: 1px solid #00964E;
+
+		.type {
+			width: 56rpx;
+			height: 56rpx;
+			background: #00964E;
+			text-align: center;
+			line-height: 56rpx;
+			font-size: 32rpx;
+			color: #fff;
+
+		}
+
+		.availability {
+			width: 102rpx;
+			height: 56rpx;
+			font-weight: 500;
+			font-size: 24rpx;
+			color: #00964E;
+			text-align: center;
+			line-height: 56rpx;
+		}
+	}
+</style>

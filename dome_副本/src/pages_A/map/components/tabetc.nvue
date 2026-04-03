@@ -1,0 +1,301 @@
+<template>
+	<view class="container" :data-theme="pageTheme" style="height: 800rpx;">
+		<!-- 标题区域 -->
+		<view class="header">
+			<view class="title">
+				<!-- <view>沿途共计<text class="count">3</text>个ETC网点</view> -->
+				<view style="flex-direction: row;align-items: center;">
+					<text class="title-text">沿途共计</text>
+					<text class="count" :style="{color:themeStore.themeColors.$color}" >{{total}}</text>
+					<text class="title-text">个ETC网点</text>
+				</view>
+				<u-icon name="close" color="#000" size="20" @click="onClose"></u-icon>
+			</view>
+			<!-- 状态标签列表 -->
+			<view class="tag-list">
+				<text v-for="item in invoiceList " :key="item.id" class="tag" :class="{ active: item.id === activeTag }"
+					@click="chengtags(item.id)">
+					{{ item.rkname }}
+				</text>
+			</view>
+		</view>
+		<scroll-view scroll-y="true" style="flex: 1;background-color:  #EFF1F6;" :show-scrollbar="false">
+			<view v-for="item in fwqlist " :key="item.id" class="station-item">
+				<view class="content">
+					<div  style="flex-direction: row;">
+						<view class="content-1" :style="{background:themeStore.themeColors.$pageBgColor}" ></view>
+						<view class="content-2">
+							<text class="name">{{ item.name }}</text>
+							<text class="address">{{item.distance}}</text>
+						</view>
+					</div>
+					
+					<view class="content-3">
+						<text class="distance">{{item.address}}</text>
+						<image :src="imgUrl+'img/daohang.png'" @click="goMap1(item)" mode="aspectFill" class="icon">
+						</image>
+					</view>
+				</view>
+			</view>
+		</scroll-view>
+	</view>
+</template>
+
+<script setup lang="ts">
+	import { ref, reactive, onMounted } from 'vue'
+	import { imgUrl } from '../../../config';
+	import {openLocation} from '@/utils/util'
+	import {
+		getEtcBranchListByLngLatlist
+	} from '@/api/map';
+	import {
+		useTheme
+	} from '@/composables/useTheme';
+	const {
+		themeStore,
+		pageTheme
+	} = useTheme();
+	const props = defineProps({
+		fromcurrentLat: {
+			type: String,
+			default: '',
+		},
+		fromcurrentLng: {
+			type: String,
+			default: '',
+		},
+		tolatitude: {
+			type: String,
+			default: '',
+		},
+		tolongitude: {
+			type: String,
+			default: '',
+		}
+	});
+	// 标签列表
+	const invoiceList = ref([
+		{ id: 0, rkname: '全部' },
+		{ id: 1, rkname: '绕城包年网点' },
+		{ id: 2, rkname: '收费站网点' },
+		{ id: 3, rkname: '服务区网点' }
+	])
+
+	// 收费站列表
+	const fwqlist = ref([])
+	const pageNum = ref(1)
+	const chengtags = (id) => {
+		activeTag.value = id
+		getlist()
+	}
+	onMounted(() => {
+		getlist()
+	})
+	// 当前选中标签
+	const activeTag = ref(0)
+
+	const total = ref(0)
+	// 关闭事件
+	const emit = defineEmits<{
+		(e : 'call-parent', data : string) : void
+	}>()
+	const goMap1 = (item) => {
+		openLocation({
+			latitude: Number(item.latitude),//维度
+			longitude: Number(item.longitude),//经度
+			scale: 18,//缩放比例，范围5~18，默认为18
+			name: item.name,
+		})
+	}
+	const getlist = () => {
+		getEtcBranchListByLngLatlist({
+			pageNum: pageNum.value,
+			pageSize: 100,
+			startLatitude: props.fromcurrentLat,
+			startLongitude: props.fromcurrentLng,
+			endLatitude: props.tolatitude,
+			endLongitude: props.tolongitude,
+			type: activeTag.value
+		}).then(res => {
+			fwqlist.value = res.data.list
+			total.value = res.data.total
+			if (total.value == 0) {
+				return
+			}
+			const arr = res.data.list.map((shop, index) => ({
+				id: index + 1, // 确保id唯一且不为0（0用于用户位置）
+				latitude: shop.latitude,
+				delid: shop.id,
+				longitude: shop.longitude,
+				title: shop.name,
+				iconPath: imgUrl +
+					'map/etcdianwei-icon.png', // 可替换为自己的图标
+				width: 20,
+				height: 20,
+				type: 'etc',
+				callout: {
+					content: shop.name,
+					color: '#333',
+					fontSize: 12,
+					borderRadius: 4,
+					bgColor: '#fff',
+					padding: 5,
+					display: 'BYCLICK'
+				}
+			}));
+			emit('maptq', arr) // 触发事件并传值
+
+			// console.log(fwqlist.value)
+		})
+	}
+	// 关闭事件
+	const onClose = () => {
+		emit('closetab')
+	}
+</script>
+
+<style scoped lang="scss">
+	.container {
+		height: 800rpx;
+		position: relative;
+		background: #EFF1F6;
+		border-radius: 36rpx 36rpx 0rpx 0rpx;
+		border: 3px solid #FFFFFF;
+	}
+
+	.header {
+		flex-shrink: 0;
+		/* 防止收缩 */
+		padding: 20rpx;
+		background: #fff;
+		border-radius: 16rpx;
+		box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.1);
+	}
+
+	.title {
+		flex-direction: row;
+		justify-content: space-between;
+		align-items: center;
+		font-weight: bold;
+		font-size: 28rpx;
+		color: #000000;
+		margin-bottom: 29rpx;
+	}
+
+	.count {
+		font-weight: bold;
+		margin: 0 8rpx;
+	}
+
+	.title-text {
+		font-weight: bold;
+		font-size: 28rpx;
+		color: #000000;
+	}
+
+	.tag-list {
+		flex-direction: row;
+		gap: 20rpx;
+		flex-wrap: wrap;
+	}
+
+	.tag {
+		margin-right: 20rpx;
+		padding-left: 30rpx;
+		padding-right: 30rpx;
+		text-align: center;
+		line-height: 56rpx;
+		height: 56rpx;
+		background: #F7F8FA;
+		border-radius: 16rpx;
+		font-weight: bold;
+		font-size: 24rpx;
+		color: #000000;
+
+		&.active {
+			padding-left: 10rpx;
+			padding-right: 10rpx;
+			height: 56rpx;
+			background: #FFFAF2;
+			border-radius: 16rpx;
+			border: 1px solid #FFA011;
+			font-weight: bold;
+			font-size: 24rpx;
+			color: #FFA011;
+		}
+	}
+
+	.station-item {
+		position: relative;
+		height: 200rpx;
+		margin: 20rpx 30rpx;
+		background: #fff;
+		border-radius: 16rpx;
+		overflow: hidden;
+		box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.1);
+		flex-direction: row;
+		align-items: center;
+	}
+
+	.content {
+		padding: 30rpx;
+		color: #333;
+		border-radius: 30rpx;
+	}
+
+	.content-1 {
+		width: 12rpx;
+		height: 12rpx;
+		background: var(--success-color);
+		border-radius: 50%;
+		margin-right: 10rpx;
+		margin-top: 20rpx;
+	}
+
+	.content-2 {
+		width: 550rpx;
+		flex-direction: row;
+		justify-content: space-between;
+		flex-wrap: nowrap;
+	}
+
+	.content-3 {
+		flex-direction: row;
+		align-items: center;
+		justify-content: space-between;
+	}
+
+	.row {
+		flex-direction: row;
+		justify-content: space-between;
+		align-items: center;
+	}
+
+	.name {
+		font-size: 34rpx;
+		font-weight: bold;
+		color: #000;
+	}
+
+	.distance {
+		display: inline;
+		width: 450rpx;
+		lines: 1;           /* 强制单行 */
+		  text-overflow: clip;
+		font-size: 28rpx;
+		color: #666;
+		margin: 16rpx 0;
+		color: var(--primary-color);
+	}
+
+	.address {
+		font-size: 24rpx;
+		color: #999;
+	}
+
+	.icon {
+		width: 32rpx;
+		height: 32rpx;
+		margin-left: 16rpx;
+	}
+</style>

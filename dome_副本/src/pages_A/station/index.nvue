@@ -1,0 +1,440 @@
+<template>
+	<view class="container" :data-theme="pageTheme">
+		<bdMapView ref="bdMapViewRef" class="map"></bdMapView>
+		
+		<view class="search-container" :style="{ background: themeStore.themeColors.$bgTemToPageColor }">
+			<view class="nav-placeholder">
+				<up-navbar title="服务区" bgColor="transparent" @leftClick="toBack" :fixed="true" placeholder></up-navbar>
+			</view>
+			
+			<view class="search-box">
+				<up-input 
+					placeholder="请输入关键字搜索" 
+					border="none" 
+					v-model="searchTex" 
+					shape="circle" 
+					height="40"
+					@confirm="inputConfirm"
+				>
+					<template #prefix>
+						<up-icon name="search" color="#999" size="20"></up-icon>
+					</template>
+				</up-input>
+			</view>
+			
+			<view class="filter-bar">
+				<view class="filter-item" @click="toggleCategory">
+					<text class="filter-text" :class="[merIndex > 0 ? 'active' : '']">{{ textValue }}</text>
+					<up-icon name="arrow-down" size="12" :color="merIndex > 0 ? '#3c9cff' : '#666'"></up-icon>
+				</view>
+			</view>
+		</view>
+
+		<view class="dropdown-mask" v-if="iscategory" @click="iscategory = false">
+			<view class="dropdown-content" @click.stop="">
+				<view v-for="(item, index) in merTypes" :key="index" 
+					class="dropdown-row" 
+					@click="cateChange(index)">
+					<text class="dropdown-text" :style="{color: merIndex == index ? '#3c9cff' : '#333'}">{{ item.val }}</text>
+				</view>
+			</view>
+		</view>
+
+		<view class="list-drawer" :style="{ height: boxHeight + 'rpx' }">
+			<view class="drawer-handler" @click="handleHeightChange">
+				<view class="handler-line"></view>
+			</view>
+			
+			<view class="list-wrapper">
+				<up-list class="list-wrapper" @scrolltolower="scrolltolower">
+					<up-list-item v-for="(item, index) in allDataList" :key="item.id || index" class="list-item-cell" >
+							<view class="service-card" @click="goStation(item.id)">
+								<view class="card-left">
+									<image class="service-image" :src="item.serviceAreaPicture || `${imgUrl}service-list-default.png`" mode="aspectFill"></image>
+									<view :class="['status-badge', item.operationalStatus === '02' ? 'bg-gray' : 'bg-green']">
+										<text class="status-text">{{ item.operationalStatus === '02' ? '关闭' : '正常' }}</text>
+									</view>
+								</view>
+							
+								<view class="card-right">
+									<view class="card-row" style="justify-content: flex-start;">
+										<text class="card-title">{{ item.serviceAreaName }}</text>
+										<text class="card-sub">{{ item.lineDirection || '' }}</text>
+									</view>
+									
+									<view class="card-row mt-10">
+										<text class="card-addr">{{ item.address }}</text>
+										<text class="card-dist">{{ item.distance || '0km' }}</text>
+										<view class="nav-btn" @click.stop="openAdd(item)">
+											<image :src="imgUrl+'static/station-dh-icon.png'" class="nav-icon"></image>
+											<text class="nav-label">导航</text>
+										</view>
+									</view>
+										
+									<view class="card-row bottom-row">
+										<view class="tag-group">
+											<view class="tag-item" v-for="(tag, idx) in item.displayTags" :key="idx">
+												<image :src="tag.serviceInfoPicUrl" class="tag-icon"></image>
+											</view>
+										</view>
+										<!-- <view class="nav-btn" @click.stop="openAdd(item)">
+											<image :src="imgUrl+'static/station-dh-icon.png'" class="nav-icon"></image>
+											<text class="nav-label">导航</text>
+										</view> -->
+									</view>
+								</view>
+								
+								<image class="watermark" v-if="themeMap[item.themeLabel]" :src="imgUrl + themeMap[item.themeLabel]"></image>
+							</view>
+					</up-list-item>
+				</up-list>
+				
+				<view class="empty-view" v-if="allDataList.length === 0 && !loadingVisible">
+					<text class="empty-text">暂无搜索结果</text>
+				</view>
+			</view>
+		</view>
+		
+		<ser-CustomImageLoading :modelValue="loadingVisible" text="数据加载中..." />
+	</view>
+</template>
+
+<script setup lang="ts">
+	import { ref, onMounted, computed, nextTick } from 'vue';
+	import { getgetServiceAreaPageList } from '@/api/map';
+	import { showToast, openAPPLocation, openLocation } from '@/utils/util';
+	import { imgUrl } from '../../config';
+	import { useTheme } from '@/composables/useTheme';
+
+	const { themeStore, pageTheme } = useTheme();
+	const bdMapViewRef = ref(null);
+	const loadingVisible = ref(false);
+	const searchTex = ref('');
+	const iscategory = ref(false);
+	const boxHeight = ref(600);
+	
+	const pageNum = ref(1)
+	const pageSize = ref(999)
+	const total = ref(0)
+	const allDataList = ref([]);
+	const merIndex = ref(0);
+	const merTypes = [
+		{ key: '', val: '全部' },
+		{ key: '01', val: '正常' },
+		{ key: '02', val: '关闭' },
+	];
+
+	const themeMap = {
+		'红色印记': 'static/station-icon-1.png',
+		'综台服务': 'static/station-icon-2.png',
+		'交文旅融合': 'static/station-icon-3.png',
+		'休闲运动': 'static/station-icon-4.png',
+		'温馨驿站': 'static/station-icon-5.png',
+		'红色文化': 'static/station-icon-6.png'
+	};
+
+	const textValue = computed(() => merTypes[merIndex.value].val);
+	const toBack = () => uni.navigateBack();
+
+	const handleHeightChange = () => {
+		boxHeight.value = (boxHeight.value === 600) ? 1200 : 600;
+	};
+	
+	const getList = async () => {
+		const params = {
+			pageNum: 1,
+			pageSize: 999,
+			longitude: uni.getStorageSync('address').lng,
+			latitude: uni.getStorageSync('address').lat,
+			serviceAreaName: searchTex.value,
+			operationalStatus: merTypes[merIndex.value].key,
+		};
+		
+		loadingVisible.value = true;
+		try {
+			const res: any = await getgetServiceAreaPageList(params);
+			if (res && res.rows) {
+				allDataList.value = res.rows.map(item => ({
+					...item,
+					displayTags: (item.detailList || []).slice(0, 5),
+					latitude: Number(item.latitude),
+					longitude: Number(item.longitude),
+				}));
+				total.value = res.total;
+				nextTick(() => {
+					const markers = allDataList.value.map(item => ({
+						...item,
+						iconPath: imgUrl + 'map/fuwuqudingwei-icon.png'
+					}));
+					bdMapViewRef.value?.showMapPoint(JSON.stringify(markers));
+				});
+			} else {
+				allDataList.value = [];
+			}
+		} catch (err) {
+			showToast('获取数据失败');
+		} finally {
+			loadingVisible.value = false;
+		}
+	};
+	
+	const scrolltolower = () => {
+		console.log("uplist触底")
+		if (total.value > allDataList.value.length) {
+			pageNum.value += 1;
+			getList();
+		}
+	}
+
+	const init = () => {
+		allDataList.value = [];
+		getList();
+	};
+
+	const inputConfirm = () => init();
+	const toggleCategory = () => iscategory.value = !iscategory.value;
+	const cateChange = (index) => {
+		merIndex.value = index;
+		iscategory.value = false;
+		init();
+	};
+
+	const openAdd = (station: any) => {
+		const lat = parseFloat(station.latitude);
+		const lng = parseFloat(station.longitude);
+		const isApp = uni.getSystemInfoSync().uniPlatform === 'app';
+		if (isApp) {
+			openAPPLocation({ endLocation: { longitude: lng, latitude: lat, address: station.address } });
+		} else {
+			openLocation({ latitude: lat, longitude: lng, name: station.serviceAreaName, address: station.address });
+		}
+	};
+
+	const goStation = (id) => uni.navigateTo({ url: `/pages_A/stationDetails/index?id=${id}` });
+
+	onMounted(() => init());
+</script>
+
+<style scoped lang="scss">
+	/* nvue 核心：布局必须明确 */
+	.container {
+		position: absolute;
+		top: 0;
+		left: 0;
+		right: 0;
+		bottom: 0;
+		background-color: #f0f2f5;
+		display: flex;
+		flex-direction: column;
+	}
+
+	.map {
+		flex: 1;
+		width: 750rpx;
+	}
+
+	.search-container {
+		position: absolute;
+		top: 0;
+		left: 0;
+		width: 750rpx;
+		z-index: 100;
+	}
+
+	.search-box {
+		width: 690rpx;
+		height: 70rpx;
+		padding: 0 30rpx;
+		// margin: 0 auto;
+		margin-left: 30rpx;
+		margin-top: 10rpx;
+		background: #f2f2f2;
+		border-radius: 45rpx;
+		
+	}
+
+	.filter-bar {
+		padding: 0 30rpx;
+		height: 80rpx;
+		flex-direction: row;
+		align-items: center;
+	}
+
+	.filter-item {
+		flex-direction: row;
+		align-items: center;
+		background-color: #ffffff;
+		padding: 10rpx 24rpx;
+		border-radius: 40rpx;
+	}
+
+	.filter-text {
+		font-size: 26rpx;
+		color: #333;
+	}
+
+	.active { color: #3c9cff; }
+
+	/* 下拉弹窗 */
+	.dropdown-mask {
+		position: fixed;
+		top: 0;
+		left: 0;
+		right: 0;
+		bottom: 0;
+		background-color: rgba(0,0,0,0.4);
+		z-index: 999;
+	}
+
+	.dropdown-content {
+		position: absolute;
+		top: 260rpx;
+		left: 30rpx;
+		width: 300rpx;
+		background-color: #ffffff;
+		border-radius: 12rpx;
+		box-shadow: 0 4rpx 12rpx rgba(0,0,0,0.1);
+	}
+
+	.dropdown-row {
+		height: 90rpx;
+		justify-content: center;
+		padding: 0 30rpx;
+		border-bottom-width: 1rpx;
+		border-bottom-color: #f5f5f5;
+	}
+
+	.dropdown-text { font-size: 28rpx; }
+
+	/* 列表抽屉样式 */
+	.list-drawer {
+		position: absolute;
+		bottom: 0;
+		left: 0;
+		width: 750rpx;
+		background-color: #f8f9fb;
+		border-top-left-radius: 40rpx;
+		border-top-right-radius: 40rpx;
+		transition: height 0.3s cubic-bezier(0.25, 0.1, 0.25, 1);
+		display: flex;
+		flex-direction: column;
+	}
+
+	.drawer-handler {
+		height: 60rpx;
+		align-items: center;
+		justify-content: center;
+	}
+
+	.handler-line {
+		width: 80rpx;
+		height: 8rpx;
+		background-color: #ddd;
+		border-radius: 4rpx;
+	}
+
+	/* 重点：列表容器必须撑开 */
+	.list-wrapper {
+		flex: 1;
+		height: 0;
+		width: 750rpx;
+	}
+
+	.custom-list {
+		background-color: transparent;
+	}
+
+	/* 去掉 uni-list 默认内边距 */
+	::v-deep .uni-list-item__container {
+		padding: 0 !important;
+		background-color: transparent !important;
+	}
+
+	.service-card {
+		width: 690rpx;
+		margin: 10rpx 30rpx 20rpx 30rpx;
+		background-color: #ffffff;
+		border-radius: 20rpx;
+		padding: 24rpx;
+		flex-direction: row;
+		position: relative;
+		/* nvue 阴影建议简单处理 */
+		box-shadow: 0 2rpx 10rpx rgba(0,0,0,0.05);
+	}
+
+	.card-left {
+		width: 180rpx;
+		height: 180rpx;
+	}
+
+	.service-image {
+		width: 180rpx;
+		height: 180rpx;
+		border-radius: 12rpx;
+	}
+
+	.status-badge {
+		position: absolute;
+		top: 0;
+		left: 0;
+		padding: 4rpx 10rpx;
+		border-top-left-radius: 12rpx;
+		border-bottom-right-radius: 12rpx;
+	}
+
+	.bg-green { background-color: #52c41a; }
+	.bg-gray { background-color: #999999; }
+	.status-text { color: #ffffff; font-size: 20rpx; }
+
+	.card-right {
+		flex: 1;
+		margin-left: 20rpx;
+	}
+
+	.card-row { flex-direction: row; align-items: center; }
+
+	.card-title {
+		font-size: 30rpx;
+		font-weight: bold;
+		color: #333;
+		lines: 1;
+		text-overflow: ellipsis;
+		// flex: 1;
+	}
+
+	.card-sub { font-size: 24rpx; color: #666; margin-left: 10rpx;}
+	.card-addr { font-size: 24rpx; color: #999; lines: 1; text-overflow: ellipsis; flex: 1; }
+	.card-dist { font-size: 24rpx; color: #999; margin-left: 10rpx; }
+	.bottom-row { margin-top: 20rpx; justify-content: space-between; }
+	.tag-group { flex-direction: row; }
+	.tag-icon { width: 34rpx; height: 34rpx; margin-right: 8rpx; }
+
+	.nav-btn {
+		flex-direction: row;
+		align-items: center;
+		padding: 8rpx 20rpx;
+		// border-radius: 30rpx;
+		// background-color: #f0f7ff;
+	}
+
+	.nav-icon { width: 32rpx; height: 32rpx; }
+	.nav-label { font-size: 22rpx; color: #666; margin-left: 6rpx; }
+
+	.watermark {
+		position: absolute;
+		right: 0;
+		bottom: 0;
+		width: 80rpx;
+		height: 80rpx;
+		opacity: 0.6;
+	}
+
+	.empty-view {
+		width: 750rpx;
+		padding-top: 100rpx;
+		align-items: center;
+	}
+
+	.empty-text { color: #999999; font-size: 26rpx; }
+	.mt-10 { margin-top: 10rpx; }
+</style>

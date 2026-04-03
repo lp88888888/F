@@ -1,0 +1,24 @@
+{
+	"string": [{
+		"name": "permission_module",
+		"value": "permission_module"
+	}, {
+		"name": "location_desc",
+		"value": "正在申请获取您的位置信息，以便为您提供相应的服务"
+	}, {
+		"name": "get_networkinfo_tips",
+		"value": "正在申请获取网络信息权限，以便为您提供相应的服务"
+	}, {
+		"name": "write_contacts",
+		"value": "正在申请写入联系人权限，以便为您提供相应的服务"
+	}, {
+		"name": "microphone",
+		"value": "正在申请使用麦克风权限，以便为您提供相应的服务"
+	}, {
+		"name": "access_biometric",
+		"value": "正在申请访问用户认证权限，以便为您提供相应的服务"
+	}, {
+		"name": "read_pasteboard",
+		"value": "正在申请获取剪切版权限，以便为您提供相应的服务"
+	}]
+}

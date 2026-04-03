@@ -1,0 +1,133 @@
+<template>
+	<BdDigitalManView ref="bdDigitalMan" v-bind="attrs"></BdDigitalManView>
+</template>
+
+<script setup lang="ts">
+	import { ref, useAttrs } from 'vue';
+
+	const attrs = useAttrs();
+	const bdDigitalMan = ref(null);
+	let speechTimer : any = null;
+
+	// 定义回调列表，支持多订阅
+	const speechCompleteCallbacks = new Set<(parsed : any, raw : string) => void>();
+	const subtitleCallbacks = new Set<(parsed : any, raw : string) => void>();
+
+	const defaultInitOptions = {
+		hairId: 'coco_02_hair_out',
+		badgeId: 'coco_02_badge_out',
+		bodyId: 'coco_02_body_out',
+		shoesId: 'coco_02_shoes_out',
+		cameraId: 'v_half_cam',
+		speechPersonId: 'LITE_clever_boy',
+		speechSpeed: 10,
+		isAutoAnimoji: true,
+	};
+
+	const parseNativeResult = (raw : string) => {
+		if (typeof raw !== 'string') {
+			return raw;
+		}
+
+		try {
+			return JSON.parse(raw);
+		} catch (error) {
+			return raw;
+		}
+	};
+
+	// 清除结束倒计时
+	const clearEndTimer = () => {
+		if (speechTimer) {
+			clearTimeout(speechTimer);
+			speechTimer = null;
+			console.log('---Bridge: 已清除播报结束计时器---');
+		}
+	};
+
+	const init = (options = {}, callback ?: (parsed : any, raw : string) => void) => {
+		if (!bdDigitalMan.value) return;
+
+		bdDigitalMan.value.initBdDigitalMan(
+			JSON.stringify({
+				...defaultInitOptions,
+				...options,
+			}),
+			(raw : string) => {
+				// 初始化完成后，统一挂载原生监听
+				setupNativeListeners();
+				callback?.(parseNativeResult(raw), raw);
+			}
+		);
+	};
+
+	const setupNativeListeners = () => {
+		// 统一处理原生字幕回调
+		bdDigitalMan.value.bdDigitalManSubtitlesCallback((raw : string) => {
+			clearEndTimer(); // 只要有新字幕，说明还在播报，清除计时器
+			const parsed = parseNativeResult(raw);
+			subtitleCallbacks.forEach(cb => cb(parsed, raw));
+		});
+
+		// 统一处理原生播报完成回调
+		bdDigitalMan.value.bdDigitalManSpeechComplete((raw : string) => {
+			const parsed = parseNativeResult(raw);
+			speechCompleteCallbacks.forEach(cb => cb(parsed, raw));
+		});
+	};
+
+	const requestLargeModelData = (params : Record<string, any>, callback ?: (parsed : any, raw : string) => void) => {
+		if (!bdDigitalMan.value) return;
+		clearEndTimer(); // 开始请求新数据，清除旧计时器
+		bdDigitalMan.value.requestBdLargeModelData(params, (raw : string) => {
+			callback?.(parseNativeResult(raw), raw);
+		});
+	};
+
+	const speak = (params : Record<string, any>, callback ?: (parsed : any, raw : string) => void) => {
+		if (!bdDigitalMan.value) return;
+		clearEndTimer(); // 开始新播报，清除旧计时器
+		bdDigitalMan.value.bdDigitalManSpeech(params, (raw : string) => {
+			callback?.(parseNativeResult(raw), raw);
+		});
+	};
+
+	const interrupt = (callback ?: (parsed : any, raw : string) => void) => {
+		if (!bdDigitalMan.value) return;
+		clearEndTimer();
+		bdDigitalMan.value.bdDigitalManSpeechInterrupt((raw : string) => {
+			callback?.(parseNativeResult(raw), raw);
+		});
+	};
+
+	const onSpeechComplete = (callback : (parsed : any, raw : string) => void) => {
+		speechCompleteCallbacks.add(callback);
+	};
+
+	const onSubtitles = (callback : (parsed : any, raw : string) => void) => {
+		subtitleCallbacks.add(callback);
+	};
+
+	const onSpeechEnd = (callback : (res : any) => void, delay = 2000) => {
+		onSpeechComplete((parsed) => {
+			console.log(`---Bridge: 触发分句结束，开始 ${delay}ms 倒计时---`);
+			clearEndTimer();
+			speechTimer = setTimeout(() => {
+				console.log('---Bridge: 确认无新内容，执行真正的结束回调---');
+				callback?.(parsed);
+				speechTimer = null;
+			}, delay);
+		});
+	};
+
+	defineExpose({
+		init,
+		requestLargeModelData,
+		speak,
+		interrupt,
+		onSpeechComplete,
+		onSubtitles,
+		onSpeechEnd,
+		nativeRef: bdDigitalMan,
+	});
+</script>

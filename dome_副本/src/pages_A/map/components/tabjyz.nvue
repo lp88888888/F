@@ -1,0 +1,285 @@
+<template>
+	<view class="container" :data-theme="pageTheme" style="height: 800rpx;  box-sizing: border-box;">
+		<!-- 标题区域 -->
+		<view class="header">
+			<view class="title">
+				<view style="flex-direction: row;align-items: center;">
+					<text class="title-text">沿途共计</text>
+					<text class="count" :style="{color:themeStore.themeColors.$color}"  >{{total}}</text>
+					<text class="title-text">个收费站</text>
+				</view>
+				<u-icon name="close" color="#000" size="24" @click="onClose"></u-icon>
+			</view>
+			<!-- 状态标签列表 -->
+			<view class="tag-list">
+				<text v-for="item in invoiceList " :key="item.id" class="tag" :class="{ active: item.id === activeTag }"
+					 @click="chengtags(item.id)">
+					{{ item.rkname }}
+				</text>
+			</view>
+		</view>
+		<scroll-view scroll-y="true" style="flex: 1;background-color:  #EFF1F6;" :show-scrollbar="false">
+			<view v-for="item in fwqlist " :key="item.id" class="station-item" @click="goStation(item.id)">
+				<image v-if="item?.detailList" :src="item?.detailList[0]?.serviceInfoPicUrl" mode="aspectFill"
+					class="bg-img"></image>
+				<image src="https://tranalioss.shanyitong.com/images/20230225/1677317200274.jpeg" v-else
+					mode="aspectFill" class="bg-img"></image>
+				<view class="content">
+					<view class="row">
+						<text class="name">{{ item.tollStationName }}</text>
+						<image :src="imgUrl+'img/daohang.png'" mode="aspectFill" @click.stop="goMap1(item)"
+							class="icon"></image>
+					</view>
+					<text class="distance">{{item.distance}}</text>
+					<text class="address texNoWrap2">{{ item.tollStationAddress }}</text>
+				</view>
+			</view>
+		</scroll-view>
+	</view>
+</template>
+
+<script setup lang="ts">
+	import { ref, reactive } from 'vue'
+	import { imgUrl } from '../../../config';
+	import { openAPPLocation } from '@/utils/util'
+	import {
+		getTollStationByLngLatList
+	} from '@/api/map';
+	import {
+		useTheme
+	} from '@/composables/useTheme';
+	const {
+		themeStore,
+		pageTheme
+	} = useTheme();
+	const props = defineProps({
+		fromcurrentLat: {
+			type: String,
+			default: '',
+		},
+		fromcurrentLng: {
+			type: String,
+			default: '',
+		},
+		tolatitude: {
+			type: String,
+			default: '',
+		},
+		tolongitude: {
+			type: String,
+			default: '',
+		}
+	});
+	const pageNum = ref(1)
+	// 页面显示
+	onMounted(() => {
+		getlist()
+	})
+	const chengtags = (id) => {
+		activeTag.value = id
+		getlist()
+	}
+	const goMap1 = (item) => {
+		console.log();
+		openAPPLocation({
+			"endLocation": {
+				"longitude": item.longitude,
+				"latitude": item.latitude,
+				"address": item.tollStationName
+			}
+		})
+	}
+	const goStation = (id : any) => {
+		// uni.navigateTo({
+		// 	url: '/pages_A/stationDetails/index?id=' + id
+		// })
+	}
+	const getlist = async () => {
+		const params = {
+			pageNum: pageNum.value,
+			pageSize: 100,
+			myLongitude: props.fromcurrentLng,
+			myLatitude: props.fromcurrentLat,
+			startLongitude: props.fromcurrentLng,
+			startLatitude: props.fromcurrentLat,
+			endLongitude: props.tolongitude,
+			endLatitude: props.tolatitude,
+			operationalStatus: activeTag.value
+		};
+		const res = await getTollStationByLngLatList(params)
+		fwqlist.value = res.data.list
+		const arr = res.data.list.map((shop, index) => ({
+			id: index + 1, // 确保id唯一且不为0（0用于用户位置）
+			delid: shop.id,
+			latitude: shop.latitude,
+			longitude: shop.longitude,
+			title: shop.tollStationName,
+			iconPath: imgUrl +
+				'map/sfzdingwei-icon.png', // 可替换为自己的图标
+			width: 24,
+			height: 24,
+			type: 'sfz',
+			callout: {
+				content: shop.tollStationName,
+				color: '#333',
+				fontSize: 12,
+				borderRadius: 4,
+				bgColor: '#fff',
+				padding: 5,
+				display: 'BYCLICK'
+			}
+		}));
+		emit('maptq', arr) // 触发事件并传值
+		total.value = res.data.total
+	};
+	// 标签列表
+	const invoiceList = ref([
+		{ id: "", rkname: '全部' },
+		{ id: "01", rkname: '正常' },
+		{ id: "02", rkname: '关闭' },
+		{ id: "05", rkname: '管制' }
+	])
+
+	// 收费站列表
+	const fwqlist = ref([
+
+	])
+
+	// 当前选中标签
+	const activeTag = ref('')
+	const total = ref(0)
+	// 关闭事件
+	const emit = defineEmits<{
+		(e : 'call-parent', data : string) : void
+	}>()
+
+	// 关闭事件
+	const onClose = () => {
+		emit('closetab')
+	}
+</script>
+
+<style scoped lang="scss">
+	.container {
+		height: 800rpx;
+		position: relative;
+		background: #EFF1F6;
+		border-radius: 36rpx 36rpx 0rpx 0rpx;
+		border: 3px solid #FFFFFF;
+	}
+
+	.header {
+		flex-shrink: 0;
+		/* 防止收缩 */
+		padding: 20rpx;
+		background: #fff;
+		border-radius: 16rpx;
+		box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.1);
+	}
+
+	.title {
+		flex-direction: row;
+		justify-content: space-between;
+		align-items: center;
+
+		margin-bottom: 20rpx;
+
+	}
+
+	.title-text {
+		font-weight: bold;
+		font-size: 28rpx;
+		color: #000000;
+	}
+
+	.count {
+		color: var(--primary-color);
+		font-weight: bold;
+		margin: 0 8rpx;
+	}
+
+	.tag-list {
+		flex-direction: row;
+		gap: 20rpx;
+		flex-wrap: wrap;
+	}
+
+	.tag {
+		text-align: center;
+		line-height: 56rpx;
+		width: 126rpx;
+		height: 56rpx;
+		background: #F7F8FA;
+		border-radius: 16rpx;
+		font-weight: bold;
+		font-size: 24rpx;
+		color: #000000;
+		margin-right: 20rpx;
+
+		&.active {
+			width: 126rpx;
+			height: 56rpx;
+			background: #FFFAF2;
+			border-radius: 16rpx;
+			border: 1px solid #FFA011;
+			font-weight: bold;
+			font-size: 24rpx;
+			color: #FFA011;
+		}
+	}
+
+	.station-item {
+		position: relative;
+		min-height: 200rpx;
+		margin: 20rpx 30rpx;
+		background: #fff;
+		border-radius: 16rpx;
+		overflow: hidden;
+		box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.1);
+		flex-direction: row;
+		align-items: center;
+	}
+
+	.bg-img {
+
+		width: 160rpx;
+		height: 120rpx;
+		border-radius: 26rpx;
+		margin-left: 30rpx;
+	}
+
+	.content {
+		width: 500rpx;
+		padding: 30rpx;
+		color: #333;
+	}
+
+	.row {
+		flex-direction: row;
+		justify-content: space-between;
+		align-items: center;
+	}
+
+	.name {
+		font-size: 34rpx;
+		font-weight: bold;
+		color: #000;
+	}
+
+	.distance {
+		font-size: 28rpx;
+		color: #666;
+		margin: 16rpx 0;
+	}
+
+	.address {
+		font-size: 24rpx;
+		color: #999;
+	}
+
+	.icon {
+		width: 32rpx;
+		height: 32rpx;
+		margin-left: 16rpx;
+	}
+</style>

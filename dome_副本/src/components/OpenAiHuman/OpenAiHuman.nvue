@@ -1,0 +1,1243 @@
+<template>
+	<view class="popView" :style="{height:systemInfo().windowHeight+'px'}" >
+		<!-- <BdDigitalManBridge ref="bdDigitalMan" :style="BdDigitalStyle" ></BdDigitalManBridge> -->
+		<!-- 透明事件拦截层 -->
+		<view class="mask" @click="noop"></view>
+		<!-- <view class="enginesdk" @click="toMenum">
+			<image class="enginesdk-img" :src="imgUrl+'BdDigitalMan/idle_6.gif'" mode=""  ></image>
+		</view> -->
+		<view class="viewtetxBox" style="justify-content: space-between;" :style="{backgroundColor: !firstShow?'rgba(252,255,252,0.5)':'rgba(252,255,252,0)'}">
+			<image class="viewBox-back" :src="icoUrl+'BdDigitalMan/home-index-hx-bg.png'" mode=""></image>
+			
+			<scroll-view class="scorBox" v-if="messageList.length && !firstShow" :scroll-top="scrollTop" :scroll-into-view="scrollIntoViewId" scroll-y>
+				<view id="top"></view>
+				<view class="messsList">
+					<!-- <image v-if="messageList.length" class="messsList-bgImg" :src="imgUrl+'BdDigitalMan/message-bg-icon.png'" mode=""></image> -->
+					<view class="messsList-item" v-for="(item,index) in messageList"  :id="'msg-' + index" :key="index" :style="{justifyContent: item.isUserType == 'user'?'flex-end':'flex-start'}"  @click="toMenum">
+						<view class="messsList-item-center" >
+							<view class="messView" :style="messStyle(item.isUserType)">
+								<view class="mseetxt" v-if="item.isUserType == 'service'">
+									<view class="querBoxTitle" @click.stop="item.queryOpenShow = !item.queryOpenShow">
+										<up-icon :name="icoUrl+'BdDigitalMan/dmIcon8.png'" size="14"></up-icon>
+										<text class="querBoxTitle-text">解析{{item.queryShow?'完成':'中'}}(基于「{{queryTextName(item.cot)}}」技能回答)</text>
+										<up-icon name="arrow-down" size="12"></up-icon>
+									</view>
+									<view class="queryBoxList" v-if="item.cot && item.queryOpenShow">
+										<view class="queryBoxList-item" v-for="(el,inc) in item.cot" :key="inc">
+											<text class="queryBoxList-item-text">{{Number(inc) + 1}}.{{el.name}}</text>
+											<up-icon v-if="el.status == 1" :name="icoUrl+'BdDigitalMan/check-circle-fill@2x.png'" size="14"></up-icon>
+											<u-loading-icon v-else text=" " :show="true" size="14"></u-loading-icon>
+										</view>
+									</view>
+								</view>
+								<view class="mseetxt" >
+									<text v-if="item.type == 'text'" class="mseetxt-text" :style="{color:item.isUserType == 'user'?'#FFFFFF':'#000000'}">{{item.msgText}}</text>
+									<up-parse style="width: 590rpx;" v-if="item.type == 'richText'" :content="htmlConter(item.msgText)" @linkTap="handleRichTextTap" ></up-parse>
+								</view>
+								<view class="bottView" v-if="item.isUserType == 'service'">
+									<view class="" v-if="item.aiData?.action == 'rescue' && item.aiData?.from_list" style="flex:1">
+										<view class="inputView" style="flex:1">
+											<text class="labelText">联系电话：</text>
+											<view style="flex:1" >
+												<up-input placeholder="请输入被救援人电话" type="number" maxlength="11" fontSize="24rpx" border="none" v-model="formData.customerPhone" ></up-input>
+											</view>
+										</view>
+										<view class="inputView" style="flex:1;margin-bottom: 20rpx;">
+											<text  class="labelText">车辆类型：</text>
+											<view style="flex:1" @click.stop="carisshow=true">
+												<text v-if="formData.vehicleType" class="fosTetx">{{formData.vehicleType}}</text>
+												<text v-else class="ladTetx">请选择车辆类型</text>
+											</view>
+										</view>
+										<text class="submitBut"  @click.stop="formSubmit(item)">提交表单</text>
+									</view>
+								</view>
+								<view class="bottomBut" v-if="item.isUserType == 'service' && index == (messageList.length - 1)">
+									<image class="bottomBut-img" :src="icoUrl+'BdDigitalMan/ai-man-new-icon1.png'" @click.stop="copyText(item.answer)"></image>
+									<image class="bottomBut-img" :src="icoUrl+'BdDigitalMan/ai-man-new-icon2.png'" @click.stop="stopTalk(item)"></image>
+									<image class="bottomBut-img" :src="`${icoUrl}BdDigitalMan/${item.positive?'ai-man-new-icon3-true':'ai-man-new-icon3'}.png`" @click.stop="zanClick(item,'POSITIVE')"></image>
+									<image class="bottomBut-img" :src="`${icoUrl}BdDigitalMan/${item.negative?'ai-man-new-icon4-true':'ai-man-new-icon4'}.png`" @click.stop="zanClick(item,'NEGATIVE')"></image>
+								</view>
+								<text v-if="item.isUserType == 'service'" class="textAi">该内容由人工智能ai生成</text>
+							</view>
+							<div  v-if="item.aiData?.follow_up" class="problem">
+							    <view v-for="(follow) in item.aiData.follow_up" :key="follow" @click.stop="followClick(follow)" class="problem-item-wrapper">
+							        <text class="problem-item">{{follow}}</text>
+							    </view>
+							</div>
+						</view>
+						<!-- <view v-if="item.isUserType == 'user'" class="messsList-item-active" style="text-align: right;">
+							<image class="messsList-item-active-img" :src="imgUrl+'static/dh_user.png'" mode=""></image>
+						</view> -->
+					</view>
+				</view>
+				<view id="bottom"></view>
+			</scroll-view>
+			<view v-else></view>
+			<!-- <image class="enginesdk" v-if="firstShow" :src="imgUrl+'BdDigitalMan/idle_6.gif'" mode="" @click="toMenum"></image> -->
+			<image class="enginesdk" v-if="firstShow && bobaoShow" :src="icoUrl+'BdDigitalMan/bobao_2.gif'" mode="" @click="toMenum"></image>
+			<image class="enginesdk" v-if="firstShow && !bobaoShow" :src="icoUrl+'BdDigitalMan/idle_6.gif'" mode="" @click="toMenum"></image>
+			<view class="inputBox">
+				<view v-if="isTextShow" style="flex: 1;flex-direction: row;align-items: center;">
+					<up-icon v-if="messageValue" name="arrow-left" size="28" @click="messageValue = ''"></up-icon>
+					<up-icon v-else :name="icoUrl+'BdDigitalMan/kefu.gif'" size="44"></up-icon>
+					<up-textarea v-model="messageValue" placeholder="请输入您要咨询的问题" autoHeight height="44rpx" border='none' ></up-textarea>
+					<up-icon v-if="messageValue" :name="icoUrl+'BdDigitalMan/submt-icon.png'" size="28" @click="subClick"></up-icon>
+					<up-icon v-else :name="icoUrl+'BdDigitalMan/dmIcon5.png'" size="28" @click="openStopk"></up-icon>
+				</view>
+				<view v-else style="flex: 1;flex-direction: row;align-items: center;">
+					<image class="inputBox-img" :src="icoUrl+'BdDigitalMan/call-ai-speek.gif'" :lazy-load="true"></image>
+					<text class="inputBox-text" v-if="speechShow">{{speechShow?'小猴在听，您请说…':''}}</text>
+					<text class="inputBox-text" v-if="!digitaShow">加载中…</text>
+				</view>
+			</view>
+			<image class="closeImg"  v-if="!firstShow" :src="icoUrl+'BdDigitalMan/home-close.png'" @click="close" mode=""></image>
+		</view>
+		<view class="stopBoxView" v-if="bobaoShow" @click="stopBobo">
+			<up-icon :name="icoUrl+'BdDigitalMan/dmIcon11.png'" size="22"></up-icon>
+			<text class="stopBoxView-text">停止播报</text>
+		</view>
+		<!-- <view class="viewBox">
+			<image v-if="digitaShow && speechShow" class="viewPage-speck" :src="icoUrl+'call-ai-speek.gif'" mode=""></image>
+			<view v-if="!digitaShow" class="ladinBox">
+				<image class="ladinBox-img" :src="imgUrl+'call-ai-lad.gif'" mode=""></image>
+				<text class="ladinBox-text">AI小助手启动中...</text>
+			</view>
+		</view> -->
+		<image class="viewPage-imgs"  v-if="firstShow" :src="icoUrl+'BdDigitalMan/home-close.png'" @click="close"></image>
+		<up-picker :show="carisshow" :columns="carcolumns" @cancel='carisshow=false' @confirm='confirmdownCar' keyName="label" valueName="value"></up-picker>
+		<up-popup :show="negaShow" mode="center" z-index="999" @close="close()" round="10">
+			<view class="feedBox">
+				<text class="feedBox-title">您不认可该回复的原因是什么？</text>
+				<view class="feedBox-tebs">
+					<text class="feedBox-tebs-text" :class="[negaForm.negativeFeedbackType == item.value?'activeText':'']" v-for="(item,index) in chatStore.feedbackTypeList" :key="index" @click="negaForm.negativeFeedbackType = item.value">{{item.name}}</text>
+				</view>
+				<view class="">
+					<up-textarea v-model="negaForm.feedbackContent" height="150" placeholder="请输入内容" ></up-textarea>
+				</view>
+				<view class="feedBox-buts">
+					<text class="feedBox-buts-item buts1" @click="close()">取消</text>
+					<text class="feedBox-buts-item buts2" @click="submit">确认</text>
+				</view>
+			</view>
+		</up-popup>
+	</view>
+</template>
+
+<script setup lang="ts">
+	import {ref,computed,onMounted,onUnmounted,onBeforeUnmount} from 'vue';
+	import { toNav,toBack } from '@/utils/route';
+	import {toast} from '@/utils/common'
+	import {imgUrl,aiUrl} from '@/config';
+	import { cached } from '@/utils/imgCache'
+	import { deepClone } from "@/uni_modules/uview-plus";
+	import { ChatStore } from "@/store/modules/chat";
+	import MessageButton from "@/components/MessageButton/MessageButtonN.nvue";
+	import { getOpenToken, openChat,feedbackAi,feedbackDeleteAi } from "@/api/openApi";
+	import { voiceToken, voiceTotext } from "@/api/language";
+	import { carTypeList } from '@/api/rescue';
+	import { getToken } from "@/utils/token";
+	import { formatTimestamp, getUUID,systemInfo ,copyText,openAPPLocation,openLocation} from "@/utils/util";
+	import {$kfMessageChange} from '@/utils/chatMessage';
+	// 主题 使用 （主题颜色 var( --theme-color)）（组件 componentColor.$pageBgColor） 图标地址（icoUrl）
+	import { useTheme } from '@/composables/useTheme';
+	const formJyData = ref(null);
+	const { themeStore, pageTheme } = useTheme();
+	const icoUrl = ref(themeStore.imgUrl);
+	const emits = defineEmits(["close"]);
+	const chatStore = ChatStore();
+	const uuid = getUUID();
+	const digitaShow = ref(false);
+	const firstShow = ref(true)
+	
+	const isTextShow = ref(false); // 是否显示输入框
+	const messageValue = ref('');
+	const bobaoShow = ref(false); // 是否正在播报
+	
+	const bdDigitalMan = ref(null);
+	const isMounted = ref(false);
+	const setBdDigitalMan = (instance) => {
+		bdDigitalMan.value = instance;
+		console.log('---OpenAiHuman setBdDigitalMan success---');
+		initMan();
+	};
+	const msgButtonRef = ref(null);
+	const show = ref(false);
+	const scrollTop = ref(0);
+	const scrollIntoViewId = ref<string>('top') // 默认指向底部占位符
+	const tabs = ref([
+		{name:'路况查询',id:'191'},
+		{name:'服务区查询',id:'213'},
+		{name:'应急咨询',id:'211'},
+		{name:'天气查询',id:'190'},
+		{name:'一键触达',id:'189'},
+		{name:'周边查询',id:'192'},
+		{name:'货车节问题',id:'195'},
+		{name:'驾驶咨询',id:'212'},
+		{name:'积分问题',id:'193'},
+	]);
+	const isLoading = ref(false);
+	const speechShow = ref(false);
+	const stokShow = ref(false);
+	const helloText = '小猴正在为你查询，请稍后'; // 小猴查询语配置
+	const tabsId = ref('')
+	const queryText = ref('');
+	const answer = ref('')
+	const htmlConter = computed(()=>{
+		return (text)=>{
+			return `<p style='font-size:28rpx;color:#333333;line-height: 48rpx;'>${text}</p>`
+		}
+	});
+	const messageList = computed(() =>{
+		return chatStore.list
+	})
+	const BdDigitalStyle  = computed(()=>{
+		// let width = 250;
+		// const height = (width * 16) / 9;  // 保持 9:16 比例
+		// return {
+		// 	width:`${width}rpx`,
+		// 	height:`${height}rpx`
+		// }
+		return{
+			width:`1rpx`,
+			height:`1rpx`,
+		}
+	});
+	
+	const messStyle = computed(()=>{
+		return (isUserType:string)=>{
+			interface Style {
+				background?:string;
+				borderRadius?:string;
+				color?:string;
+			}
+			let style:Style = {}
+			if(isUserType == 'user'){
+				style.background=themeStore.themeColors.$DigitaColor;
+				style.borderRadius='32rpx 32rpx 0rpx 32rpx';
+				style.color='#FFFFFF';
+			}
+			if(isUserType == 'service'){
+				style.background='#FFFFFF';
+				style.borderRadius='32rpx';
+				style.color='#000000';
+			}
+			
+			return style
+		}
+	})
+	const queryTextName = computed(()=>{
+		return (cot)=>{
+			let title = '大模型'
+			if(cot && Array.isArray(cot) && cot.length){
+				if(cot[0].outputs){
+					title = cot[0].outputs.name
+				}
+			}
+			
+			return title
+		}
+	});
+	
+	const formSubmit = (item)=>{
+		const phoneReg = /^1[3-9]\d{9}$/;
+		if(!formData.customerPhone) return toast('请填写手机号码');
+		if (!phoneReg.test(formData.customerPhone)) {
+			return toast('请输入正确的手机号格式');
+		}
+		if(!formData.vehicleType) return toast('请选择车辆类型');
+		formData.customerName = formData.customerPhone
+		formData.memberId = uni.getStorageSync('userInfo').id
+		formJySubmit({msgText:'确定提交救援订单',formData:deepClone(formData)});
+		delete item.aiData.from_list;
+		resetForm()
+	}
+	
+	const resetForm = ()=>{
+		formData.customerPhone = '';
+		formData.customerName = '';
+		formData.vehicleType = '';
+	}
+	const formJySubmit = (obj) =>{
+	  formJyData.value = obj.formData
+	  if(uni.getStorageSync('address')){
+	  	  formJyData.value.fault = {
+	  	  	address: uni.getStorageSync('address').standardAddress,
+	  	  	longitude: uni.getStorageSync('address').lng,
+	  	  	latitude: uni.getStorageSync('address').lat
+	  	  }
+		  formJyData.value.destination = {
+		  	address: uni.getStorageSync('address').standardAddress,
+		  	longitude: uni.getStorageSync('address').lng,
+		  	latitude: uni.getStorageSync('address').lat
+		  }
+	  }
+	  addMessage({msgText:obj.msgText,type:'text'})
+	} 
+	const carisshow = ref<boolean>(false);
+	const carcolumns = ref<any>([
+		[
+			{
+			    "label": "7坐以下客车",
+			    "value": "1"
+			},
+			{
+			    "label": "7坐以上客车",
+			    "value": "2"
+			},
+			{
+			    "label": "货车",
+			    "value": "3"
+			},
+			{
+			    "label": "危化品运输车",
+			    "value": "4"
+			}
+		]
+	]);
+	const formData = reactive({
+		memberId:'',
+		// 被救援人姓名
+		customerName: '',
+		// 被救援人电话
+		customerPhone: '',
+		// 故障车牌号
+		handFilledLicensePlate: '',
+		// 车辆类型
+		vehicleType: '',
+		// 车辆类型值
+		vehicleTypeValue: '',
+		// 救援地址
+		fault: {
+			address: '',
+			longitude: '',
+			latitude: ''
+		},
+		// 目的地址
+		destination: {
+			address: '',
+			longitude: '',
+			latitude: ''
+		},
+		// 行驶方向
+		direction: '',
+		// 高速公路路段
+		highwayName: '',
+		// 高速公路路段
+		highwayNameId: '',
+		// 占据车道
+		lane: ''
+	});
+	const confirmdownCar = (e : any) => {
+		const station = e.value[0]
+		console.log("e", e)
+		formData.vehicleType = station.label
+		carisshow.value = false
+	}
+	
+	const close = ()=>{
+		speechStop()
+		startTalk();
+		emits('close');
+	};
+	const opChange = (item)=>{
+		tabsId.value = item.id
+		stokValue(item.name)
+	}
+	const toMenum = () =>{
+		close()
+		toNav('/pages_E/digitalHuman/openAi');
+	}
+	const followClick = (item)=>{
+		addMessage({msgText:item});
+	}
+	// 输入框发送消息
+	const subClick = ()=>{
+		addMessage({msgText:messageValue.value})
+	}
+	const openStopk = ()=>{
+		speechStart()
+	}
+	
+	
+	// 发送消息
+	const addMessage = (objs: Objs) => {
+		firstShow.value = false
+		speechStop();
+		isLoading.value = true;
+		speechShow.value = false
+		answer.value = '';
+		messageValue.value = '';
+		scrollToBottom('bottom')
+		// startTalk();
+		console.log("--------objs---------", objs);
+		// scrollTop.value = 0
+		let obj: Objs = { type: "text" };
+		if (objs.msgText) {
+		  obj.msgText = objs.msgText;
+		  obj.type = "text";
+		  queryText.value = objs.msgText;
+		  chatStore.setUserMessage(deepClone(obj));
+		  
+		  setTimeout(() => {
+		    addKfMessage(deepClone(obj));
+		  }, 100);
+		}
+		console.log("object", objs);
+		if (objs.voice) {
+		  obj.voice = objs.voice;
+		  obj.duration = objs.duration;
+		  obj.type = "voice";
+		  obj.voiceState = objs.voiceState;
+		  // chatStore.setUserMessage(deepClone(obj))
+		  uploadPcm(objs);
+		}
+	};
+	const addKfMessage = (obj: Objs) => {
+	  console.log("--------obj---------", obj);
+	  let msgText = obj.msgText || "";
+	  if (obj.voice) {
+	    let newObj: NewObj = {
+	      type: "text",
+	    };
+	
+	    let arr = chatStore.dataList.filter(
+	      (item) =>
+	        item.name.indexOf(obj.voiceState) != -1 || obj.voiceState.indexOf(item.name) != -1
+	    );
+	    if (arr.length) {
+	      if (arr[0].richText) {
+	        newObj.type = "richText";
+	        newObj.msgText = arr[0].richText;
+	      } else {
+	        newObj.msgText = "你好，该功能暂未开通";
+	      }
+	      chatStore.setServiceMessage(newObj);
+	    } else {
+	      newObj.msgText = "你好，请描述所需办理的业务";
+	      chatStore.setServiceMessage(newObj);
+	    }
+	  } else {
+	    setChat(obj);
+	  }
+	  
+	};
+	const uploadPcm = (data) => {
+	  plus.io.resolveLocalFileSystemURL(data.voice, (entry) => {
+	    entry.file(file => {
+	      const reader = new plus.io.FileReader()
+	      reader.onloadend = e => {
+	  		getVoictToText(e.target.result.split(',')[1], data);
+	  	}
+	      reader.readAsDataURL(file)
+	    })
+	  });
+	};
+	// 语音转文字
+	const getVoictToText = async (base64Speech, datas) => {
+		console.log("-----getVoictToText------");
+	  try {
+	    const tokRes = await voiceToken();
+	    const accessToken = tokRes.access_token || null;
+	    if (accessToken) {
+			const res = await voiceTotext(accessToken, base64Speech);
+			if (res.err_no == 0) {
+				  let valueText = res.result.join()
+				  if(!valueText) return toast('未识别出文字');
+					let obj = {
+					  msgText: res.result.join(),
+					  type: "text",
+					};
+					queryText.value = valueText
+					setChat(obj)
+					
+			} else {
+			  toast(e.err_msg);
+			}
+	    } else {
+	      toast(tokRes.error);
+	    }
+	  } catch (e) {
+	    toast(e.error);
+	  }
+	};
+	const setChat = async (messageObj) => {
+	  const requestTime = formatTimestamp(new Date().getTime() - 1000, "YYYY-MM-DD HH:mm:ss");
+	  console.log("requestTime", requestTime);
+	  try {
+	    const tokenRes = await getOpenToken(requestTime);
+	    if (tokenRes.status === 200) {
+	     start(tokenRes.result, requestTime);
+	    } else {
+	      toast(tokenRes.message);
+	    }
+	  } catch (e) {
+	    toast(e.message);
+	  }
+	};
+	const stopBobo = ()=>{
+		startTalk()
+		if(!isTextShow.value){
+			speechStart()
+		}
+	}
+	const startTalk = ()=> {
+		bobaoShow.value = false;
+		bdDigitalMan.value.interrupt(event=>{
+			stokShow.value = false
+		})
+		
+	}
+	const start = (token, requestTime) => {
+		console.log('----------start---------------');
+		const messageId = getUUID()
+		startTalk()
+		// stokValue(helloText)
+		bdDigitalMan.value.requestLargeModelData({
+				// isAutoSpeech:true,
+				playType:1,
+				"url":aiUrl+'/copilot/v1/openApi/chat',
+				"copilotAk": "copilot_ak_4qZ84MGWrRoXcMwY",
+				"assistantId":'118',
+				"requestTime": requestTime,
+				"copilotToken": token,
+				"removeRegularList":chatStore.removeRegularList,
+				"ttsConfig": chatStore.ttsConfig,
+				"endWidthSymbol":chatStore.endWidthSymbol,
+				"body": JSON.stringify({
+					type: 'IM_CLICK',
+					assistantId:118,
+					query: queryText.value,
+					sessionId: uuid,
+					skillId:tabsId.value,
+					params: {
+						userCode: getToken(), // 用户token
+						'user_info':formJyData.value || undefined,
+						userLat:uni.getStorageSync('address').lat || '',
+						userLon:uni.getStorageSync('address').lng || '',
+						useLon:uni.getStorageSync('address').lng || '',
+						'member_id':uni.getStorageSync('userInfo').id || '',
+						'memberType':uni.getStorageSync('userInfo').memberType || '1'
+					},
+				})
+		},(res)=>{
+			let data = typeof res.data === 'string' ? JSON.parse(res.data) : res.data
+			// $kfMessageChange(res,messageId)
+			chatStore.setServiceQueryMessage({
+				type:'text',
+				id:messageId,
+				queryId:data.data.queryId,
+				sessionId:data.data.sessionId || '',
+				code:data.code,
+				cot:data.data.cot,
+				msgText:data.data.answer?data.data.answer:'',
+				answer:data.data.answer?data.data.answer:'',
+				aiData:data.data.data || null
+			})
+			formJyData.value  = null
+			if(data.code == 100){
+				
+			}else{
+				isLoading.value = false;
+			}
+			if(data.code == 200){
+				bobaoShow.value = true
+			}
+			if(data.code != 100 && data.code != 200){
+				// answer.value = data.data.answer;
+				stokValue(data.data.answer)
+				stokShow.value = true
+			}
+			if(data.data?.data?.action == 'navigation'){
+				setTimeout(() => {
+					// #ifdef APP
+					let start ={"lat": 34.2778,"lng": 108.953098,"address": "西安市"}
+						if(uni.getStorageSync('address')){
+							start.lat = uni.getStorageSync('address').lat
+							start.lng = uni.getStorageSync('address').lng
+							start.address = uni.getStorageSync('address').standardAddress || uni.getStorageSync('address').city
+						}
+						openAPPLocation({
+							startLocation:{
+								longitude:start.lng,
+								latitude:start.lat,
+								address:start.address,
+							},
+							endLocation:{
+								longitude:data.data.data.destination.longitude,
+								latitude:data.data.data.destination.latitude,
+								address:data.data.data.destination.name,
+							}
+						})
+					// #endif
+					// #ifdef MP-WEIXIN
+						openLocation(data.data.data.destination)
+					// #endif
+				},1000)
+			}
+		})
+		// 播报
+		bdDigitalMan.value.onSubtitles((event)=>{
+			stokShow.value = true
+			console.log('-播报--->>',event);
+			bobaoShow.value = true
+			const res = event;
+			if(res.content != chatStore.helloText && res.content != chatStore.getText){
+				answer.value = answer.value + res.content;
+				scrollToBottom('bottom')
+				speechStop()
+			}
+		})
+		// bdDigitalMan.value.bdDigitalManSpeechComplete((res)=>{
+		// 	console.log('说2完了=----',res);
+		// 	speechStart()
+		// })
+	};
+	
+	const negaShow = ref(false);
+	const negaObj = ref({});
+	const negaForm = ref({
+		negativeFeedbackType:'',
+		feedbackContent:'',
+	});
+	//汽车类型
+	const carTypefun = async () => {
+		const res = await carTypeList();
+		console.log("----------------->>>>>",res);
+		carcolumns.value = [res.data]
+	}
+	const noop = () => {};
+	const handleRichTextTap = (e) => {
+		toNav(e['data-link'])
+		console.log('-00990878966465587', e);
+	}
+	// 播报
+	const stopTalk = (item)=>{
+		stokValue(item.answer || item.msgText)
+	}
+	const stokValue = (text)=>{
+		// bobaoShow.value = true
+		bdDigitalMan.value.speak({
+		  ttsConfig: chatStore.ttsConfig,
+		  "content": text,
+		  "regularList": chatStore.regularList
+	},(datas)=>{
+			console.log('-------------------------datas----');
+			// bobaoShow.value = true
+			// stoopbbj()
+		})
+		bdDigitalMan.value.onSpeechEnd((res)=>{
+			
+			console.log('说完了=----',text,'===0');
+			console.log('-0909',text != helloText );
+			bobaoShow.value = false
+			if(isMounted.value && text != helloText ){
+				console.log('说完了=----说完了=----说完了=----说完了=----说完了=----说完了=----');
+				stokShow.value = true
+				speechStart()
+			}
+			text = ''
+		})
+	};
+	const stoopbbj = ()=>{
+		bdDigitalMan.value.onSpeechEnd(event=>{
+			console.log("+++++++++++++++++++++++++++++++++++++++++",event);
+		})
+	}
+	const scrollToBottom = (type) => {
+		nextTick(() => {
+		    scrollIntoViewId.value = 'bottom'
+		    scrollTop.value = messageList.value.length * 9999;
+		    setTimeout(() => {
+		      scrollTop.value += 1
+		    }, 500)
+		  })
+	};
+	const speechTimeout = ref<NodeJS.Timeout | null>(null);
+	const speechStartTime = ref(0);
+	/* 
+		设置超时时间 
+		2026-01-12 修改由30s调整为6s
+	 */
+	const startTiem = ()=>{
+		console.log('------------开始退出计时-------------');
+		// 设置20秒超时
+		speechTimeout.value = setTimeout(() => {
+			console.log('09090998',Date.now() - speechStartTime.value >= 10000);
+			if (Date.now() - speechStartTime.value >= 10000) {
+				isTextShow.value = true
+				speechStop()
+			}
+		}, 10000);
+	}
+	const clearTime = ()=>{
+		console.log('------------清空倒计时-------------');
+		// isTextShow.value = true
+		clearTimeout(speechTimeout.value);
+	}
+	// 说话
+	const speechStart = ()=>{
+		// if(isLoading.value) return;
+		speechShow.value = true;
+		isTextShow.value = '';
+		speechStartTime.value = Date.now();
+		
+		// 清除之前的定时器
+		if (speechTimeout.value) {
+			clearTime()
+		}
+		startTiem()
+		console.log('---------------------------开始识别---------speechStart------------------------');
+		plus.speech.startRecognize({
+			engine: 'baidu',
+			lang: 'zh-cn',
+			userInterface: false,
+			continue: true,
+			'vadEos': 500,
+			'nbest': 1,
+			'punctuation': true,
+			'interimResults': true
+		}, function(result) {
+			if (speechTimeout.value) {
+				clearTime()
+			}
+			console.log('实时识别：' + result);
+			queryText.value = result;
+			addMessage({type: "text", msgText: result});
+			speechStop();
+		}, function(error) {
+			if (speechTimeout.value) {
+				clearTime()
+			}
+			console.error('识别错误：', error);
+		});
+	}
+
+	
+	// 停止
+	const speechStop = ()=> {
+		speechShow.value = false
+		 plus.speech.stopRecognize();
+	}
+	const initMan = () => {
+		if (!bdDigitalMan.value) return;
+		// bdDigitalMan.value.init({}, (res)=>{
+		// 	console.log("-------------------initBdDigitalMan回调--------------------",res);
+		// 	// speechStart()
+		// 	if(res && (res.code == 2 || res.code == 1 || res.code == 0)){ 
+				
+				setTimeout(()=>{
+					stokValue("小猴在听，您请说")
+					digitaShow.value = true
+				},1000)
+		// 	}
+		// });
+	}
+	onMounted(()=>{
+		console.log('0-0009090900990');
+		isMounted.value = true;
+		initMan();
+		carTypefun();
+		
+	})
+	
+	const zanClick = (item,type)=>{
+		if(type == 'POSITIVE'){
+			if(item.positive){
+				console.log('-0-98976544654');
+				delFeed(item,type)
+			}else{
+				praiseClick(item,type)
+			}
+			
+		}else{
+			if(item.negative){
+				delFeed(item,type)
+			}else{
+				negaObj.value = item
+				negaShow.value = true;
+			}
+		}
+	}
+	const closNe = () => {
+		negaShow.value = false;
+		negaObj.value = {}
+		negaForm.value = {
+			negativeFeedbackType:'',
+			feedbackContent:'',
+		}
+	}
+	const submit = () => {
+		praiseClick(negaObj.value,'NEGATIVE')
+	}
+	const praiseClick = async (item,type)=>{
+		//  type POSITIVE 正反馈，NEGATIVE负反馈
+		try{
+			const requestTime = formatTimestamp(new Date().getTime() - 1000, 'YYYY-MM-DD HH:mm:ss');
+			const tokenRes:any = await getOpenToken(requestTime);
+			if (tokenRes.status === 200){
+				let params = {
+					requestTime:requestTime,
+					feedbackType:type,
+					sessionId:item.sessionId,
+					queryId:item.queryId,
+					lastQueryId:item.queryId,
+					feedbackContent:'',
+				}
+				if(type == 'NEGATIVE'){
+					params.feedbackContent = negaForm.value.feedbackContent
+					params.negativeFeedbackType = negaForm.value.negativeFeedbackType
+				}
+				console.log('09-=-=================',params);
+				const ress = await feedbackAi(tokenRes.result,params)
+				if(ress.status == 200){
+					item.feedbBackId = ress.result
+					if(type == 'POSITIVE'){
+						item.positive = true
+						item.negative = false
+					}else{
+						item.negative = true
+						item.positive = false
+					}
+					closNe()
+					uni.showToast({ title: type == 'POSITIVE'?'点赞成功':'反馈成功', icon: 'none' })
+				}else{
+					uni.showToast({ title: '提交失败', icon: 'none' })
+				}
+				console.log('-0-099880908908098890',item);
+			}else{
+				uni.showToast({ title: 'token获取失败', icon: 'none' })
+			}
+		}catch(e){
+			console.log('-----------------0',e);
+			uni.showToast({ title: e.message, icon: 'none' })
+		}
+	}
+	const delFeed = async (item,type)=>{
+		console.log('=--=-0--990-9',item);
+		try{
+			const requestTime = formatTimestamp(new Date().getTime() - 1000, 'YYYY-MM-DD HH:mm:ss');
+			const tokenRes:any = await getOpenToken(requestTime);
+			if(tokenRes.status == 200){
+				const ress = await feedbackDeleteAi(tokenRes.result,{
+					requestTime:requestTime,
+					id:item.feedbBackId
+				})
+				if(ress.status == 200){
+					item.positive = false
+					item.negative = false
+					uni.showToast({ title: '取消成功', icon: 'none' })
+				}else{
+					console.log('yteuiopfcgvhbjnklm;,.');
+					// uni.showToast({ title: '取消失败', icon: 'none' })
+					item.positive = false
+					item.negative = false
+				}
+			}else{
+				uni.showToast({ title: '获取token失败', icon: 'none' })
+			}
+		}catch(err){
+			console.log('-----------',err);
+		}
+	}
+	onBeforeUnmount(()=>{
+		console.log("----------onBeforeUnmount-------------");
+		isMounted.value = false;
+		startTalk();
+		speechStop();
+	})
+	onUnmounted(()=>{
+		console.log("----------onUnmounted-------------");
+		isMounted.value = false;
+		startTalk();
+		// speechStop();
+		// bdDigitalMan.value.bdDigitalManDestroy((datas)=>{
+		// 	console.log('----销毁-----',datas);
+		// })
+	})
+	defineExpose({
+		show,
+		close,
+		setBdDigitalMan
+	})
+</script>
+
+<style lang="scss" scoped>
+	.textAi{
+		font-size: 26rpx;
+		padding: 0 30rpx 30rpx 30rpx;
+		color: #666666;
+	}
+	.stopBoxView{
+		position: absolute;
+		bottom: 300rpx;
+		left:275rpx;
+		width: 200rpx;
+		height: 76rpx;
+		background: #FFFFFF;
+		// box-shadow: -3rpx 2rpx 13rpx 0rpx rgba(0,0,0,0.2);
+		border-radius: 54rpx 54rpx 54rpx 54rpx;
+		flex-direction: row;
+		align-items: center;
+		justify-content: center;
+		.stopBoxView-text{
+			font-weight: 400;
+			font-size: 28rpx;
+			color: #646464;
+			margin-left: 10rpx;
+		}
+	}
+	.feedBox{
+		width: 660rpx;
+		padding: 30rpx;
+		border-radius: 30rpx;
+		.feedBox-buts{
+			flex-direction: row;
+			justify-content: space-around;
+			padding-top: 25rpx;
+			.feedBox-buts-item{
+				width: 260rpx;
+				height: 70rpx;
+				border-radius: 15rpx;
+				line-height: 70rpx;
+				text-align: center;
+			}
+			.buts1{
+				border: 1rpx solid #EEEEEE;
+			}
+			.buts2{
+				background: #539DFF;
+				color: #FFFFFF;
+			}
+		}
+		.feedBox-title{
+			font-size: 30rpx;
+			font-weight: bold;
+			
+		}
+		.feedBox-tebs{
+			padding: 20rpx 0;
+			flex: 1;
+			flex-direction: row;
+			align-items: center;
+			justify-content: space-between;
+			.feedBox-tebs-text{
+				width: 180rpx;
+				height: 60rpx;
+				line-height: 60rpx;
+				text-align: center;
+				font-size: 24rpx;
+				border: 1rpx solid #EEEEEE; 
+				border-radius: 14rpx;
+			}
+			.activeText{
+				color: #FFFFFF;
+				background: #539DFF;
+				border: 1rpx solid #539DFF; 
+			}
+		}
+	}
+	.bottomBut{
+		flex-direction: row;
+		padding: 10rpx 20rpx 20rpx 20rpx;
+		border-top: 1rpx solid #EEEEEE; 
+		.bottomBut-img{
+			width: 65rpx;
+			height: 65rpx;
+			margin-right: 30rpx;
+		}
+	}
+	.inputView{
+		padding: 15rpx 0;
+		
+		flex-direction: row;
+		align-items: center;
+		// margin-bottom: 20rpx;
+		.labelText{
+			font-size: 26rpx;
+		}
+	}
+	.problem{
+	    .problem-item-wrapper {
+	        align-self: flex-start;
+	        margin-top: 20rpx;
+	    }
+	    .problem-item{
+	        font-size: 28rpx;
+	        padding: 24rpx 24rpx;
+	        // background: #F9F9F9;
+	        border-radius: 12rpx;
+	        border: 1px solid #D3E7D1;
+			
+			max-width: 650rpx;          /* 限制最大宽度（可按实际调整） */
+			white-space: normal;        /* 允许换行 */
+			word-break: break-all;      /* 英文/数字超长时强制换行 */
+	    }
+	}
+	.querBoxTitle{
+		flex: 1;
+		height: 44rpx;
+		flex-direction: row;
+		justify-content: space-between;
+		align-items: center;
+		.querBoxTitle-text{
+			width: 523rpx;
+			height: 28rpx;
+			line-height: 28rpx;
+			font-weight: 400;
+			font-size: 28rpx;
+			color: #333333;
+			text-align: left;
+		}
+	}
+	.queryBoxList{
+		flex: 1;
+		margin-top: 10rpx;
+		.queryBoxList-item{
+			flex: 1;
+			flex-direction: row;
+			justify-content: space-between;
+			align-items: center;
+			margin-bottom: 20rpx;
+		}
+		.queryBoxList-item-text{
+			font-weight: 400;
+			font-size: 24rpx;
+			color: #6E6E6E;
+		}
+	}
+	.messsList{
+		// flex: 1;
+		padding: 40rpx 20rpx;
+		// background: #EEEEEE;
+		position: relative;
+		.messsList-bgImg{
+			position: absolute;
+			top: 0;
+			right: 0;
+			bottom: 0;
+			left: 0;
+			flex: 1;
+		}
+		.messsList-item{
+			width: 650rpx;
+			flex-direction: row;
+			align-items: flex-start;
+			padding-bottom: 30rpx;
+			.messsList-item-active{
+				width: 85rpx;
+				.messsList-item-active-img{
+					width: 60rpx;
+					height: 60rpx;
+					border-radius: 50%;
+				}
+			}
+			.messsList-item-center{
+				max-width: 650rpx;
+				
+				.messView{
+					flex: 1;
+					box-shadow: 0rpx 0rpx 10rpx 0rpx #F6F6F6;
+				}
+				.mseetxt{
+					// width: 650rpx;
+					padding: 12rpx 32rpx;
+					box-sizing: border-box;
+					flex: 1;
+					.mseetxt-text {
+						font-weight: 500;
+						font-size: 28rpx;
+						line-height: 50rpx;
+					}
+					.voicView{
+						display: flex;
+						align-items: center;
+						image{
+							width: 40rpx;
+							height: 40rpx;
+							margin-left: 10rpx;
+						}
+					}
+				}
+			}
+		}
+	}
+	
+	
+	.scorBox{
+		width: 686rpx; 
+		height: 1100rpx;
+		border-radius: 32rpx;
+		background: linear-gradient(to bottom, #FFFFFF , rgba(252,255,252,0.8));
+		filter: blur(13.600000381469727px);
+		// background: #FFFFFF;
+	}
+	.inputBox{
+		width: 686rpx;
+		min-height: 112rpx;
+		background: #FFFFFF;
+		box-shadow: 0rpx 2rpx 8rpx 0rpx rgba(174,213,171,0.5);
+		border-radius: 32rpx;
+		flex-direction: row;
+		align-items: center;
+		padding: 0 32rpx;
+		.inputBox-img{
+			width: 80rpx;
+			height: 40rpx;
+			margin-right: 24rpx;
+		}
+		.inputBox-text{
+			font-weight: 400;
+			font-size: 28rpx;
+			color: #6E6E6E;
+		}
+	}
+	.ladinBox{
+		position: absolute;
+		flex: 1;
+		left: 0;
+		bottom: 0;
+		right: 0;
+		align-items: center;
+		padding-bottom: 90rpx;
+		.ladinBox-img{
+			width: 200rpx;
+			height: 150rpx;
+		}
+		.ladinBox-text{
+			font-weight: 500;
+			font-size: 32rpx;
+			color: #666666;
+			line-height: 46rpx;
+		}
+	}
+	.popView{
+		width: 750rpx;
+		position: fixed;
+		z-index:9999;
+		top: 0;
+		left: 0;
+		right: 0;
+		bottom: 0;
+		background-color: transparent;
+		// background-color: rgba(255,255,255,0.5);
+		align-items: center;
+		justify-content: flex-end;
+		flex: 1;
+		padding-bottom: 0rpx;
+	}
+	.mask {
+	  position: absolute;
+	  left: 0;
+	  top: 0;
+	  right: 0;
+	  bottom: 0;
+	  background-color: transparent;   /* 必须透明 */
+	}
+	.viewBox{
+		width: 750rpx;
+		// height: 308rpx;
+		position: relative;
+	}
+	.viewBox-back{
+		position: absolute;
+		left: 0;
+		bottom: 0;
+		width: 750rpx;
+		height: 308rpx;
+		background: linear-gradient(to top, #C9F8C1 , rgba(252,255,252,0.5));
+	}
+	.viewtetxBox{
+		left: 0;
+		flex: 1;
+		position: absolute;
+		bottom: 0rpx;
+		padding: 0 30rpx 40rpx;
+		width: 750rpx;
+		height: 1350rpx; // ✅ 根据实际内容调整
+		align-items: center;
+		// background-color: rgba(252,255,252,0.5);
+	}
+	.viewtetxBox-text{
+		align-items: center;
+		font-size: 30rpx;
+		margin-bottom: 20rpx;
+		padding: 0 30rpx;
+		background: red;
+	}
+	.viewtetxBox-text2{
+		font-size: 30rpx;
+		margin-bottom: 20rpx;
+		padding: 0 30rpx;
+		flex: 1;
+	}
+	.viewPage-imgs{
+		position: absolute;
+		bottom: 260rpx;
+		right: 30rpx;
+		width: 40rpx;
+		height: 40rpx;
+	}
+	.closeImg{
+		position: absolute;
+		top: 0rpx;
+		right: 30rpx;
+		width: 40rpx;
+		height: 40rpx;
+	}
+	.viewPage-speck{
+		position: absolute;
+		left: 275rpx;
+		bottom: 20rpx;
+		width: 200rpx;
+		height: 200rpx;
+	}
+	.enginesdk{
+		width: 300rpx;
+		height: 300rpx;
+		position: absolute;
+		left: 0;
+		bottom: 100rpx;
+	}
+	.fixedView-bottLabel {
+		width: 750rpx;
+		padding: 30rpx;
+		flex-direction: row;
+		align-items: center;
+		flex-wrap: wrap;
+		.activeClass {
+			color: #FF9600 !important;
+		}
+	
+		.fixedView-bottLabel-item {
+			flex-direction: row;
+			align-items: center;
+			justify-content: center;
+			width: 200rpx;
+			height: 56rpx;
+			background: #F5F5F5;
+			border-radius: 28rpx;
+			
+			margin-right: 20rpx;
+			margin-bottom: 20rpx;
+			.fixedView-bottLabel-item-text{
+				font-weight: 500;
+				font-size: 24rpx;
+				color: #000000;
+			}
+			.fixedView-bottLabel-item-img {
+				width: 26rpx;
+				height: 26rpx;
+				margin-right: 15rpx;
+			}
+		}
+	
+	}
+	.topView-right {
+	  width: 260rpx;
+	  height: 298rpx;
+	  position: absolute;
+	  top: 0;
+	  right: 0;
+	}
+</style>

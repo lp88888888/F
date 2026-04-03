@@ -1,0 +1,250 @@
+<template>
+	<view class="container" :data-theme="pageTheme" style="height: 500rpx; box-sizing: border-box;">
+		<view class="headen-tab" :style="{background:themeStore.themeColors.$pageBBgColor}">
+			<view class="headen-list" v-for="(item,index) in invoiceList" :key="item.id" @click="selectRoute(index)">
+				<text :class="activeTag==index?'actiTax1':'tax1'" :style="{color:activeTag==index?themeStore.themeColors.$color:'#333'}" >{{ item.pusLabelName }}</text>
+				<text :class="activeTag==index?'actiTax2':'tax2'" :style="{color:activeTag==index?themeStore.themeColors.$color:'#333'}" >{{ timeCup(item.mPassTime) }}</text>
+				<text :class="activeTag==index?'actiTax3':'tax3'" :style="{color:activeTag==index?themeStore.themeColors.$color:'#333'}"  > {{ lengCop(item.mLength)}} </text>
+			</view>
+		</view>
+		<view class="headen-dh">
+			<view class="headen-left">
+				<!-- #ifdef APP -->
+				<text class="headen-left-text">去导航</text>
+				<!-- #endif -->
+				<!-- #ifdef MP-WEIXIN -->
+				<text class="headen-left-text">小程序不具备导航功能，</text>
+				<text class="headen-left-text">请使用对外服务平台APP或其他软件进行导航</text>
+				<!-- #endif -->
+			</view>
+			<text class="headen-bott" :style="{background:themeStore.themeColors.$pageBBgColor}" @click="navigateToApp">到这去</text>
+		</view>
+	</view>
+</template>
+<script setup lang="ts">
+	import { ref, reactive } from 'vue';
+	import {openAPPLocation} from '@/utils/util'
+	import {
+		useTheme
+	} from '@/composables/useTheme';
+	const {
+		themeStore,
+		pageTheme
+	} = useTheme();
+	const props = defineProps({
+		routelist: {
+			default: [],
+		},
+		tolatitude: {
+			type: String,
+			default: '',
+		},
+		tolongitude: {
+			type: String,
+			default: '',
+		},
+		toname: {
+			type: String,
+			default: '',
+		},
+
+	});
+	const timeCup = computed(()=>{
+		return (time) =>{
+			const h = Math.floor(time / 3600);
+			const m = Math.floor((time % 3600) / 60);
+			if(h > 0){
+				return `${h}小时${m}分钟`
+			}else{
+				return `${m}分钟`
+			}
+			
+		}
+	})
+	const lengCop = computed(()=>{
+		return (len) =>{
+			
+			return `${len / 1000}km`
+		}
+	})
+	
+	onMounted(() => {
+		getroutelist()
+	})
+	// 标签列表
+	const invoiceList = ref([
+	])
+	// 当前选中标签
+	const activeTag = ref(0)
+	const emit = defineEmits<{
+		(e : 'qiehuantab', data : string) : void
+	}>()
+	// 选择路线事件
+	const selectRoute = (item) => {
+		console.log(item,activeTag.value);
+		if(item == activeTag.value) return
+		emit('qiehuantab', item)
+		activeTag.value = item;
+		console.log('选择了路线:', item);
+	}
+	const getroutelist = () => {
+		console.log(invoiceList.value, 'invoiceList.value')
+		invoiceList.value = props.routelist
+		// if (props.routelist.length > 0) {
+		// 	invoiceList.value[0].rkname = '最优路线'
+		// }
+		// if (
+		// 	props.routelist.length == 2
+		// ) {
+		// 	invoiceList.value[1].rkname = '大家常走'
+		// }
+		// if (
+		// 	props.routelist.length == 3
+		// ) {
+		// 	if (invoiceList.value[1].toll > invoiceList.value[2].toll) {
+		// 		invoiceList.value[1].rkname = '收费少'
+		// 		invoiceList.value[2].rkname = '大家常走'
+		// 	} else {
+		// 		invoiceList.value[1].rkname = '大家常走'
+		// 		invoiceList.value[2].rkname = '收费少'
+		// 	}
+		// }
+		console.log(invoiceList.value, 'invoiceList.value')
+	}
+	// 导航到外部应用
+	// const navigateToApp = () => {
+	// 	if (activeTag.value) {
+	// 		uni.showToast({
+	// 			title: `已选择${invoiceList.value[activeTag.value - 1].rkname}，请打开外部导航应用`,
+	// 			icon: 'none'
+	// 		});
+	// 	} else {
+	// 		uni.showToast({
+	// 			title: '请选择一条路线',
+	// 			icon: 'none'
+	// 		});
+	// 	}
+	// }
+	const navigateToApp = () => {
+		openAPPLocation({
+			"endLocation": {
+				"longitude": props.tolongitude,//经度
+				"latitude": props.tolatitude,//维度
+				"address": props.toname,
+			}
+		})
+	}
+</script>
+
+<style scoped lang="scss">
+	.container {
+		flex-direction: row;
+		flex-direction: column;
+		border-radius: 10px;
+		box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+
+
+	}
+
+	.headen-tab {
+		margin: 30rpx;
+		flex-direction: row;
+		align-items: center;
+		height: 210rpx;
+		background: var(--success-color);
+		border-radius: 30rpx;
+		border: 3px solid #FFFFFF;
+	}
+
+	.headen-list {
+		min-width: calc(220rpx - 20px);
+		background-color: #f9f9f9;
+		border-radius: 8px;
+		padding: 10px;
+		text-align: center;
+		cursor: pointer;
+		transition: background-color 0.3s;
+		display: flex;
+		flex-direction: column;
+		justify-content: space-between;
+		align-items: center;
+
+	}
+
+	.tax1 {
+		text-align: center;
+		color: #000000;
+		font-weight: bold;
+		font-size: 22rpx;
+		margin-bottom: 25rpx;
+	}
+
+	.tax2 {
+		color: #000000;
+		font-weight: bold;
+		font-size: 32rpx;
+		margin-bottom: 25rpx;
+	}
+
+	.tax3 {
+		font-weight: 500;
+		font-size: 22rpx;
+		color: #999999;
+	}
+
+	.actiTax1 {
+		font-weight: bold;
+		font-size: 22rpx;
+		margin-bottom: 25rpx;
+		color: var(--primary-color);
+	}
+
+	.actiTax2 {
+		font-weight: bold;
+		font-size: 32rpx;
+		margin-bottom: 25rpx;
+		color: var(--primary-color);
+	}
+
+	.actiTax3 {
+		font-weight: 500;
+		font-size: 22rpx;
+		color: var(--primary-color);
+	}
+
+	.headen-dh {
+		flex-direction: row;
+		align-items: center;
+		justify-content: space-between;
+		height: 118rpx;
+		background-color: #fff;
+		padding: 40rpx;
+	}
+
+	.headen-left {
+		display: flex;
+		flex-direction: column;
+		align-items: flex-start;
+
+		.headen-left-text {
+			font-weight: 500;
+			font-size: 20rpx;
+			color: #666666;
+			line-height: 40rpx;
+		}
+	}
+
+	.headen-bott {
+		width: 230rpx;
+		height: 78rpx;
+		background: var(--secondary-color);
+		border-radius: 39rpx;
+		color: #fff;
+		font-size: 16px;
+		cursor: pointer;
+		transition: background-color 0.3s;
+		text-align: center;
+		line-height: 78rpx;
+
+	}
+</style>

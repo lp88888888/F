@@ -1,0 +1,355 @@
+{
+    "name" : "爱上高速",
+    "appid" : "__UNI__9B93198",
+    "description" : "",
+    "versionName" : "1.0.10",
+    "versionCode" : 1460,
+    "transformPx" : false,
+    /* 5+App特有相关 */
+    "app-plus" : {
+        "compatible" : {
+            "ignoreVersion" : true //true表示忽略版本检查提示框，HBuilderX1.9.0及以上版本支持  
+        },
+        "optimization" : {
+            "options" : {
+                "snapshot" : false,
+                "hardwareAcceleration" : true
+            }
+        },
+        "nativePlugins" : {
+            "BdDigitalManView" : {
+                "__plugin_info__" : {
+                    "name" : "BdDigitalManView",
+                    "description" : "百度数字人uniapp插件",
+                    "platforms" : "Android",
+                    "url" : "",
+                    "android_package_name" : "",
+                    "ios_bundle_id" : "",
+                    "isCloud" : false,
+                    "bought" : -1,
+                    "pid" : "",
+                    "parameters" : {}
+                }
+            },
+            "bdMapPlugin" : {
+                "__plugin_info__" : {
+                    "name" : "bdMapPlugin",
+                    "description" : "百度地图插件",
+                    "platforms" : "Android,iOS",
+                    "url" : "",
+                    "android_package_name" : "",
+                    "ios_bundle_id" : "",
+                    "isCloud" : false,
+                    "bought" : -1,
+                    "pid" : "",
+                    "parameters" : {}
+                }
+            },
+            "bdSpeechPlugin" : {
+                "__plugin_info__" : {
+                    "name" : "bdSpeechPlugin",
+                    "description" : "百度语音插件",
+                    "platforms" : "Android",
+                    "url" : "",
+                    "android_package_name" : "",
+                    "ios_bundle_id" : "",
+                    "isCloud" : false,
+                    "bought" : -1,
+                    "pid" : "",
+                    "parameters" : {}
+                }
+            }
+        },
+        "usingComponents" : true,
+        "nvueStyleCompiler" : "uni-app",
+        "compilerVersion" : 3,
+        "splashscreen" : {
+            "alwaysShowBeforeRender" : true,
+            "waiting" : true,
+            "autoclose" : true,
+            "delay" : 0
+        },
+        /* 模块配置 */
+        "modules" : {
+            "Record" : {},
+            "Camera" : {},
+            "Barcode" : {},
+            "Geolocation" : {},
+            "maps" : {},
+            "LivePusher" : {},
+            "Speech" : {},
+            "VideoPlayer" : {},
+            "Push" : {},
+            "Share" : {},
+            "OAuth" : {},
+            "Payment" : {}
+        },
+        /* 应用发布信息 */
+        "distribute" : {
+            /* android打包配置 */
+            "android" : {
+                "package" : "com.baidu.aip.digitalhuman.avartar",
+                // "keystore": "D:\A_work\8578bb0cf7ae560b52f67084b0fd8556.keystore",
+                // "alias": "__uni__9b93198",
+                "password" : "engine666",
+                "privatePassword" : "engine666",
+                "permissions" : [
+                    "<uses-permission android:name=\"android.permission.ACCESS_COARSE_LOCATION\"/>",
+                    "<uses-permission android:name=\"android.permission.ACCESS_FINE_LOCATION\"/>",
+                    "<uses-permission android:name=\"android.permission.INTERNET\"/>",
+                    "<uses-permission android:name=\"android.permission.RECORD_AUDIO\"/>",
+                    "<uses-permission android:name=\"android.permission.VIBRATE\"/>",
+                    "<uses-permission android:name=\"android.permission.ACCESS_WIFI_STATE\"/>",
+                    "<uses-feature android:name=\"android.hardware.camera.autofocus\"/>",
+                    "<uses-permission android:name=\"android.permission.ACCESS_NETWORK_STATE\"/>",
+                    "<uses-permission android:name=\"android.permission.CAMERA\"/>",
+                    "<uses-permission android:name=\"android.permission.WAKE_LOCK\"/>",
+                    "<uses-feature android:name=\"android.hardware.camera\"/>",
+                    "<uses-permission android:name=\"android.permission.READ_MEDIA_IMAGES\"/>",
+                    "<uses-permission android:name=\"android.permission.READ_MEDIA_VIDEO\"/>",
+                    "<uses-permission android:name=\"android.permission.READ_EXTERNAL_STORAGE\" android:maxSdkVersion=\"32\"/>",
+                    "<uses-permission android:name=\"android.permission.READ_MEDIA_AUDIO\"/>",
+                    "<uses-permission android:name=\"android.permission.MODIFY_AUDIO_SETTINGS\"/>"
+                ],
+                "abiFilters" : [ "armeabi-v7a", "arm64-v8a" ],
+                "minSdkVersion" : 24,
+                "targetSdkVersion" : 33,
+                "schemes" : "asgsToApp",
+                "excludePermissions" : [
+                    "<uses-permission android:name=\"android.permission.ACCESS_LOCATION_EXTRA_COMMANDS\"/>",
+                    "<uses-permission android:name=\"android.permission.BLUETOOTH\"/>",
+                    "<uses-permission android:name=\"android.permission.BLUETOOTH_ADMIN\"/>",
+                    "<uses-permission android:name=\"android.permission.READ_PHONE_STATE\"/>"
+                ]
+            },
+            /* ios打包配置 */
+            "ios" : {
+                "privacyDescription" : {
+                    "NSMicrophoneUsageDescription" : "需要访问您的麦克风",
+                    "NSPhotoLibraryUsageDescription" : "需要访问您的相册",
+                    "NSLocationAlwaysAndWhenInUseUsageDescription" : "您的位置信息将用于地图展示",
+                    "NSLocationWhenInUseUsageDescription" : "需要获取您的位置信息",
+                    "NSCameraUsageDescription" : "需要访问您的相机",
+                    "NSUserTrackingUsageDescription" : "为了更好地为您提供个性化服务",
+                    "NSPhotoLibraryAddUsageDescription" : "下载海报分享图片"
+                },
+                "dSYMs" : false
+            },
+            "maps" : {
+                "qqmap" : {
+                    "key" : {
+                        "android" : "PLTBZ-QWLKZ-D3QX5-ZQGDB-3UBWK-4ZBYB",
+                        "ios" : "PLTBZ-QWLKZ-D3QX5-ZQGDB-3UBWK-4ZBYB"
+                    }
+                }
+            },
+            /* SDK配置 */
+            "sdkConfigs" : {
+                "share" : {
+                    "weixin" : {
+                        "appid" : "wx90c850f92690cb19",
+                        "UniversalLinks" : "https://app.aishanggaosu.com:31084/"
+                    }
+                },
+                "geolocation" : {
+                    "system" : {
+                        "__platform__" : [ "ios", "android" ]
+                    }
+                },
+                "maps" : {},
+                "speech" : {
+                    "baidu" : {
+                        "appid" : "121120321",
+                        "apikey" : "LHCqobhrVzQnlUowcLwTTq1V",
+                        "secretkey" : "JkIcnMG38e97fVxVn6ERfi0TEbNza8B3"
+                    }
+                },
+                "push" : {},
+                "payment" : {
+                    "weixin" : {
+                        "__platform__" : [ "ios", "android" ],
+                        "appid" : "wx90c850f92690cb19",
+                        "UniversalLinks" : "https://app.aishanggaosu.com:31084/"
+                    }
+                },
+                "oauth" : {
+                    "weixin" : {
+                        "appid" : "wx90c850f92690cb19",
+                        "appsecret" : "7120048fc4edb88d1579dc4fbb9f2abc",
+                        "UniversalLinks" : "https://app.aishanggaosu.com:31084/"
+                    }
+                }
+            },
+            "splashscreen" : {
+                "iosStyle" : "common",
+                "androidStyle" : "default",
+                "useOriginalMsgbox" : true,
+                "android" : {
+                    "hdpi" : ""
+                }
+            },
+            "icons" : {
+                "android" : {
+                    "hdpi" : "unpackage/res/icons/72x72.png",
+                    "xhdpi" : "unpackage/res/icons/96x96.png",
+                    "xxhdpi" : "unpackage/res/icons/144x144.png",
+                    "xxxhdpi" : "unpackage/res/icons/192x192.png"
+                },
+                "ios" : {
+                    "appstore" : "unpackage/res/icons/1024x1024.png",
+                    "ipad" : {
+                        "app" : "unpackage/res/icons/76x76.png",
+                        "app@2x" : "unpackage/res/icons/152x152.png",
+                        "notification" : "unpackage/res/icons/20x20.png",
+                        "notification@2x" : "unpackage/res/icons/40x40.png",
+                        "proapp@2x" : "unpackage/res/icons/167x167.png",
+                        "settings" : "unpackage/res/icons/29x29.png",
+                        "settings@2x" : "unpackage/res/icons/58x58.png",
+                        "spotlight" : "unpackage/res/icons/40x40.png",
+                        "spotlight@2x" : "unpackage/res/icons/80x80.png"
+                    },
+                    "iphone" : {
+                        "app@2x" : "unpackage/res/icons/120x120.png",
+                        "app@3x" : "unpackage/res/icons/180x180.png",
+                        "notification@2x" : "unpackage/res/icons/40x40.png",
+                        "notification@3x" : "unpackage/res/icons/60x60.png",
+                        "settings@2x" : "unpackage/res/icons/58x58.png",
+                        "settings@3x" : "unpackage/res/icons/87x87.png",
+                        "spotlight@2x" : "unpackage/res/icons/80x80.png",
+                        "spotlight@3x" : "unpackage/res/icons/120x120.png"
+                    }
+                }
+            }
+        }
+    },
+    /* 快应用特有相关 */
+    "quickapp" : {},
+    /* 小程序特有相关 */
+    "mp-weixin" : {
+        "appid" : "wxe855aef6746428d4",
+        // "appid" : "wx6762fb13b8377159",
+        "plugins" : {
+            "WechatSI" : {
+                "version" : "0.3.3",
+                "provider" : "wx069ba97219f66d99"
+            }
+        },
+        "setting" : {
+            "urlCheck" : false,
+            "minified" : true,
+            "postcss" : false,
+            "es6" : true
+        },
+        "permission" : {
+            "scope.userLocation" : {
+                "desc" : "获取您的当前位置，方便了解周边资讯"
+            },
+            "scope.userInfo" : {
+                "desc" : "您的头像将用于展示您的个人信息"
+            },
+            "scope.record" : {
+                "desc" : "用于发送语音消息或语音输入功能"
+            }
+        },
+        "requiredPrivateInfos" : [ "getLocation", "chooseLocation" ],
+        "usingComponents" : true,
+        "optimization" : {
+            "subPackages" : true
+        }
+    },
+    "mp-alipay" : {
+        "usingComponents" : true
+    },
+    "mp-baidu" : {
+        "usingComponents" : true
+    },
+    "mp-toutiao" : {
+        "usingComponents" : true
+    },
+    "uniStatistics" : {
+        "enable" : false
+    },
+    "vueVersion" : "3",
+    "fallbackLocale" : "zh-Hans",
+    "locale" : "zh-Hans",
+    "h5" : {
+        "title" : "爱上高速"
+    },
+    "_spaceID" : "mp-a22da7c0-fb36-4d2e-9a92-f439f0713a37",
+    "app-harmony" : {
+        "distribute" : {
+            "permissions" : [
+                {
+                    "name" : "ohos.permission.MICROPHONE",
+                    "reason" : "用于语音录制、语音交互功能",
+                    "usedScene" : {
+                        "abilities" : [ "entry" ],
+                        "when" : "always"
+                    }
+                },
+                {
+                    "name" : "ohos.permission.WRITE_USER_STORAGE",
+                    "reason" : "用于语音录制、语音交互功能",
+                    "usedScene" : {
+                        "abilities" : [ "entry" ],
+                        "when" : "always"
+                    }
+                }
+            ],
+            "modules" : {
+                "uni-map" : {
+                    "tencent" : {
+                        "key" : "PLTBZ-QWLKZ-D3QX5-ZQGDB-3UBWK-4ZBYB"
+                    }
+                },
+                "uni-share" : {
+                    "weixin" : {
+                        "appid" : "wx90c850f92690cb19"
+                    }
+                },
+                "uni-push" : {},
+                "uni-oauth" : {
+                    "weixin" : {
+                        "appid" : "wx90c850f92690cb19"
+                    },
+                    "huawei" : {
+                        "client_id" : "6917594799119519421"
+                    }
+                },
+                "uni-payment" : {
+                    "wxpay" : {
+                        "appid" : "wx90c850f92690cb19"
+                    }
+                }
+            },
+            "icons" : {
+                "foreground" : "/Volumes/F/D/lp/A_work/本地打包/打包证书和包名/应用的图标icon/应用的图标icon/华为应用商城 2/华为应用商城/logo@1x.png",
+                "background" : "/Volumes/F/D/lp/A_work/本地打包/打包证书和包名/应用的图标icon/应用的图标icon/华为应用商城 2/华为应用商城/1024_1024@1x.png"
+            },
+            "bundleName" : "com.aishanggaosu.huawei",
+            "signingConfigs" : {
+                "default" : {
+                    "certpath" : "爱上高速-调试.cer",
+                    "keyAlias" : "aishanggaosu",
+                    "keyPassword" : "000000195B12013F19BA5D7650FB6FFD6EFA5DA052D1FFB4EF1BF2291B605FB4AE4B036E59BD81F5B2",
+                    "profile" : "爱上高速-调试Debug.p7b",
+                    "signAlg" : "SHA256withECDSA",
+                    "storeFile" : "爱上高速.p12",
+                    "storePassword" : "00000019124E84EABA721BBF3F86A77AAA572F4036DF78FD3D420E7DFFA2942D929C03C61ADA1AB3DB"
+                },
+                "release" : {
+                    "certpath" : "爱上高速-发布.cer",
+                    "keyAlias" : "aishanggaosu",
+                    "keyPassword" : "00000019700CE667D3B070C5960FC5FE6E068E9D77ECABBBEAFF7A349204A1E98785EB95DE4E9BFBA7",
+                    "profile" : "爱上高速-发布Release.p7b",
+                    "signAlg" : "SHA256withECDSA",
+                    "storeFile" : "爱上高速.p12",
+                    "storePassword" : "00000019A67BF0205B9F7154E738C9C5C3087A0897ABE6FFBC55FA2AA57D01179B69562F1FCBE35907"
+                }
+            },
+            "splashScreens" : {
+                "startWindowIcon" : "/Volumes/F/D/lp/A_work/本地打包/打包证书和包名/应用的图标icon/应用的图标icon/华为应用商城 2/华为应用商城/logo合@1x-500x500.png"
+            }
+        }
+    }
+}

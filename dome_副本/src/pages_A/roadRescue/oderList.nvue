@@ -1,0 +1,658 @@
+<!-- pages/order-detail/order-detail.vue -->
+<template>
+	<view class="page">
+		<!-- 页面标题 -->
+
+
+		<!-- 状态栏 -->
+		<view class="status-bar">
+			<text class="status-text">{{getStatusText(detailinfo.status)}}</text>
+		</view>
+		<view class="map-box">
+			<!-- 司机状态 -->
+			<view class="driver-status" v-if="detailinfo.status==23||detailinfo.status==15||detailinfo.status==15">
+				<view class="driver-title"><text>救援司机正在路上</text>
+					<image :src="imgUrl+'shuaxin-icon.png'" @click="huoqu" class="xhuaixn-icon" mode="aspectFill" />
+				</view>
+				<view class="driver-desc">不要慌张，救援已在途中，请安心等待~</view>
+			</view>
+
+			<!-- 地图区域 -->
+			<view class="map-container" v-if="detailinfo.status==23||detailinfo.status==15||detailinfo.status==15">
+				<!-- <view class="map-container"> -->
+				<bdMapView ref="bdMapViewRef" class="map"></bdMapView>
+			</view>
+			<view style="display: flex;align-items: center;justify-content: space-between;flex-direction: row;"
+				v-if="detailinfo.status!=23||detailinfo.status!=15||detailinfo.status!=20">
+				<text
+					style="font-weight: 600;font-size: 28rpx;color: #000000;display:inline-block;">救援司机:{{ isShowFull ? detailinfo.driverPhone : desensitizePhone(detailinfo.driverPhone) }}
+					<image :src="imgUrl + (isShowFull ? 'eye-open.png' : 'check.png')" class="check_img eye-btn"
+						@click.stop.prevent="toggleShow" />
+				</text>
+				<text style="font-weight: 400;font-size: 26rpx;color: #00BEBE;display:inline-block;"
+					v-if="detailinfo.status==5">等待系统确认
+				</text>
+				<text style="font-weight: 400;font-size: 26rpx;color: #00BEBE;display:inline-block;"
+					v-if="detailinfo.status==25">已救援</text>
+				<text style="font-weight: 400;font-size: 26rpx;color: #00BEBE;display:inline-block;"
+					v-if="detailinfo.status==35">已取消</text>
+			</view>
+			<!-- 救援地址 -->
+			<view class="info-item-1">
+				<view class="rico">
+
+				</view>
+				<text class="label1">救援地址：</text>
+				<text class="value1">{{detailinfo.accidentLocation}}</text>
+			</view>
+			<image :src="imgUrl+'xiaxian-icon.png'" class="xiaxian-icon" mode="aspectFill" />
+			<!-- 目的地 -->
+			<view class="info-item-1">
+				<view class="rico">
+
+				</view>
+				<text class="label1">目的地地址：</text>
+				<text class="value1">{{detailinfo.destinationLocation||待填写}}</text>
+			</view>
+		</view>
+
+
+		<!-- 车辆信息 -->
+		<view class="vehicle-info">
+			<view class="info-row1">
+				<text>车辆类型：</text>
+				<text>{{detailinfo.vehicleType}}</text>
+			</view>
+			<view class="info-row">
+				<text class="key">路段名称：</text>
+				<text class="value">{{detailinfo.highWayName}}</text>
+			</view>
+			<view class="info-row">
+				<text class="key">行驶方向：</text>
+				<text class="value">{{detailinfo.vehicleDirection}}</text>
+			</view>
+			<view class="license-time">
+				<text class="license">{{detailinfo.vehicleNumber}}</text>
+				<text class="time">{{detailinfo.createTime}}</text>
+			</view>
+		</view>
+
+		<!-- 车牌号和时间 -->
+
+
+		<!-- 工单信息 -->
+
+
+		<view class="info-list">
+			<view class="section-title">
+				<view class="line"></view>
+				<text class="section-label">工单信息</text>
+			</view>
+			<view class="info-item">
+				<text class="label">工单号</text>
+				<text class="value">{{detailinfo.workOrderId}}</text>
+			</view>
+			<view class="info-item">
+				<text class="label">被救援人姓名</text>
+				<text class="value">{{detailinfo.liaisonMan}}</text>
+			</view>
+			<view class="info-item">
+				<text class="label">被救援人电话</text>
+				<text class="value">{{detailinfo.mobileNumber}}</text>
+			</view>
+			<view class="info-item">
+				<text class="label">车辆类型</text>
+				<text class="value">{{detailinfo.vehicleType}}</text>
+			</view>
+			<view class="info-item">
+				<text class="label">占用车道</text>
+				<text class="value">{{detailinfo.occupyLane}}</text>
+			</view>
+		</view>
+
+	</view>
+	<up-overlay :show="show" @click="show = false">
+		<view class="warp">
+			<text class="text-1">确认取消</text>
+			<text class="text-2">确认是否取消该工单？</text>
+			<view style="display: flex;align-items: center;flex-direction: row;justify-content: space-between;">
+				<text class="bnt-1" @click="show = false">取消</text>
+				<text @click="cannel" class="bnt-2">确定</text>
+			</view>
+
+		</view>
+	</up-overlay>
+	<view class="bot" v-if="detailinfo.status==5">
+		<text class="btn" @click="show=true">
+			取消工单
+		</text>
+	</view>
+</template>
+
+<script setup>
+	// 可以在此处添加数据请求或逻辑
+	import {
+		ref,
+		onMounted
+	} from 'vue'
+	import {
+		imgUrl
+	} from '../../config';
+	import {
+		onLoad,
+		onShow
+	} from '@dcloudio/uni-app'
+	import {
+		debounce
+	} from '@/utils/common';
+	import {
+		getorderDetail,
+		cannelOrder,
+		getrescueLocation
+	} from '@/api/rescue';
+	const bdMapViewRef = ref(null)
+	const currentLat = ref(uni.getStorageSync('address').lat);
+	const scale = ref(15);
+	const workOrderId = ref('');
+	const detailinfo = ref({});
+	const show = ref(false);
+	const currentLng = ref(uni.getStorageSync('address').lng);
+	const isShowFull = ref(false);
+	const toggleShow = () => {
+		isShowFull.value = !isShowFull.value;
+	};
+	const desensitizePhone = (phone) => {
+		if (!phone || !/^1[3-9]\d{9}$/.test(phone)) return '';
+		return phone.replace(/(\d{3})\d{4}(\d{4})/, '$1****$2');
+	}
+	onLoad((option) => {
+		workOrderId.value = option.id
+		getDetail()
+	})
+	const getDetail = async () => {
+		const res = await getorderDetail(
+			workOrderId.value
+		)
+		if (res.code == 200) {
+			markers.value = []
+			detailinfo.value = res.data
+			pausmud()
+			if (detailinfo.value.status == 23 || detailinfo.value.status == 15 || detailinfo.value.status == 15) {
+				huoqu()
+			}
+		}
+	}
+	const pausmud = () => {
+		let arr = {
+			id: 0, // 确保id唯一且不为0（0用于用户位置）
+			latitude: detailinfo.value.destinationLocationLat || currentLat.value,
+			longitude: detailinfo.value.destinationLocationLong || currentLng.value,
+			title: '目的地',
+			iconPath: imgUrl +
+				'wo-biaodian-cion.png', // 可替换为自己的图标
+			width: 24,
+			height: 24,
+			type: 'mdd',
+			callout: {
+				content: '目的地',
+				color: '#333',
+				fontSize: 12,
+				borderRadius: 4,
+				bgColor: '#fff',
+				padding: 5,
+				display: 'BYCLICK'
+			}
+		}
+		markers.value.push(arr)
+	}
+	const sjcurrentLat = ref('');
+	const sjcurrentLng = ref('');
+	const huoqu = () => {
+		const lastIndex = markers.value.findLastIndex(marker => marker.id === 2);
+		// 如果找到了这样的项，就删除它
+		if (lastIndex !== -1) {
+			markers.value.splice(lastIndex, 1);
+		}
+		getweizhi()
+	}
+	const getweizhi = async () => {
+		const res = await getrescueLocation(
+			workOrderId.value
+		)
+		if (res.code == 200) {
+			let arr = {
+				id: 2, // 确保id唯一且不为0（0用于用户位置）
+				latitude: res.data.latitude,
+				longitude: res.data.longitude,
+				title: '司机正在路上',
+				iconPath: imgUrl +
+					'jy-car-icon.png', // 可替换为自己的图标
+				width: 24,
+				height: 24,
+				type: 'jyc',
+				callout: {
+					content: '司机正在路上',
+					color: '#333',
+					fontSize: 12,
+					borderRadius: 4,
+					bgColor: '#fff',
+					padding: 5,
+					display: 'BYCLICK'
+				}
+			}
+			markers.value.push(arr)
+			addMap()
+		}
+	}
+	const addMap = () => {
+		console.log('-=-=-=---=-p=--', markers.value);
+		if (markers.value.length == 0) {
+			// 清空
+			bdMapViewRef.value.cleanMapPoint('', event => {
+				console.log('-----------回2调-----------', event);
+			})
+		} else {
+			bdMapViewRef.value.showMapPoint(JSON.stringify(markers.value), event => {
+				console.log('-----------回1调-----------', event);
+			})
+		}
+		bdMapViewRef.value.ondMapPointItemClick(event => {
+			console.log('-----------点击了什么---------------', event);
+		})
+	}
+	const cannel = debounce(async () => {
+		show.value = false
+		const res = await cannelOrder(
+			workOrderId.value
+		)
+		if (res.code == 200) {
+			uni.showToast({
+				title: '取消成功',
+				icon: 'success'
+			})
+			setTimeout(() => {
+				uni.navigateBack()
+			}, 1000)
+		}
+	}, 500)
+	const getStatusText = (status) => {
+		switch (status) {
+			case 5:
+				return "待派单";
+			case 10:
+				return "已确认";
+			case 15:
+				return "已派单";
+			case 20:
+				return "处理中";
+			case 23:
+				return "已接单";
+			case 24:
+				return "待付款";
+			case 25:
+				return "已结束";
+			case 30:
+				return "已完成";
+			case 35:
+				return "已取消";
+			default:
+				return "未知状态"; // 处理未匹配的状态
+		}
+	}
+	const getvehicleType = (status) => {
+		switch (status) {
+			case '01':
+				return "<=9座客车";
+			case '02':
+				return ">9座客车";
+			case '03':
+				return "危化品运输车";
+			case '04':
+				return "特种车";
+			case '05':
+				return "货车";
+			default:
+				return "其他";
+		}
+	}
+	const getoccupyLane = (status) => {
+		switch (status) {
+			case "01":
+				return "超车道";
+			case '02':
+				return "主车道";
+			default:
+				return "应急车道";
+		}
+
+	}
+	onMounted(() => {})
+	const markers = ref([]);
+	const orderInfo = ref({
+		status: '进行中',
+		driverStatus: '司机正在路上',
+		rescueAddress: '陕西省西安市雁塔区丈八街道',
+		destination: '待填写',
+		vehicleType: '小米SU7',
+		roadName: 'G30连霍高速',
+		direction: '渭南方向',
+		licensePlate: '陕A66666',
+		time: '2025-11-20 16:30:25',
+		orderId: '2024101029183',
+		name: '王晓',
+		phone: '15466492210',
+		carModel: 'SU7',
+		lane: '慢车道'
+	})
+</script>
+<style scoped lang="scss">
+	.check_img {
+		width: 30rpx;
+		height: 30rpx;
+		margin-left: 20rpx;
+	}
+
+	.warp {
+		display: flex;
+		width: 570rpx;
+		height: 332rpx;
+		background: #C8FFFD;
+		border-radius: 24rpx 24rpx 24rpx 24rpx;
+		padding: 50rpx;
+		box-sizing: border-box;
+		margin: 400rpx 90rpx;
+
+		.text-1 {
+			font-weight: 350;
+			font-size: 32rpx;
+			color: #333333;
+			text-align: center;
+			margin-bottom: 20rpx;
+		}
+
+		.text-2 {
+			font-weight: 350;
+			font-size: 28rpx;
+			color: #333333;
+			text-align: center;
+			margin-bottom: 48rpx;
+		}
+
+		.bnt-1 {
+			display: inline-block;
+			width: 220rpx;
+			height: 60rpx;
+			background: #FFFFFF;
+			border-radius: 48rpx;
+			border: 1rpx solid #00BEBE;
+			font-size: 28rpx;
+			color: #00BEBE;
+			line-height: 60rpx;
+			text-align: center;
+		}
+
+		.bnt-2 {
+			display: inline-block;
+			width: 220rpx;
+			height: 60rpx;
+			background: #00BEBE;
+			border-radius: 48rpx;
+			border: 1rpx solid #00BEBE;
+			font-weight: 500;
+			font-size: 28rpx;
+			color: #fff;
+			line-height: 60rpx;
+			text-align: center;
+		}
+	}
+
+	.bot {
+		background-color: #fff;
+		display: flex;
+		flex-direction: row;
+		justify-content: center;
+		align-items: center;
+		padding: 20rpx 0;
+
+		.btn {
+			display: inline-block;
+			width: 560rpx;
+			height: 80rpx;
+			background: #00BEBE;
+			;
+			border-radius: 40rpx;
+			font-weight: 400;
+			font-size: 30rpx;
+			color: #FFFFFF;
+			text-align: center;
+			line-height: 80rpx;
+		}
+	}
+
+	/* 页面根容器 */
+	.page {
+		background-color: #F8F9FB;
+		padding: 30rpx;
+	}
+
+	/* 头部标题 */
+	.header {
+		display: flex;
+		flex-direction: row;
+		justify-content: center;
+		align-items: center;
+		height: 80rpx;
+		font-size: 36rpx;
+		color: #333;
+		border-bottom: 1rpx solid #e5e5e5;
+	}
+
+	/* 状态栏 */
+	.status-bar {
+		padding: 20rpx;
+		margin-top: 20rpx;
+		border-radius: 12rpx;
+		box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.05);
+	}
+
+	.status-text {
+		font-weight: 600;
+		font-size: 40rpx;
+		color: #000000;
+	}
+
+	.xhuaixn-icon {
+		width: 44rpx;
+		height: 44rpx;
+		margin-left: 10rpx;
+	}
+
+	.map-box {
+		background: #FFFFFF;
+		border-radius: 12rpx 12rpx 12rpx 12rpx;
+		padding: 20rpx;
+	}
+
+	.map {
+		width: 630rpx;
+		height: 350rpx;
+	}
+
+	.xiaxian-icon {
+		height: 63rpx;
+		width: 12rpx;
+		margin-left: 28rpx;
+	}
+
+	.info-item-1 {
+		display: flex;
+		flex-direction: row;
+		align-items: center;
+		padding: 20rpx;
+
+		.rico {
+			width: 14rpx;
+			height: 14rpx;
+			border: 2rpx solid #999999;
+			border-radius: 14rpx;
+			margin-right: 28rpx;
+
+		}
+
+		.label1 {
+			font-weight: 400;
+			font-size: 26rpx;
+			color: #333333;
+		}
+
+		.value1 {
+			font-weight: 400;
+			font-size: 24rpx;
+			color: #333333;
+		}
+	}
+
+	/* 司机状态 */
+	.driver-status {}
+
+	.driver-title {
+		font-size: 30rpx;
+		color: #333;
+		margin-bottom: 10rpx;
+		display: flex;
+		flex-direction: row;
+		align-items: center;
+		justify-content: space-between;
+	}
+
+	.driver-desc {
+		font-size: 26rpx;
+		color: #666;
+	}
+
+	/* 地图容器 */
+	.map-container {
+		position: relative;
+		width: 630rpx;
+		height: 300rpx;
+		margin-top: 20rpx;
+		border-radius: 12rpx;
+		overflow: hidden;
+	}
+
+
+
+
+
+	.car-icon {
+		width: 40rpx;
+		height: 40rpx;
+	}
+
+	/* 信息项通用样式 */
+	.info-item {
+		display: flex;
+		flex-direction: row;
+		align-items: center;
+		padding: 20rpx 0;
+		border-bottom: 1rpx solid #eee;
+	}
+
+	.label {
+		font-weight: 600;
+		font-size: 28rpx;
+		color: #333333;
+		display: inline-block;
+		width: 260rpx;
+	}
+
+	.value {
+		font-weight: 400;
+		font-size: 28rpx;
+		color: #333333;
+	}
+
+	/* 车辆信息 */
+	.vehicle-info {
+		background-color: #fff;
+		padding: 30rpx;
+		margin-top: 20rpx;
+		border-radius: 12rpx;
+		box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.05);
+	}
+
+	.info-row {
+		display: flex;
+		flex-direction: row;
+		align-items: center;
+		font-weight: 400;
+		font-size: 24rpx;
+		color: #333333;
+		margin-top: 20rpx;
+	}
+
+	.info-row1 {
+		display: flex;
+		flex-direction: row;
+		font-weight: 500;
+		font-size: 28rpx;
+		color: #333333;
+	}
+
+
+	/* 车牌和时间 */
+	.license-time {
+		display: flex;
+		flex-direction: row;
+		justify-content: space-between;
+		padding: 20rpx 0;
+	}
+
+	.license {
+		font-weight: 600;
+		font-size: 28rpx;
+		color: #333333;
+	}
+
+	.time {
+		font-weight: 400;
+		font-size: 26rpx;
+		color: #333333;
+	}
+
+	/* 工单信息标题 */
+	.section-title {
+		margin-top: 20rpx;
+		padding: 10rpx 0;
+		font-weight: 600;
+		font-size: 32rpx;
+		color: #333333;
+		display: flex;
+		flex-direction: row;
+		align-items: center;
+
+	}
+
+	.line {
+		width: 4rpx;
+		height: 26rpx;
+		background: #00BEBE;
+		border-radius: 0rpx 4rpx 4rpx 0rpx;
+		margin-right: 30rpx;
+	}
+
+	.section-label {
+		font-weight: 600;
+		font-size: 32rpx;
+		color: #333333;
+	}
+
+	/* 工单信息列表 */
+	.info-list {
+		background-color: #fff;
+		margin-top: 20rpx;
+		border-radius: 12rpx;
+		padding: 30rpx;
+		box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.05);
+	}
+</style>

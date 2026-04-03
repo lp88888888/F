@@ -1,0 +1,127 @@
+/**
+ * interface.uts
+ * uts插件接口定义文件，按规范定义接口文件可以在HBuilderX中更好的做到语法提示
+ */
+
+/**
+ * =========================
+ * Request (APP only for now)
+ * =========================
+ */
+
+export type RequestMethod =
+	| "GET"
+	| "POST"
+	| "PUT"
+	| "PATCH"
+	| "DELETE"
+	| "CONNECT"
+	| "HEAD"
+	| "OPTIONS"
+	| "TRACE"
+
+export type RequestResponseType = "json" | "text" | "arraybuffer"
+
+export type RequestDataOptions = UTSJSONObject | string | ArrayBuffer
+
+/**
+ * 请求错误码（参考 uni-network）
+ */
+export type RequestErrorCode =
+	| 5 // time out
+	| 1000 // server system error
+	| 100001 // invalid json
+	| 100002 // error message invalid json
+	| 100003 // json parsing type conversion failed
+	| 600003 // network interrupted
+	| 600008 // invalid data param type
+	| 600009 // invalid URL
+	| 602001 // request system error
+
+export interface RequestFail extends IUniError {
+	errCode: RequestErrorCode
+}
+
+/**
+ * 注意：为兼容 uni-app(UTS) 的编译限制，这里不对 request 做泛型透传。
+ * `success(res).data` 统一用 `any` 承载。
+ */
+export type RequestOptions = {
+	url: string
+	method?: RequestMethod | string | null
+	data?: RequestDataOptions | null
+	header?: UTSJSONObject | null
+	timeout?: number | null
+
+	/**
+	 * 默认 json；SSE/流式建议使用 text + enableChunked
+	 */
+	responseType?: RequestResponseType | null
+
+	/**
+	 * 是否启用分块回调（task.onChunkReceived）
+	 * - 用于 SSE/流式响应
+	 */
+	enableChunked?: boolean | null
+
+	success?: RequestSuccessCallback | null
+	fail?: RequestFailCallback | null
+	complete?: RequestCompleteCallback | null
+}
+
+export type RequestSuccess = {
+	data: any | null
+	statusCode: number
+	header: UTSJSONObject
+	cookies: string[]
+}
+
+export type RequestTaskOnHeadersReceivedListenerResult = {
+	statusCode: number
+	header: UTSJSONObject
+	cookies: string[]
+}
+
+export type RequestTaskOnHeadersReceivedCallback = (res: RequestTaskOnHeadersReceivedListenerResult) => void
+
+export type RequestTaskOnChunkReceivedListenerResult = {
+	data: ArrayBuffer
+}
+
+export type RequestTaskOnChunkReceivedCallback = (res: RequestTaskOnChunkReceivedListenerResult) => void
+
+export type RequestTaskOnTextChunkReceivedListenerResult = {
+	text: string
+}
+
+export type RequestTaskOnTextChunkReceivedCallback = (res: RequestTaskOnTextChunkReceivedListenerResult) => void
+
+export interface RequestTask {
+	abort(): void
+
+	onHeadersReceived(listener: RequestTaskOnHeadersReceivedCallback): number
+	offHeadersReceived(id?: number | RequestTaskOnHeadersReceivedCallback | null): void
+
+	onChunkReceived(listener: RequestTaskOnChunkReceivedCallback): number
+	offChunkReceived(id?: number | RequestTaskOnChunkReceivedCallback | null): void
+
+	/**
+	 * Text chunk callback for streaming responses (recommended on iOS).
+	 * - Works with enableChunked: true
+	 * - Delivers decoded UTF-8 text chunks to avoid bridging ArrayBuffer to JS.
+	 */
+	onTextChunkReceived(listener: RequestTaskOnTextChunkReceivedCallback): number
+	offTextChunkReceived(id?: number | RequestTaskOnTextChunkReceivedCallback | null): void
+}
+
+export type RequestSuccessCallback = (res: RequestSuccess) => void
+export type RequestFailCallback = (res: RequestFail) => void
+export type RequestCompleteCallback = (res: any) => void
+
+export type Request = (options: RequestOptions) => RequestTask
+
+/**
+ * Enable/disable internal console.log output for the hans-request network layer.
+ * - Default: disabled
+ */
+export function setNetworkLogEnabled(enabled: boolean): void

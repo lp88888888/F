@@ -1,0 +1,198 @@
+/* 主题CSS变量定义 - 兼容多平台 */
+
+/* 默认主题（light） */
+:root,
+page,
+[data-theme="light"] {
+  --head-color:linear-gradient( 180deg, #D7E1EB 16%, rgba(255,255,255,0) 100%);
+  --text-color: #333333;
+  --linear-color: linear-gradient( 180deg, #DAFDFF 0%, #FDFCFC 100%);
+  --background-color: #FFFFFF;
+  --label-color: #DBF8E1;
+  --primary-color: #1FC5C5;
+  --secondary-color: #4788FA;
+  --success-color: #10B981;
+  --warning-color: #F59E0B;
+  --error-color: #EF4444;
+  --border-color: #E5E7EB;
+  --card-bg: #FFFFFF;
+  --tabbar-bg: #FFFFFF;
+  --tabbar-color: #666666;
+  --tabbar-active-color: #3B82F6;
+}
+
+/* 橙色主题 */
+[data-theme="orange"],
+[data-theme="orange"] page {
+  --head-color: linear-gradient( 180deg, #FFE0BC 16%, rgba(255,255,255,0) 100%);
+  --text-color: #333333;
+  --linear-color: linear-gradient( 180deg, #FFF3E6 0%, #FDFCFC 98%);
+  --background-color: #FFFFFF;
+  --label-color: #FFE7CB;
+  --primary-color: #FF6A00;
+  --secondary-color: #FF8400;
+  --success-color: #34D399;
+  --warning-color: #FBBF24;
+  --error-color: #F87171;
+  --border-color: #FFA011;
+  --card-bg: #FFFFFF;
+  --tabbar-bg: #242424;
+  --tabbar-color: #9CA3AF;
+  --tabbar-active-color: #64d89c;
+}
+
+/* 蓝色主题 */
+[data-theme="blue"],
+[data-theme="blue"] page {
+  --head-color:linear-gradient( 180deg, #C0E1FF 16%, rgba(255,255,255,0) 100%);
+  --text-color: #333333;
+  --linear-color: linear-gradient( 180deg, #E1F5FF 0%, #FCFCFB 100%);
+  --background-color: #FFFFFF;
+  --label-color: #D5EAFF;
+  --primary-color: #5FAFFF;
+  --secondary-color: #4E9AFF;
+  --success-color: linear-gradient(to bottom, #edfcf0, #fcfffc);
+  --warning-color: #D97706;
+  --error-color: #DC2626;
+  --border-color: #BFDBFE;
+  --card-bg: #FFFFFF;
+  --tabbar-bg: #e6f3ff;
+  --tabbar-color: #1E40AF;
+  --tabbar-active-color: #2fa6c8;
+  --but-color-line:linear-gradient(to bottom, #4881F5, #83AAF9);
+   --bgqtmd:#D1E5F9;
+   --bgqscolor:linear-gradient( 360deg, #C0E1FF 0%, #FCFCFB 100%);
+}
+
+/* 绿色主题 */
+[data-theme="green"],
+[data-theme="green"] page {
+	/* 绿白渐变 */
+  --head-color: linear-gradient( 135deg, #EBF8EE 0%, #FEFEFE 100%); 
+  --text-color: #333333;
+  /* 白绿渐变 */
+  --linear-color: linear-gradient( 106deg, #FEFEFE 0%, #EBF8EE 100%);
+  --background-color: #FFFFFF;
+  /* 阴影色 */
+  --label-color: #d3e7d1; 
+  /* 主色1 */
+  --primary-color: #628F2F;
+  /* 主色2 */
+  --secondary-color: #8DAB77;
+  /* 背景渐变色 */
+  --success-color: linear-gradient(to bottom, #edfcf0, #fcfffc);
+  --warning-color: #D97706;
+  --error-color: #DC2626;
+  --border-color: #A7F3D0;
+  --card-bg: #FFFFFF;
+  --tabbar-bg: #ecfdf5;
+  --tabbar-color: #065F46;
+  --tabbar-active-color: #10B981;
+  --but-color-line:linear-gradient(to bottom, #80A653, #B2D38A);
+  --bgqtmd:#DCF8E2;
+--bgqscolor:linear-gradient( 360deg, #FCFFFC 0%, #D8F7DE 100%);
+}
+
+/* 樱桃红主题 */
+[data-theme="pink"],
+[data-theme="pink"] page {
+  --head-color:linear-gradient( 180deg, #FFDDDD 16%, rgba(255,255,255,0) 100%);
+  --text-color: #333333;
+  --linear-color: linear-gradient( 180deg, #FFD1D1 0%, #FCFCFB 100%);
+  --background-color: #FFFFFF;
+  --label-color: #FFD0D0;
+  --primary-color: #ED3321;
+  --secondary-color: #ED3321;
+  --success-color: #059669;
+  --warning-color: #D97706;
+  --error-color: #DC2626;
+  --border-color: #A7F3D0;
+  --card-bg: #FFFFFF;
+  --tabbar-bg: #ecfdf5;
+  --tabbar-color: #065F46;
+  --tabbar-active-color: #10B981;
+}
+
+/* 全局基础样式（使用CSS变量） */
+page {
+  color: var(--text-color);
+  background-color: var(--background-color);
+  font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif;
+  /* #ifndef MP-WEIXIN */
+  transition: color 0.3s ease, background-color 0.3s ease;
+  /* #endif */
+  min-height: 100vh;
+}
+
+/* 小程序中确保page元素也有主题属性 */
+/* #ifdef MP-WEIXIN */
+page[data-theme="light"] {
+  --text-color: #333333;
+  --background-color: #F5F5F4;
+  --primary-color: #3B82F6;
+}
+
+page[data-theme="orange"] {
+  --text-color: #E5E7EB;
+  --background-color: #1a1a1a;
+  --primary-color: #64d89c;
+}
+
+page[data-theme="blue"] {
+  --text-color: #1e3a5f;
+  --background-color: #f0f8ff;
+  --primary-color: #2fa6c8;
+}
+
+page[data-theme="green"] {
+  --text-color: #1a3a2f;
+  --background-color: #f0fdf4;
+  --primary-color: #628F2F;
+}
+
+page[data-theme="pink"] {
+  --text-color: #333333;
+  --background-color: #f0fdf4;
+  --primary-color: #ED3321;
+}
+/* #endif */
+
+/* 通用样式类 */
+.theme-card {
+  background-color: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 24rpx;
+  padding: 32rpx;
+  margin: 32rpx;
+  /* #ifndef MP-WEIXIN */
+  transition: all 0.3s ease;
+  /* #endif */
+}
+
+.theme-button {
+  background-color: var(--primary-color);
+  color: white;
+  border: none;
+  border-radius: 16rpx;
+  padding: 32rpx 64rpx;
+  font-size: 28rpx;
+  /* #ifndef MP-WEIXIN */
+  transition: background-color 0.3s ease;
+  /* #endif */
+}
+
+.text-primary {
+  color: var(--primary-color);
+}
+
+.text-secondary {
+  color: var(--secondary-color);
+}
+
+.bg-primary {
+  background-color: var(--primary-color);
+}
+
+.bg-secondary {
+  background-color: var(--secondary-color);
+}

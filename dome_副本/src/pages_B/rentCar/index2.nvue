@@ -1,0 +1,88 @@
+<template>
+	<view class="">
+		<Home v-if="tabbarType == 'home'"></Home>
+		<OrderAdd v-if="tabbarType == 'add'"></OrderAdd>
+		<OrderList v-if="tabbarType == 'order'"></OrderList>
+		<view class="tabbarBox">
+			<view class="tabbarBox-item" @click="changeTab('home')">
+				<image class="tabbar_icon_image" v-if="tabbarType  == 'home'" :src="imgUrl+'static/B-direct-tabbar-home-active.png'"></image>
+				<image class="tabbar_icon_image" v-else :src="imgUrl+'static/B-direct-tabbar-home-inactive.png'"></image>
+				<text :class="[tabbarType  == 'home'?'activeText':'defText']">推荐</text>
+			</view>
+			<view class="tabbarBox-item" @click="changeTab('add')">
+				<image class="tabbar_icon_image" v-if="tabbarType  == 'add'" :src="imgUrl+'static/B-direct-tabbar-collection-active.png'"></image>
+				<image class="tabbar_icon_image" v-else :src="imgUrl+'static/B-direct-tabbar-collection-inactive.png'"></image>
+				<text :class="[tabbarType  == 'add'?'activeText':'defText']">我要租车</text>
+			</view>
+			<view class="tabbarBox-item" @click="changeTab('order')">
+				<image class="tabbar_icon_image" v-if="tabbarType  == 'order'" :src="imgUrl+'static/B-direct-tabbar-order-active.png'"></image>
+				<image class="tabbar_icon_image" v-else :src="imgUrl+'static/B-direct-tabbar-order-inactive.png'"></image>
+				<text :class="[tabbarType  == 'order'?'activeText':'defText']">我的预定</text>
+			</view>
+		</view>
+		<view class="placeView"></view>
+	</view>
+</template>
+
+<script setup lang="ts">
+	import {ref,computed} from 'vue';
+	import { onLoad, onShow,onPageScroll } from '@dcloudio/uni-app';
+	import Home from './home.nvue';
+	import OrderAdd from './orderAdd.nvue';
+	import OrderList from './orderList.nvue';
+	import { toNav,toBack } from '@/utils/route';
+	import { imgUrl } from '@/config';
+	const keyword = ref('');
+	const tabbarType = ref('home');
+	
+	const changeTab = (type) =>{
+		tabbarType.value = type;
+		uni.pageScrollTo({
+		  scrollTop: 0,
+		  duration: 300 // 滚动动画时长，单位 ms
+		});
+	}
+	onPageScroll((e)=>{
+		
+	})
+</script>
+
+<style lang="scss" >
+	page{
+		background: $pageBgColor;
+	}
+	.placeView{
+		height: 120rpx;
+	}
+	.tabbarBox{
+		width: 750rpx;
+		height: 120rpx;
+		
+		position: fixed;
+		left: 0;
+		bottom: 0;
+		align-items: center;
+		flex-direction: row;
+		justify-content: space-evenly;
+		
+		background: #FFFFFF;
+		.tabbarBox-item{
+			flex: 1;
+			align-items: center;
+			.tabbar_icon_image{
+				width: 42rpx;
+				height: 42rpx;
+				margin-bottom: 15rpx;
+			}
+			.activeText{
+				font-size: 24rpx;
+				color: #FF9600;
+				
+			}
+			.defText{
+				font-size: 24rpx;
+				color: #606266 ;
+			}
+		}
+	}
+</style>

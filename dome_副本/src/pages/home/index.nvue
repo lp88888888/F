@@ -1,0 +1,4905 @@
+<template>
+	<view class="page-container" :style="{ backgroundColor: '#FCFFFC' }" :data-theme="pageTheme">
+		<view :style="{ flex: '1', height: topBoxHeight + 'px' }"></view>
+
+		<!-- 一键救援悬浮 -->
+		<view class="kf-box" @click="toNav('/pages_A/roadRescue/index')">
+			<image class="kf-img" :src="imgUrl + 'static/new_kf_img.png'"></image>
+			<text class="kf-text" :style="{ color: themeStore.themeColors.$primaryColor }">一键救援</text>
+		</view>
+
+		<!-- 积分 @click="toNav('/pages_D/volumePricing/discount/index')"-->
+		<view class="jf_box">
+			<!-- <image class="jf_img" src="/src/static/tabbar/tabbar-jy.png" mode="heightFix"></image> -->
+			<text class="jf_text">我的积分：</text>
+			<text class="jf_text jf_text1"
+				:style="{ color: themeStore.themeColors.$primaryColor }">{{ getAlljf() }}</text>
+			<text class="jf_text jf_text2">分</text>
+
+			<view class="fl-al-ce" style="flex-direction: row">
+				<view class="theme-switcher" style="margin-right: 20rpx" @click="toNav('/pages_E/globalsearch/index')">
+					<u-icon :name="imgUrl + 'search-icons2.png'" size="40rpx"></u-icon>
+				</view>
+				<view class="theme-switcher" @click="toNav('/pages_A/setting/themeswitcher')">
+					<u-icon :name="imgUrl + 'ind-icon-pf.png'" size="40rpx"></u-icon>
+				</view>
+			</view>
+		</view>
+		<!-- 头部图片 -->
+		<view class="header-box">
+			<swiper class="top-swiper" style="height: 388rpx" :indicator-dots="true" :autoplay="false" :interval="3000"
+				:duration="1000">
+				<swiper-item class="top-swiper" v-for="(item, index) in headerBanners" :key="index"
+					@click="PageTo(item)">
+					<image class="top-img" :src="item.imageUrl" lazy-load></image>
+				</swiper-item>
+			</swiper>
+		</view>
+		<!-- 小猴模块 -->
+		<view class="monkey_box">
+			<image class="monkey_box_bg" :src="icoUrl + 'monkey_bg.png'" mode=""></image>
+			<image class="monkey_box_img" :src="icoUrl + 'BdDigitalMan/idle_6.gif'" @click="openAiHuman" mode="heightFix"></image>
+			<view class="maQp" @click="openAiHuman">
+				<view class="maQp-View">
+					<image class="maQp-bg" :src="icoUrl+'home-index-qp1.png'" mode=""></image>
+					<view class="maQp-View-center">
+						<image class="maQp-View-icon" :src="icoUrl+'home-index-heads.png'" mode=""></image>
+						<text class="maQp-View-text" :style="{ color: themeStore.themeColors.$primaryColor }">点点我或说出"小猴小猴"唤醒我哦~</text>
+					</view>
+				</view>
+			</view>
+			<view class="monkey_box_count">
+				<!-- <text class="monkey_box_count_tips"
+					:style="{ color: themeStore.themeColors.$primaryColor }">点点我或说出"小猴小猴"唤醒我哦~</text> -->
+					<text class="monkey_box_count_tips"
+						:style="{ color: themeStore.themeColors.$primaryColor }"></text>
+				<view class="route_card">
+					<view class="route-item" @click="openMap('start')">
+						<text class="route-place">{{ mylocationinfo.name || '我的位置' }}</text>
+						<text class="route-location">{{ mylocationinfo.city || mylocationinfo.address || '' }}</text>
+					</view>
+					<image class="arrow2_img" :src="icoUrl + 'to_line.png'"></image>
+					<view class="route-item" @click="openMap('end')">
+						<text class="route-place">{{ endlocationinfo.name || '请输入' }}</text>
+						<text
+							class="route-location">{{ endlocationinfo.city || endlocationinfo.address || '目的地' }}</text>
+					</view>
+				</view>
+				<view class="monkey_box_count_bottom" v-if="routeByLngLat.totalDistance && !lxIsSHow">
+					<text class="monkey_box_count_bottom_item" v-if="!lxIsSHow"
+						:style="{ color: themeStore.themeColors.$primaryColor }" @click="lxIsSHow = true">展开内容</text>
+					<text class="monkey_box_count_bottom_item" :style="{ color: themeStore.themeColors.$primaryColor }"
+						@click="lxClear">一键清空</text>
+				</view>
+			</view>
+			
+		</view>
+
+		<view class="page-view">
+			<!-- 速小猴看路况 -->
+			<!-- <view class="card" :style="{ background: themeStore.themeColors.$linearColor, boxShadow: themeStore.themeColors.$homeCardBoxShadow }">
+				<view class="card_icon_card_header" style="align-items: center">
+					<view class="card_icon_card_header_lt" style="width: 320rpx; justify-content: flex-start">
+						<image class="card_icon_card_header-img" style="width: 320rpx" :src="icoUrl + 'icon_bg2.png'"
+							mode=""> </image>
+						<text class="title_text_primary" style="margin-left: 36rpx">速小猴看路况</text>
+						<image class="card_title_icon" :src="imgUrl + 'static/card_lt_icon.png'" mode=""></image>
+					</view>
+					<view class="">
+						<text class="iconText" v-if="!qureyShow">已完成思考</text>
+					</view>
+				</view>
+				<view class="szrBox">
+					<view class="querBoxTitle" v-if="qureyShow">
+						<up-icon :name="icoUrl + 'BdDigitalMan/dmIcon8.png'" size="14"></up-icon>
+						<text
+							class="querBoxTitle-text">解析{{ !qureyShow ? '完成' : '中' }}(基于「{{ queryTextName(chatCot) }}」技能回答)</text>
+					</view>
+					<view :class="[textShow ? '' : 'szrBox-A']">
+						<text :class="[textShow ? 'szrBox-text' : 'szrBox-text2']">{{ answerText }}回答回答回答回答回答回答回答回答回答回答回答回答回答回答回答回答回答回答回答回答回答回答回答回答回答回答</text>
+						<text class="textAi" v-if="textShow && answerText">该内容由人工智能AI生成</text>
+						
+						<text class="szrBox-but" :style="{ color: themeStore.themeColors.$primaryColor }"
+							@click="textShow = !textShow">
+							{{ textShow ? '点击收起' : '展开' }}</text>
+					</view>
+				</view>
+			</view> -->
+			<view class="card" v-if="routeByLngLat.totalDistance && lxIsSHow"
+				:style="{ background: themeStore.themeColors.$linearColor, boxShadow: themeStore.themeColors.$homeCardBoxShadow }">
+				<view class="card_icon_card_header" style="align-items: center">
+					<view class="card_icon_card_header_lt" style="width: 320rpx; justify-content: flex-start">
+						<image class="card_icon_card_header-img" style="width: 320rpx" :src="icoUrl + 'icon_bg2.png'"
+							mode=""> </image>
+						<text class="title_text_primary" style="margin-left: 36rpx">速小猴看路况</text>
+						<image class="card_title_icon" :src="imgUrl + 'static/card_lt_icon.png'" mode=""></image>
+					</view>
+					<view class="">
+						<text class="iconText" v-if="!qureyShow">已完成思考</text>
+					</view>
+				</view>
+				<view class="szrBox">
+					<view class="querBoxTitle" v-if="qureyShow">
+						<up-icon :name="icoUrl + 'BdDigitalMan/dmIcon8.png'" size="14"></up-icon>
+						<text
+							class="querBoxTitle-text">解析{{ !qureyShow ? '完成' : '中' }}(基于「{{ queryTextName(chatCot) }}」技能回答)</text>
+					</view>
+					<view :class="[textShow ? '' : 'szrBox-A']">
+						<text :class="[textShow ? 'szrBox-text' : 'szrBox-text2']">{{ answerText }}</text>
+						<text class="textAi" v-if="textShow && answerText">该内容由人工智能AI生成</text>
+						<view class="bbView" v-if="textShow && answerText" >
+							<view class="bbView-Box" @click="bobaoShow?startTalk():stokValue(answerText)">
+								<image class="bbView-Box-bg" v-if="bobaoShow" :src="icoUrl+'home-index-bobao-icon3.png'" mode=""></image>
+								<image class="bbView-Box-bg" v-else :src="icoUrl+'home-index-bobao-icon2.png'" mode=""></image>
+								<view class="bbView-Box-view">
+									<image class="bbView-Box-view-img" v-if="bobaoShow" :src="icoUrl+'home-index-bobao-icon1.png'"></image>
+									<image class="bbView-Box-view-img" v-else :src="imgUrl+'home-index-bobao-icon.png'"></image>
+									<text class="bbView-Box-view-text" :style="{ color: bobaoShow?'#333333':'#ffffff' }">{{bobaoShow?'停止播报':'开始播报'}}</text>
+								</view>
+							</view>
+						</view>
+						<text class="szrBox-but" :style="{ color: themeStore.themeColors.$primaryColor }"
+							@click="textShow = !textShow">
+							{{ textShow ? '点击收起' : '展开' }}</text>
+					</view>
+				</view>
+			</view>
+			<!-- 出行方案 -->
+			<view class="card" v-if="routeByLngLat.totalDistance && lxIsSHow"
+				:style="{ background: themeStore.themeColors.$linearColor, boxShadow: themeStore.themeColors.$homeCardBoxShadow }">
+				<view class="card_icon_card_header">
+					<view class="card_icon_card_header_lt">
+						<image class="card_icon_card_header-img" :src="icoUrl + 'icon_bg.png'" mode=""> </image>
+						<text class="title_text_primary">出行方案</text>
+						<image class="card_title_icon" :src="imgUrl + 'static/card_lt_icon.png'" mode=""></image>
+					</view>
+					<view class="fl-ce-ce" style="flex-direction: row" @click="handleMapMode">
+						<u-icon :name="icoUrl + 'address-icon-1.png'" size="32rpx"></u-icon>
+						<text class="iconText" :style="{ color: themeStore.themeColors.$primaryColor }">地图模式</text>
+					</view>
+				</view>
+				<view class="card_item">
+					<view v-if="routeByLngLat.totalDistance" class="router_info">
+						<view class="router_info_times">
+							<text class="router_info_times_1">{{ routeByLngLat.totalDistance }}km</text>
+							<text class="router_info_times_2">&nbsp;&nbsp;.&nbsp;&nbsp;</text>
+							<text class="router_info_times_3">{{ routeByLngLat.totalTime }}</text>
+						</view>
+						<scroll-view class="router_info_length" scroll-x="true" :show-scrollbar="false">
+							<view class="router_info_length_item" v-if="routeByLngLat.cityDistanceStart">
+								<text
+									class="router_info_length_item_text">城市通行{{ routeByLngLat.cityDistanceStart }}公里</text>
+							</view>
+							<view class="router_info_length_item bg_o" v-if="routeByLngLat.highwayDistance">
+								<text
+									class="router_info_length_item_text">高速通行{{ routeByLngLat.highwayDistance }}公里</text>
+							</view>
+							<view class="router_info_length_item" v-if="routeByLngLat.cityDistanceEnd">
+								<text
+									class="router_info_length_item_text">城市通行{{ routeByLngLat.cityDistanceEnd }}公里</text>
+							</view>
+						</scroll-view>
+
+						<view class="route-timeline">
+							<view class="tl-item" v-for="(node, index) in timelineNodes" :key="index">
+								<!-- 左侧：圆点 + 竖线 -->
+								<view class="tl-left" v-if="node.km != 0">
+									<view class="tl-dot" :class="node.dotClass">
+										<template v-if="node.dotType === 'flag'">
+											<text class="flag-text">{{ node.flagText }}</text>
+										</template>
+										<template v-else>
+											<text class="km-val">{{ node.km }}</text>
+											<text class="km-unit">km</text>
+										</template>
+									</view>
+
+									<view v-if="index !== timelineNodes.length - 1" class="tl-line"
+										:class="node.lineClass"></view>
+								</view>
+
+								<!-- 右侧：标题行 + 内容面板 -->
+								<view class="tl-right" v-if="node.km != 0">
+									<view class="tl-head">
+										<view class="tl-title-wrap">
+											<text class="tl-title" :class="node.titleClass">{{ node.title }}</text>
+											<image v-if="node.weatherIcon"
+												:src="`https://tranalioss.shanyitong.com/wximage/trip-pro/weather/${node.weatherIcon}.png`"
+												class="icon-32 m-r-10" mode="heightFix"></image>
+											<text v-if="node.conditiontxt" class="tl-sub">{{ node.conditiontxt }}</text>
+											<text v-if="node.subTitle" class="tl-sub">{{ node.subTitle }}</text>
+											<view class="tq_tag" v-if="node.alerts">
+												<text class="tq_tag_text"
+													v-for="(titem,tindex) in node.alerts">{{ titem.eventType?.name }}</text>
+											</view>
+											<view v-if="node.rightText" class="tl-right-text"
+												@tap.stop="node.onRightTextClick && node.onRightTextClick(node)">
+												<text class="tl-right-text1"
+													:class="['', 'rt-muted', 'rt-danger', 'rt-success'][node.rightClass]">{{ node.rightText }}</text>
+												<image v-if="node.rightArrow" class="tl-arrow-tri"
+													:src="`${imgUrl}static/home_line_arrow${node.rightClass}.png`"
+													mode=""></image>
+											</view>
+										</view>
+
+
+									</view>
+
+									<!-- 收费站下对应服务： 以量定价 / 可办理ETC / 绿通预约  -->
+									<view v-if="node.badges && node.badges.length" class="tl-right-area">
+										<text class="tl-badge"
+											:style="{ color: themeStore.themeColors.$primaryColor, borderColor: themeStore.themeColors.$primaryColor }"
+											v-for="(badgeItem, badgeIndex) in node.badges" :key="badgeIndex"
+											@tap.stop="badgeItem.onClick && badgeItem.onClick(node)">
+											{{ badgeItem.text }}
+										</text>
+									</view>
+
+									<!-- 灰色：ETC/人工通道 -->
+									<view v-if="node.panel === 'channels' && node.channels.length"
+										class="tl-panel tl-panel-gray">
+										<scroll-view class="tl-panel_scroll" :scroll-x="true" :show-scrollbar="false">
+											<view class="ch-row" v-for="(ch, ci) in node.channels" :key="ci">
+												<text class="ch-name"
+													:style="{ opacity: ch.laneType === 1 ? '1' : '0' }">ETC</text>
+												<view class="bar" :class="ch.status ? 'bar-green' : 'bar-red'"> </view>
+												<!-- <view class="ch-bars"></view> -->
+											</view>
+										</scroll-view>
+									</view>
+
+									<view class="rout_box" v-if="node.routinfo">
+										<view class="rout_title">
+											<image class="rout_img" :src="`${imgUrl}static/rout_icon.png`" mode="">
+											</image>
+											<text class="rout_text">路况信息</text>
+										</view>
+										<view class="rout_count">
+											<text class="rout_count_txt">{{ node.routinfo }}</text>
+										</view>
+									</view>
+
+									<!-- 灰色：占用车道 + 时间 -->
+									<view v-else-if="node.panel === 'lane'"
+										class="tl-panel tl-panel-gray tl-panel-lane">
+										<view class="lane-row">
+											<text class="ch-name">占用车道</text>
+											<view class="ch-bars">
+												<view class="bar" v-for="(b, bi) in node.laneBars" :key="bi" :class="b">
+												</view>
+											</view>
+											<text class="lane-time">{{ node.laneTime }}</text>
+										</view>
+									</view>
+
+									<!-- 绿色：服务区 icon + 了解详情 -->
+									<view v-else-if="node.panel === 'service'" class="tl-panel tl-panel-green">
+										<view style="flex: 1">
+											<view v-if="(node.serviceAreas || []).length" class="svc-icons">
+												<view class="svc-icon" v-for="(it, si) in node.serviceAreas || []"
+													:key="si">
+													<image class="service-img" :src="it.serviceInfoPicUrl"></image>
+												</view>
+											</view>
+										</view>
+										<view class="svc-btn" @click="goServiceDetail(node)">
+											<text class="svc-btn_txt">了解详情</text>
+										</view>
+									</view>
+
+									<!-- 无面板占位 -->
+									<view v-else class="tl-spacer"></view>
+								</view>
+							</view>
+						</view>
+
+						<view class="router_go_btn" :style="{ borderColor: themeStore.themeColors.$primaryColor }"
+							@click="handelGoRouter">
+							<text class="router_go_btn_text"
+								:style="{ color: themeStore.themeColors.$primaryColor }">按上述路线开始导航 {{ '>' }} </text>
+						</view>
+					</view>
+					<view class="lxBottomTetx" @click="lxIsSHow = false">
+						<u-icon name="arrow-up" size="30rpx" :color="themeStore.themeColors.$primaryColor"></u-icon>
+						<text class="lxBottomTetx-text" :style="{ color: themeStore.themeColors.$primaryColor }">
+							全部收起</text>
+					</view>
+				</view>
+			</view>
+			<view class="card"
+				:style="{ background: themeStore.themeColors.$linearColor, boxShadow: themeStore.themeColors.$homeCardBoxShadow }">
+				<view class="card_icon_card_header">
+					<view class="card_icon_card_header_lt">
+						<image class="card_icon_card_header-img" :src="icoUrl + 'icon_bg.png'" mode=""> </image>
+						<text class="title_text_primary">出行服务</text>
+						<image class="card_title_icon" :src="imgUrl + 'static/card_lt_icon.png'" mode=""></image>
+					</view>
+				</view>
+				<view class="card_item">
+					<view class="grid-box">
+						<view class="grid-box-item" style="width: 140rpx" v-for="(item, index) in lkTabs" :key="index"
+							@click="tabsClick(item)">
+							<image class="grid-box-img" :lazyLoad="true" :src="item.iconUrl"></image>
+							<text class="grid-box-text">{{ item.entryName }}</text>
+						</view>
+					</view>
+				</view>
+			</view>
+			<!-- 服务区 -->
+			<view class="card"
+				:style="{ background: themeStore.themeColors.$linearColor, boxShadow: themeStore.themeColors.$homeCardBoxShadow }">
+				<view class="card_icon_card_header" style="align-items: center">
+					<view class="card_icon_card_header_lt">
+						<image class="card_icon_card_header-img" :src="icoUrl + 'icon_bg.png'" mode=""> </image>
+						<text class="title_text_primary">服务区</text>
+						<image class="card_title_icon" :src="imgUrl + 'static/card_lt_icon.png'" mode=""></image>
+					</view>
+					<text :style="{ color: themeStore.themeColors.$primaryColor,fontSize:'28rpx' }"
+						@click="toNav('/pages_A/station/index')">全部</text>
+				</view>
+
+				<view class="card_item" style="padding-bottom: 20rpx;" v-if="serviceInfoList.length">
+					<swiper class="swiper" :style="{ width: '702rpx', height: swiperHeight + 'rpx' }" :autoplay="false"
+						:current="swiperCurrent" @change="handleSwiperChange">
+						<swiper-item v-for="(item, index) in serviceInfoList" :key="index"
+							style="width: 702rpx; justify-content: flex-start; align-items: center;">
+							<view class="service-card" @click="handleFwqDetail(item)">
+								<view class="header-section" >
+									<view class="image-wrapper">
+										<up-image :src="item.serviceAreaPicture || imgUrl + 'del/car-back1.png'"
+											width="190rpx" height="190rpx" :radius="6"></up-image>
+										<view class="status-badge">
+											<text
+												class="status-badge-text">{{ item.operationalStatus == '01' ? '正常' : '关闭' }}</text>
+										</view>
+										<view class="star-overlay" v-if="item.starRatingLabel">
+											<text class="star-text">{{item.starRatingLabel}}</text>
+										</view>
+									</view>
+
+									<view class="info-content">
+										<view class="title-row">
+											<text class="title-text">{{ item.serviceAreaName }}</text>
+											<text class="direction">{{item.lineDirection || ''}}</text>
+										</view>
+										<view style="flex-direction: row;align-items: center;margin-bottom: 10rpx;">
+											<text class="address-text">{{ item.address }}</text>
+											<text class="distance-text" style="margin-left: 20rpx;">{{ item.distance }}</text>
+										</view>
+										
+										<view class="tag-group" v-if="item.detailList && item.detailList.length">
+											<view class="tag-item"
+												:style="{ background: (item1.serviceInfoCode == '05' || item1.serviceInfoCode == '13' || item1.serviceInfoCode == '16')?'#FFF6DC':themeStore.themeColors.$badgeBgColor}"
+												v-for="(item1, index1) in item.displayTags" :key="index1">
+												<u-icon :name="item1.serviceInfoPicUrl" size="24rpx"></u-icon>
+												<text class="tag-text"
+													:style="{ color: (item1.serviceInfoCode == '05' || item1.serviceInfoCode == '13' || item1.serviceInfoCode == '16')?'#FFBC05':themeStore.themeColors.$primaryColor}">{{ item1.serviceInfoName }}</text>
+											</view>
+										</view>
+									</view>
+									
+									
+								</view>
+								<view class="bottom-section" v-if="hasBottomData(item)">
+									<view class="promo-box"
+										v-if="item.serviceAreaActivityList && item.serviceAreaActivityList.length">
+										<text class="promo-title">限时活动：</text>
+										<text
+											class="promo-text">{{ item.serviceAreaActivityList[0].activityContent }}</text>
+									</view>
+									<view class="action-cards">
+										<view class="cardd gas-card"
+											v-if="item.gasStationList && item.gasStationList.length && item.gasStationList[0].odsGasStationOilPriceVoList.length"
+											@click.stop="goJyDetail(item.gasStationList[0])">
+											<view class="fl-al-ce" style="flex-direction: row;align-items: center;">
+												<view class="fl-al-ce"
+													v-for="(events,evIndex) in gasCoumStationList(item.gasStationList[0].odsGasStationOilPriceVoList)"
+													:key="evIndex"
+													style="flex-direction: row;align-items: center;margin-right: 20rpx;">
+													<text class="card-label">{{events.oilName}}</text>
+													<view class="price-row">
+														<text class="price-num">{{events.stationPrice}}</text>
+														<text class="price-unit">元/L</text>
+													</view>
+												</view>
+											</view>
+											<view class="card-btn">
+												<text class="btn-text orange-text">去加油</text>
+												<u-icon name="arrow-right" size="20rpx" color="#FF5405"></u-icon>
+											</view>
+										</view>
+										<view class="cardd charge-card"
+											v-if="item.chargingStationList && item.chargingStationList.length"
+											@click.stop="goCdDetail(item.chargingStationList[0])">
+											<view class="fl-al-ce" style="flex-direction: row;align-items: center;">
+												<text class="card-label">空闲充电桩</text>
+												<view class="card-icon-item iconK"
+													:style="{ background: themeStore.themeColors.$badgeBgColor,border:`2rpx solid ${themeStore.themeColors.$primaryColor}` }">
+													<text class="card-icon-item-text"
+														:style="{ background: themeStore.themeColors.$primaryColor }">快</text>
+													<text class="card-icon-item-num"
+														:style="{ color: themeStore.themeColors.$primaryColor }">{{item.chargingStationList[0].slowFree + item.chargingStationList[0].fastFree }}/{{ item.chargingStationList[0].slowTotal + item.chargingStationList[0].fastTotal }}</text>
+												</view>
+											</view>
+											<view class="card-btn">
+												<text class="btn-text blue-text">去充电</text>
+												<u-icon name="arrow-right" size="20rpx" color="#4881F5"></u-icon>
+											</view>
+										</view>
+									</view>
+								</view>
+								<image class="watermark" v-if="item.themeLabel == '红色印记'" :src="imgUrl+'static/station-icon-1.png'" lazy-load></image>
+								<image class="watermark" v-if="item.themeLabel == '綜台服务'" :src="imgUrl+'static/station-icon-2.png'" lazy-load></image>
+								<image class="watermark" v-if="item.themeLabel == '交文旅融合'" :src="imgUrl+'static/station-icon-3.png'" lazy-load></image>
+								<image class="watermark" v-if="item.themeLabel == '休闲运动'" :src="imgUrl+'static/station-icon-4.png'" lazy-load></image>
+								<image class="watermark" v-if="item.themeLabel == '温馨驿站'" :src="imgUrl+'static/station-icon-5.png'" lazy-load></image>
+								<image class="watermark" v-if="item.themeLabel == '红色文化'" :src="imgUrl+'static/station-icon-6.png'" lazy-load></image>
+							</view>
+						</swiper-item>
+					</swiper>
+					<view class="swiper_dot">
+						<view :class="[index == swiperCurrent?'swiper_dot_active':'swiper_dot_item']"
+							:style="{background: index == swiperCurrent?themeStore.themeColors.$primaryColor:'#D8D8D8'}"
+							v-for="(item,index) in serviceInfoList"></view>
+					</view>
+				</view>
+			</view>
+			<!-- 优惠通行 -->
+			<view class="card card1" style="padding-bottom: 20rpx" v-if="vehicleType == 1 && yhList.length"
+				:style="{ background: themeStore.themeColors.$linearColor, boxShadow: themeStore.themeColors.$homeCardBoxShadow }">
+				<view class="card_icon_card_header">
+					<view class="card_icon_card_header_lt">
+						<image class="card_icon_card_header-img" :src="icoUrl + 'icon_bg.png'" mode=""> </image>
+						<text class="title_text_primary">优惠通行</text>
+						<image class="card_title_icon" :src="imgUrl + 'static/card_lt_icon.png'" mode=""></image>
+					</view>
+				</view>
+				<view class="card_item">
+					<template v-for="(item, index) in yhList" :key="index">
+						<view class="card_sm_head">
+							<view class="card_sm_head_l">
+								<image class="card_sm_head_sicon" :src="imgUrl + 'static/hot_icon.png'" mode="">
+								</image>
+								<text class="card_sm_head_text"
+									:style="{ color: themeStore.themeColors.$primaryColor }">&nbsp;&nbsp;{{item.name}}</text>
+								<image class="card_sm_head_icon" :src="icoUrl + 'card_lt_icon_green.png'" mode="">
+								</image>
+							</view>
+						</view>
+						<view class="card_yh_item"
+							:style="{ background: themeStore.themeColors.$linearColor, boxShadow: themeStore.themeColors.$homeCardBoxShadow }"
+							@click="tabsyyClick(item)">
+							<image class="card_yh_item_img" :src="item.imageUrl" mode=""></image>
+							<view class="card_yh_item_c">
+								<text class="card_yh_item_c_txt">已报名：32人</text>
+								<text class="card_yh_item_c_txt1">2025.11.15～2026.11.18</text>
+							</view>
+							<view class="card_yh_item_btn">
+								<text class="card_yh_item_btn_txt">报名中</text>
+							</view>
+						</view>
+					</template>
+					<view class="card_sm_head">
+						<view class="card_sm_head_l">
+							<text class="card_sm_head_text">"货车积分"&nbsp;&nbsp;补贴活动</text>
+							<image class="card_sm_head_icon" :src="imgUrl + 'static/card_lt_icon_green.png'" mode="">
+							</image>
+						</view>
+					</view>
+					<view class="card_yh_item m-b-30">
+						<image class="card_yh_item_img" :src="imgUrl + 'static/card_activity_img.png'" mode=""></image>
+						<view class="card_yh_item_c">
+							<text class="card_yh_item_c_txt">已报名：32人</text>
+							<text class="card_yh_item_c_txt1">2025.11.15～2026.11.18</text>
+						</view>
+						<view class="card_yh_item_btn">
+							<text class="card_yh_item_btn_txt">报名中</text>
+						</view>
+					</view>
+				</view>
+			</view>
+
+			<!-- 出行生活 -->
+			<view class="card">
+				<view class="card_item" v-for="(item,index) in activitylist" >
+					<view class="card_lx"   :style="{ background: themeStore.themeColors.$linearColor, boxShadow: themeStore.themeColors.$homeCardBoxShadow }">
+						<view class="card_sm_head">
+							<view class="card_sm_head_l">
+								<text class="card_sm_head_text" :style="{ color: themeStore.themeColors.$primaryColor }">{{item.activityName }}</text>
+								<image class="card_sm_head_icon" :src="icoUrl + 'card_lt_icon_green.png'" mode=""></image>
+							</view>
+							<view class="card_sm_head_r">
+								<image class="card_sm_head_r_icon" :src="imgUrl + 'static/card_rt_icon.png'" mode=""> </image>
+							</view>
+						</view>
+						<view class="lx_info">
+							<image  v-if="!item.image" class="lx_info_img" :src="imgUrl + 'static/qlx.png'"> </image>
+							<image v-else class="lx_info_img" :src="item.image"></image>
+							<view class="lx_info_texts">
+								<text class="lx_info_title">{{item.activitySubtitle }}</text>
+								<text class="lx_info_time">{{item.startDate}}</text>
+								<view class="lx_info_rinfo">
+									<text class="lx_info_rinfo_text"></text>
+									<!-- <text class="lx_info_rinfo_text lx_info_rinfo_text1">32人</text> -->
+									<view class="lx_info_rinfo_btn">
+										<text class="lx_info_rinfo_btn_text" @click="toNav(item.jumpRoute)" >报名中</text>
+									</view>
+								</view>
+							</view>
+						</view>
+					</view>
+				</view>
+			</view>
+
+			<!-- 业务办理 -->
+			<!-- <view class="card" :style="{ background: themeStore.themeColors.$linearColor, boxShadow: themeStore.themeColors.$homeCardBoxShadow }">
+				<view class="card_icon_card_header">
+					<view class="card_icon_card_header_lt">
+						<image class="card_icon_card_header-img" :src="icoUrl + 'icon_bg.png'" mode=""> </image>
+						<text class="title_text_primary">业务办理</text>
+						<image class="card_title_icon" :src="imgUrl + 'static/card_lt_icon.png'" mode=""></image>
+					</view>
+				</view>
+				<view class="card_item">
+					<view class="grid-box">
+						<view
+							class="grid-box-item"
+							:style="{ width: vehicleType == 1 ? '175rpx' : '140rpx' }"
+							v-for="(item, index) in vehicleType == 1 ? hcywTabs : ywTabs"
+							:key="index"
+							@click="tabsClick(item)"
+						>
+							<image class="grid-box-img" :src="item.iconUrl || item.icon"></image>
+							<text class="grid-box-text">{{ item.entryName || item.name }}</text>
+						</view>
+					</view>
+				</view>
+			</view> -->
+
+			<!-- 出行服务 -->
+			<!-- <view class="card" :style="{ background: themeStore.themeColors.$linearColor, boxShadow: themeStore.themeColors.$homeCardBoxShadow }">
+				<view class="card_icon_card_header">
+					<view class="card_icon_card_header_lt">
+						<image class="card_icon_card_header-img" :src="icoUrl + 'icon_bg.png'" mode=""> </image>
+						<text class="title_text_primary">出行服务</text>
+						<image class="card_title_icon" :src="imgUrl + 'static/card_lt_icon.png'" mode=""></image>
+					</view>
+				</view>
+				<view class="card_item">
+					<view class="grid-box" style="justify-content: flex-start">
+						<view class="grid-box-item" style="width: 140rpx" v-for="(item, index) in fwTabs" :key="index" @click="tabsClick(item)">
+							<image class="grid-box-img" :src="item.iconUrl"></image>
+							<text class="grid-box-text">{{ item.entryName }}</text>
+						</view>
+					</view>
+				</view>
+			</view> -->
+
+			<!-- 货车接单 -->
+			<!-- <view
+				class="card card1"
+				v-if="vehicleType == 1"
+				:style="{ background: themeStore.themeColors.$linearColor, boxShadow: themeStore.themeColors.$homeCardBoxShadow }"
+			>
+				<view class="card_icon_card_header">
+					<view class="card_icon_card_header_lt">
+						<image class="card_icon_card_header-img" :src="icoUrl + 'icon_bg.png'" mode=""> </image>
+						<text class="title_text_primary">货车接单</text>
+						<image class="card_title_icon" :src="imgUrl + 'static/card_lt_icon.png'" mode=""></image>
+					</view>
+				</view>
+				<view class="card_item">
+					<view
+						class="card_order"
+						:style="{ background: themeStore.themeColors.$homeHyCardBg, boxShadow: themeStore.themeColors.$homeCardBoxShadow }"
+						v-for="(item, index) in dataList"
+						:key="index"
+						@click="toNav('/pages_D/informationMatch/detail?id=' + item.id)"
+					>
+						<view class="card_order_t">
+							<text class="card_order_t_start" :style="{ color: themeStore.themeColors.$primaryColor }">{{
+								item.loadingAddrName ? item.loadingAddrName[2] : '灞桥区'
+							}}</text>
+							<image class="arrow_img" :src="icoUrl + 'to_line.png'"></image>
+							<text class="card_order_t_end" :style="{ color: themeStore.themeColors.$primaryColor }">{{
+								item.unloadingAddrName ? item.unloadingAddrName[2] : '长安区'
+							}}</text>
+							<text class="card_order_t_type">{{ item.weight || '10' }}吨{{ item.goodsName || '苹果' }}</text>
+						</view>
+						<view class="card_order_time">
+							<text class="card_order_time_txt">发布时间</text>
+							<text class="card_order_time_txt">2025-12-18 22:20:00</text>
+						</view>
+						<view class="card_order_user">
+							<text class="card_order_user_txt">发布人</text>
+							<text class="card_order_user_txt1">{{ item.contactPerson || '某某公司' }}</text>
+							<view class="card_order_user_btn">
+								<text class="card_order_user_btn_txt">抢单</text>
+							</view>
+						</view>
+					</view>
+
+					<view
+						class="card_order_more"
+						:style="{ borderColor: themeStore.themeColors.$primaryColor }"
+						@click="informationMatchFun('/pages_D/informationMatch/index')"
+					>
+						<text class="card_order_more_txt" :style="{ color: themeStore.themeColors.$primaryColor }">更多物流订单 > </text>
+					</view>
+				</view>
+			</view> -->
+
+			<!-- 完成任务 -->
+			<view class="card"
+				:style="{ background: themeStore.themeColors.$linearColor, boxShadow: themeStore.themeColors.$homeCardBoxShadow }">
+				<view class="card_icon_card_header">
+					<view class="card_icon_card_header_lt">
+						<image class="card_icon_card_header-img" :src="icoUrl + 'icon_bg.png'" mode=""> </image>
+						<text class="title_text_primary">福利兑换</text>
+						<image class="card_title_icon" :src="imgUrl + 'static/card_lt_icon.png'" mode=""></image>
+					</view>
+					<!-- <view class="card_icon_card_header_rt" v-if="taskStatus == 1">
+						<image class="card_icon_card_header_rt_img" :src="imgUrl + 'static/card_jf_icon.png'" mode="">
+						</image>
+						<view class="card_icon_card_header_rt_r" @click="handleCloseTask">
+							<text class="card_icon_card_header_rt_r_txt">不再提示任务</text>
+							<uni-icons type="closeempty" size="12" color="#909599"></uni-icons>
+						</view>
+					</view> -->
+					<view class="card_sm_head_r" @click="toRec('/pages/home/home?type=points')">
+						<text class="card_sm_head_r_text">兑换更多福利</text>
+						<image class="card_sm_head_r_aright" :src="imgUrl + 'static/card_double right.png'" mode="">
+						</image>
+					</view>
+				</view>
+				<view class="card_item">
+					<!-- <view class="rw_list" v-if="taskStatus == 1&&ismakepoint"> -->
+					<!-- <view class="rw_list" v-if="taskStatus == 1">
+						<view class="rw_item"
+							:style="{ borderColor: themeStore.themeColors.$homeHyCardBg, borderBottomColor: themeStore.themeColors.$DigitaColor }"
+							v-for="(item, index) in taskList" :key="index">
+							<image class="rw_item_img" :src="icoUrl+item.icon" mode=""></image>
+							<text class="rw_item_text">{{ item.name }}</text>
+							<view class="rw_item_btn-1" v-if="item.info?.getPoint">
+								<text class="rw_item_btn_text-1">奖励已发放</text>
+							</view>
+							<view class="rw_item_btn" v-else @click="toNav(item.path)">
+								<text class="rw_item_btn_text">领{{ item.info?.point }}积分</text>
+							</view>
+						</view>
+					</view>
+					<view class="card_sm_head" v-if="taskStatus == 1">
+						<view class="card_sm_head_l">
+							<text class="card_sm_head_text"
+								:style="{ color: themeStore.themeColors.$primaryColor }">福利兑换</text>
+							<image class="card_sm_head_icon" :src="icoUrl + 'card_lt_icon_green.png'" mode=""> </image>
+						</view>
+						<view class="card_sm_head_r" @click="toRec('/pages/home/home?type=points')">
+							<text class="card_sm_head_r_text"
+								:style="{ color: themeStore.themeColors.$primaryColor }">兑换更多福利</text>
+							<image class="card_sm_head_r_aright" :src="icoUrl + 'card_lt_icon_green.png'" mode="">
+							</image>
+						</view>
+					</view> -->
+					<view class="card_goods_list">
+						<view class="card_goods_item" v-for="(item, index) in pointsData" :key="index"
+							@click="toNav('/pages_A/points/details?id=' + item.id)">
+							<view class="card_goods_item_img">
+								<image class="card_goods_item_img_1" :src="item.picUrl"></image>
+							</view>
+							<text class="card_goods_item_title">{{ item.spuName }}</text>
+							<view class="card_goods_item_jf">
+								<text class="card_goods_item_jf_num">{{ item.point }}</text>
+								<image class="card_goods_item_jf_icon" :src="imgUrl + 'tab4.png'" mode=""> </image>
+							</view>
+						</view>
+					</view>
+				</view>
+			</view>
+		</view>
+
+		<!-- 导航栏放置最后，nvue中层级显示和渲染顺序有关 -->
+		<view class="nav-container" :style="{ background: themeStore.themeColors.$tabbarBg1 }" id="navID">
+			<up-navbar bgColor="transparent" placeholder :fixed="false">
+				<template #left>
+					<view class="weather_box" @click="toNav('/pages_A/weather/index')">
+						<image
+							:src="`https://tranalioss.shanyitong.com/wximage/trip-pro/weather/${weatherNow.icon}.png`"
+							class="weather-icon" mode="heightFix"></image>
+						<view class="weather_info">
+							<text class="weather-text">{{ weatherNow.temp || '0' }}℃</text>
+							<text class="weather-cs">{{ cityDw || '--' }}</text>
+						</view>
+						<text v-if="weatherNowyujing.length>0"
+							class="weather_box_icon">
+							<!-- {{weatherNowyujing[0]?.eventType?.name}} -->
+							预警
+							</text>
+					</view>
+				</template>
+				<template #center>
+					<view class="fl-ce-ce" style="flex-direction: row" @click="toJump('/pages_A/car/myCar')">
+						<image v-if="vehicleType == 1 && carNumber" class="kfImg" :src="icoUrl + 'huo_icon.png'"
+							:lazy-load="true" mode="scaleToFill" />
+						<image v-if="vehicleType != 1 && carNumber" class="kfImg" :src="icoUrl + 'ke_icon.png'"
+							:lazy-load="true" mode="scaleToFill" />
+						<text class="titleText"
+							v-if="uni.getStorageSync('Token')">{{ carNumber ? carNumber : '请绑定车辆' }}</text>
+						<text class="titleText" v-else>点击登录</text>
+						<view v-if="carNumberList.length" @tap.stop>
+							<picker mode="selector" :range="licensePlateRange" :value="carPickerIndex"
+								@change="onCarPickerChange">
+								<image class="qhImg" :src="imgUrl + 'static/qh_kh_icon.png'" mode="scaleToFill" />
+							</picker>
+						</view>
+					</view>
+				</template>
+				<!-- <template #right>
+					<view>
+						<view class="theme-switcher" @click="toNav('/pages_A/setting/themeswitcher')">
+							<image class="pf-img" :src="imgUrl + 'ind-icon-pf.png'"></image>
+						</view>
+					</view>
+				</template> -->
+			</up-navbar>
+		</view>
+		<!-- <up-gap height="90"></up-gap> -->
+		<SateLayer ref="sateLayerRef"></SateLayer>
+		<up-popup v-model:show="showExperiencePopup1" mode="center" :closeOnClickOverlay="true" @close="getHomeConfig" :round="24"
+			bgColor="transparent" z-index="9999999">
+			<view class="exp-popup1" @click="getHomeConfig">
+				<image class="exp-popup__card1" :src="imgUrl + 'home-zs-bj.png'" mode="widthFix" />
+				<view class="lw-vox">
+					<text class="lw-vox-text-1">
+						{{maskPhone(liwuobj.senderPhone)}}，送你一份礼物
+					</text>
+					<image class="lw-avi" :src="liwuobj.spuPicUrl"></image>
+					<text class="lw-vox-text-2">
+						{{liwuobj.spuName}}
+					</text>
+				</view>
+				<!-- <view class="order-close-wrap1">
+					<image class="orderBox-close1" @click="showExperiencePopup1=false"
+						:src="imgUrl + 'ic_close_white.png'">
+					</image>
+				</view> -->
+			</view>
+		</up-popup>
+		<up-popup v-model:show="showExperiencePopup" mode="center" :closeOnClickOverlay="true" :round="24"
+			bgColor="transparent" z-index="9999999">
+			<view class="exp-popup" @tap.stop>
+				<!-- 整张体验官卡片：一张背景图就够 -->
+				<image class="exp-popup__card" :src="imgUrl + 'experience/ex_popup.png'" mode="widthFix" />
+
+				<!-- 立即申请按钮：用一张按钮背景图 -->
+				<view class="exp-popup__btn-wrap" @tap="handleExperienceApply">
+					<image class="exp-popup__btn-bg" :src="imgUrl + 'experience/ex_btn.png'" mode="widthFix" />
+					<text class="exp-popup__btn-text">立即申请></text>
+				</view>
+
+				<!-- 底部关闭按钮（X 图标） -->
+				<image class="exp-popup__close" :src="imgUrl + 'experience/ex_close.png'" mode="aspectFit"
+					@tap="closeExperiencePopup" />
+			</view>
+		</up-popup>
+		<up-popup v-model:show="showOrder" mode="center" :closeOnClickOverlay="true" :round="24" bgColor="transparent"
+			z-index="9999999">
+			<view>
+				<view class="orderBox">
+					<image class="orderBox-bgImg" :src="imgUrl + 'home-order-beij@2x.png'" mode=""></image>
+					<view class="orderBox-box">
+						<view style="align-items: center">
+							<text class="fontBox">扫码付订单二维码</text>
+							<view class="timer" style="flex-direction: row; align-items: center">
+								<view class="tex28_66_b">2025-12-22</view>
+								<view style="flex-direction: row; align-items: center">
+									<text class="fontText1">{{ splitDataTime[0] }}</text>
+									<text class="fontText2">时</text>
+									<text class="fontText1">{{ splitDataTime[1] }}</text>
+									<text class="fontText2">分</text>
+									<text class="fontText1">{{ splitDataTime[2] }}</text>
+									<text class="fontText2">秒</text>
+								</view>
+							</view>
+						</view>
+						<view class="fl-al-ce" style="flex-direction: column">
+							<view class="station" style="flex-direction: row">
+								<text class="station-text1">出口：</text>
+								<text class="station-text2 texNoWrap">{{ orderLayer.payStationName }}</text>
+							</view>
+							<image class="codeBox" :src="orderLayer.codeUrl" mode="" />
+							<text class="tips">出示此二维码，核验成功后放行</text>
+						</view>
+					</view>
+				</view>
+				<view style="flex: 1; align-items: center; margin-top: 30rpx">
+					<image class="orderBox-close" @click="closeOrederLayer" :src="imgUrl + 'ic_close_white.png'"
+						mode=""></image>
+				</view>
+			</view>
+		</up-popup>
+		<SpeechRecognition :show="speekstatus" @close="closeSpeek"></SpeechRecognition>
+		<UpdateProtocol></UpdateProtocol>
+	</view>
+</template>
+<script setup lang="ts">
+	import { ref, onMounted, computed, watch ,nextTick} from 'vue';
+	import SateLayer from '@/components/SateLayer/index.nvue';
+	// import {checkAndGetLocationPermission} from '@/utils/usePermission'
+	import SpeechRecognition from '@/components/SpeechRecognition';
+	import { getTadayApi, getWeatherWarnings } from '@/api/weather.ts';
+	import { getNewsList, recordShow, shouldShow, getRouteByLngLat, gridMenu, gethomeconfig, gethomefwq,getActiveList } from '@/api/home';
+	import { onLoad, onReady, onShow, onTabItemTap } from '@dcloudio/uni-app';
+	import { updateClickVolume, getLocationInfoid } from '@/api/index';
+	import { CurrentPage, showAlert2, openAPPLocation, makePhoneCall, openLocation, AppLaunchMiniProgram, getUUID, formatTimestamp } from '@/utils/util';
+	import { toast } from '@/utils/common';
+	import { imgUrl, aiUrl } from '../../config';
+	import { toNav, toRec } from '@/utils/route';
+	import { useAppStore } from '@/store/modules/app';
+	import { getByUserIdAndVehicleAll } from '@/api/user';
+	import { useElementRects } from '@/utils/useElementRect';
+	import { getPrSupplyRouteSubscription, listPrSupplySource } from '@/api/premium';
+	import { getEvents, getgetTollStationByIdList, getgetServiceAreaPageList, getServiceAreaById, postmapServicesList, getServiceAreaByLngLatlist } from '@/api/map';
+	import { formatDate, splitTime } from '@/utils/date';
+	import { DBReverseGeocodingPoi } from '@/utils/bdMap';
+	import { listPoints, getpageTypeActivityInfo, getclassify, postreceive, gethasunreceived,getgridMenuhome,getunreceivedlist } from '@/api/points';
+	import { bannerList } from '@/api/car';
+	import { getmemberpointsDetailStatistics, getmembermakePoint, postsaveSignInPoint } from '@/api/member';
+	import { requestMicrophonePermission, permission, checkAndGetLocationPermission } from '@/utils/usePermission';
+	import UpdateProtocol from '@/components/PrivacyDialog/UpdateProtocol.vue';
+	import { configKeyTiyanguan } from '@/api/config';
+	import { getOpenToken, openChat } from '@/api/openApi';
+	import { getToken } from '@/utils/token';
+	import { ChatStore } from "@/store/modules/chat";
+	import { SpeechRecognizer } from '@/utils/SpeechRecognizer';
+	const emits = defineEmits(['openAiHuman', 'stopWakeUp', 'startWakeUp']);
+	const normalizeSpeechText = (val : any) => {
+		if (!val) return '';
+		return String(val).trim().replace(/[\s，。！？,.!?]/g, '');
+	};
+	const speechRejectKeywords = ['取消', '不用导航', '停止导航', '不需要不', '不需要', '算了', '先不', '稍后', '不用了', '不导航'];
+	const speechConfirmKeywords = ['是', '确认', '可以', '开始导航', '立即导航', '进入导航走', '出发', '好的', '行', '对', '走'];
+	/**
+	 * 实例化语音识别器
+	 * 配置回调函数，将识别器的内部状态同步到 Vue 响应式变量中
+	 */
+	const recognizer = new SpeechRecognizer({
+	  // 当识别到中间结果时触发（如：我... 我想...）
+	  onPartialResult: (text) => {
+	    // tempResult.value = text;
+	  },
+	  // 当识别到一段完整的句子时触发
+	  onFinalResult: (text) => {
+		console.log('-0识别到了-00-0',text);
+		const normalized = normalizeSpeechText(text);
+		if (!normalized) return;
+		if (speechRejectKeywords.some((k) => normalized.includes(k))) return;
+		if (speechConfirmKeywords.some((k) => normalized.includes(k))) {
+			handelGoRouter();
+		}
+	  },
+	  // 识别器状态（录音中、说话中）变化时的回调
+	  onStatusChange: (rec, spoken) => {
+		if (rec) {
+			emits('stopWakeUp');
+		} else {
+			emits('startWakeUp');
+		}
+	  },
+	  // 发生错误（如网络断开、权限拒绝）时的回调
+	  onError: () => {
+	    uni.showToast({ title: '识别异常', icon: 'none' });
+	  }
+	});
+	const chatStore = ChatStore();
+	const props = defineProps<{
+		scrollTop : number;
+	}>();
+	const sateLayerRef = ref(null);
+
+	const { queryAll } = useElementRects(['#navID']);
+	const topBoxHeight = ref(88);
+	const appStore = useAppStore();
+	// const isLogin = ref(appStore.checkLogin());
+	const newArray = ref<any>([]);
+	const backgroundColor = ref<string>('#fff');
+	const fixed = ref<boolean>(true);
+	const isshow = ref<boolean>(true);
+	const navBarHeight = ref(0);
+	const bottomHeight = ref(100);
+	const searchRead = ref(false);
+
+	const longitude = ref(0);
+	const latitude = ref(0);
+	const keyword = ref('');
+	const dataList = ref<any>([]);
+	const datObj = ref<any>({});
+	const navBgColor = ref('#D7E1EB');
+	const searchBgColor = ref('transparent');
+	const cityDw = ref('');
+
+	import { useTheme } from '@/composables/useTheme';
+	const { themeStore, pageTheme } = useTheme();
+	// const icoUrl = ref(themeStore.imgUrl);
+	// 监听themeStore.imgUrl的变化并更新icoUrl
+	const textShow = ref(true);
+	const icoUrl = computed(() => {
+		return themeStore.imgUrl;
+	});
+
+	const orderLayer = ref({
+		payStationName: 'bndnd ',
+		codeUrl: imgUrl + 'dsewf.png',
+		// codeUrl:''
+	});
+	const maskPhone = (raw) => {
+		if (!raw) return ''
+		const clean = String(raw).replace(/\D/g, '')
+		if (clean.length === 11 && /^1[3-9]/.test(clean)) {
+			return clean.replace(/(\d{3})\d{4}(\d{4})/, '$1****$2')
+		}
+		return raw // 或 return '***'
+	}
+	const handleEstimate = (item) => {
+		if (item.serviceAreaName == '曲江服务区' || item.serviceAreaName == '汉城服务区') {
+			return `(${['', '内环', '外环'][item.locationDirection]})`;
+		}
+		if (item.locationDirection) {
+			return `(${item.serviceAreaName.indexOf('绕城') != -1 ? ['', '内环', '外环'][item.locationDirection] : ['', '上行', '下行'][item.locationDirection]
+				})`;
+		}
+		return '';
+	};
+	const showOrder = ref(false);
+	let inter = null;
+	const splitDataTime = ref(splitTime(new Date()));
+	const openTime = () => {
+		const intedr = setInterval(() => {
+			splitDataTime.value = splitTime(new Date());
+		}, 1000);
+		inter = intedr;
+	};
+	const closeOrederLayer = () => {
+		showOrder.value = false;
+	};
+	const showExperiencePopup1 = ref(false);
+	const getisliwu = async () => {
+		const res = await gethasunreceived();
+		console.log('-0-00--0-0getisliwu-0-00-0-0-0-0-',res);
+		if (res.code == 200) {
+			if (res.data) {
+				gerliwulist()
+			} else {
+				showExperiencePopup1.value = false
+			}
+		}
+	};
+	const getHomeConfig = async () => {
+		const res = await postreceive();
+		console.log('-0-00--0-0getHomeConfig-0-00-0-0-0-0-',res);
+		if (res.code == 200) {
+			uni.navigateTo({
+				url: '/pages_A/order/index',
+			});
+			showExperiencePopup1.value = false
+		}
+	};
+	const liwuobj=ref({})
+	const gerliwulist = async () => {
+		const res = await getunreceivedlist();
+		console.log('-0-00--0-0gerliwulist-0-00-0-0-0-0-',res);
+		if (res.code == 200) {
+			liwuobj.value = res.data[0]
+			showExperiencePopup1.value = true
+		}
+	};
+	// 讲话弹窗
+	const speekstatus = ref(false);
+	const closeSpeek = async (val) => {
+		console.log('讲话的状态', val);
+		const hasPermission = await checkRecordAuth();
+		if (!hasPermission) {
+			uni.showToast({ title: '未获取麦克风权限', icon: 'none' });
+			return;
+		}
+		speekstatus.value = val;
+	};
+	const ismakepoint = ref(true);
+	const carlist = ref<any>([]);
+	const getcarlistdata = async () => {
+		// const userId = uni.getStorageSync('userInfo')?.id;
+		// if (!userId) return;
+		// const params = {
+		// 	userId: userId,
+		// };
+		// const res = await getByUserIdAndVehicleAll(params);
+		// carlist.value = res.data;
+		// if (carlist.value.length >= 3) {
+		// 	taskList.value[1].info = {
+		// 		getPoint: true,
+		// 	};
+		// }
+		// 判断 taskList 中所有项的 info.getPoint 是否都为 true
+		const allGetPointTrue = taskList.value.every((item) => {
+			return item.info != null && item.info.getPoint === true;
+		});
+
+		if (allGetPointTrue) {
+			// 所有 getPoint 都是 true，执行你的处理逻辑
+			// ismakepoint.value = false;
+			handleCloseTask();
+		}
+	};
+	// 查询麦克风权限
+	const checkRecordAuth = async () => {
+		const platform = uni.getSystemInfoSync().platform;
+		let granted = false;
+		if (platform === 'android') {
+			const result = await permission.requestAndroidPermission('android.permission.RECORD_AUDIO');
+			granted = result === 1; // 1 允许  0 拒绝  -1 永久拒绝
+		} else if (platform === 'ios') {
+			granted = permission.judgeIosPermission('record');
+		}
+		if (!granted) {
+			// uni.showModal({
+			// 	title: '需要麦克风权限',
+			// 	content: '是否前往设置手动开启？',
+			// 	success: (res) => res.confirm && permission.gotoAppPermissionSetting(),
+			// });
+		}
+		return granted;
+	};
+	// 获取组件颜色
+	const componentColor = themeStore.themeColors;
+	const isLogin = computed(() => {
+		return appStore.checkLogin();
+	});
+	//
+	//获取积分规则
+	const pointsRules = ref({});
+	const getPointsinfo = async () => {
+		try {
+			const res = await getmembermakePoint();
+			console.log('---积分规则----', res);
+			if (res.code == 200) {
+				pointsRules.value = res.rows;
+				if (isLogin.value) {
+					res.data.registerPointRule.getPoint = true;
+				}
+				taskList.value[0].info = res.data.registerPointRule;
+				taskList.value[1].info = res.data.bindVehiclePointRule;
+				taskList.value[2].info = res.data.completeInfoPointRule;
+				getcarlistdata();
+			}
+		} catch (err) {
+			console.log('---积分规则err----', err);
+		}
+	};
+	const lkTabs = ref([]);
+	const ywTabs = computed(() => {
+		return hcywTabs.value.filter((item) => item.entryName != '绿通预约' && item.entryName != '运政办理' && item.entryName != '更多服务');
+	});
+	const hcywTabs = ref([]);
+	const fwTabs = ref([]);
+
+	const eventList = ref({});
+	const bannerCard = ref([]);
+	// const stationList = ref({});
+	const serviceList = ref({});
+	const serviceInfoList = ref([]);
+
+	const openAiHuman = () => {
+		if (isLogin.value) {
+			emits('openAiHuman');
+		} else {
+			uni.showToast({ title: '登录后使用，请先登录', icon: 'none' });
+		}
+	};
+	const PageTo = (val : any) => {
+		console.log('090909--0-', val);
+		console.log(val);
+		// 内部 0，
+		if (val.jumpType == 0) {
+			uni.navigateTo({
+				url: val.jumpAddr,
+			});
+			// 外部 1，
+		} else if (val.jumpType == 1) {
+			uni.navigateTo({
+				url: '/pages_A/raffleH5/index?linkUrl=' + encodeURIComponent(val.jumpAddr),
+			});
+			// 小程序 2
+		} else if (val.jumpType == 2) {
+			uni.navigateTo({
+				url: val.jumpAddr,
+			});
+		}
+	};
+	// 小猴子全局搜索
+	const handleChangeDwinput = () => {
+		// toast('“全局搜索”正在赶来的路上');
+		toNav('/pages_E/globalsearch/index');
+	};
+
+	const tabsClick = (item) => {
+		console.log('ooo[p[0909]]', item);
+		// 内部 0，
+		if (item.jumpType == 0) {
+			if (item.jumpPage == '/') return toast('该功能正在快马加鞭赶来的路上');
+			if (item.entryName == '扫码付') return toast('该功能正在快马加鞭赶来的路上');
+			toNav(item.jumpPage);
+			// 外部 1，
+		} else if (item.jumpType == 1) {
+			uni.navigateTo({
+				url: '/pages_A/raffleH5/index?linkUrl=' + encodeURIComponent(item.jumpPage),
+			});
+			// 小程序 2
+		} else if (item.jumpType == 2) {
+			// toast('该功能正在快马加鞭赶来的路上');
+			navLink(item.jumpPage);
+		}
+	};
+
+	const bdMapViewRef = ref(null);
+	const markers = ref([]);
+
+	// 获取当前位置
+	const getLocation = () => {
+		longitude.value = uni.getStorageSync('address').lng;
+		latitude.value = uni.getStorageSync('address').lat;
+		getServiceList();
+		// uni.getLocation({
+		// 	type: 'wgs84',
+		// 	success: (res) => {
+		// 		console.log('获取的当前定位信息', res);
+		// 		longitude.value = res.longitude;
+		// 		latitude.value = res.latitude;
+		// 		console.log('当前位置经纬度：', longitude.value, latitude.value);
+		// 		// getList();
+		// 		getServiceList();
+		// 	},
+		// 	fail: (err) => {
+		// 		console.log('获取位置失败：', err);
+		// 		// getList();
+		// 		getServiceList();
+		// 	},
+		// });
+	};
+
+	// 获取层级高度
+	const handleQuery = async (retryCount = 1) => {
+		try {
+			const result : any = await queryAll();
+			for (let i in result) {
+				if (result[i].id == 'navID' && result[i].height > 0) {
+					topBoxHeight.value = result[i].height;
+				}
+			}
+		} catch (err) {
+			console.log('获取尺寸失败:', err);
+		}
+	};
+	const showExperiencePopup = ref<boolean>(false);
+	// 定义全局数据类型
+	type GlobalData = {
+		hasCheckExperiencePopup ?: boolean; // 是否已判断过体验官弹窗
+	};
+
+	// 拿到 app 全局对象
+	const app = getApp<{ globalData : GlobalData }>();
+	// 打开弹窗（你可以在合适的时机调用）
+	const openExperiencePopup = () => {
+		showExperiencePopup.value = true;
+	};
+
+	const closeExperiencePopup = () => {
+		showExperiencePopup.value = false;
+	};
+
+	// 点击“立即申请”
+	const handleExperienceApply = () => {
+		if (!isLogin.value) {
+			// #ifdef MP-WEIXIN
+			toNav('/pages_A/login/login');
+			// #endif
+			// #ifdef APP
+			uni.navigateTo({ url: '/pages_A/login_password/login' });
+			// #endif
+		} else {
+			toNav('/pages_E/experience/index');
+			showExperiencePopup.value = false;
+		}
+	};
+	// 判断本次进入小程序是否需要展示「出行体验官」弹窗
+	const checkExperiencePopup = async () => {
+		let ress = await configKeyTiyanguan();
+		console.log('---------checkExperiencePopup-------------', ress);
+		if (ress.data == 1) {
+			// 未登录不弹（按需要保留 / 去掉）
+			if (!isLogin.value) {
+				showExperiencePopup.value = true;
+				return;
+			}
+
+			// 本次小程序生命周期已经判断过，就不再调接口
+			if (app.globalData.hasCheckExperiencePopup) {
+				return;
+			}
+
+			// 立刻置为已判断，避免重复并发调用
+			app.globalData.hasCheckExperiencePopup = true;
+
+			try {
+				const res : any = await shouldShow();
+				// 根据后端返回结构判断，这里假设后端返回 { code:200, data:true/false }
+				if (res.code === 200 && (res.data === true || res.data?.show)) {
+					// 打开弹窗
+					openExperiencePopup();
+
+					// 记录“本次已展示弹窗”
+					// data 结构按你后端约定来，这里示例一个最简的
+					await recordShow({
+						// 比如传一个弹窗业务编码，方便后端区分
+						popupCode: 'experience_officer',
+					});
+				}
+			} catch (e) {
+				console.error('出行体验官弹窗判断失败:', e);
+			}
+		}
+	};
+
+	const bdMapPlugin = uni.requireNativePlugin('bdMapPlugin');
+	const mylocationinfo = ref({});
+	const endlocationinfo = ref({});
+	const lxIsSHow = ref(false);// 是否查看路线
+	const lxClear = () => {
+		endlocationinfo.value = {};
+		routeByLngLat.value = [];
+		getServiceList()
+	}
+	const openMap = async (type : string) => {
+		const res = await checkAndGetLocationPermission()
+		if (res) {
+			getAddress(type);
+		} else {
+			uni.showModal({
+				title: '权限提示',
+				content: '我们需要定位权限来为您规划路线，请在设置中开启',
+				confirmText: '去设置',
+				success: (res) => {
+					if (res.confirm) {
+						// 引导去系统设置
+						// #ifdef APP-PLUS
+						uni.openAppAuthorizeSetting({
+							success(res) {
+								console.log('打开设置成功', res);
+								// 返回设置页面后重新检查权限
+							},
+							fail(err) {
+								console.log('打开设置失败', err);
+								uni.showToast({
+									title: '打开设置失败',
+									icon: 'none',
+								});
+							},
+						});
+						// #endif
+					}
+				},
+			});
+		}
+		console.log(res);
+		// getAddress(type);
+		// uni.getLocation({
+		// 	type: 'wgs84',
+		// 	success: (res) => {
+		// 		console.log('0-0--0-', res);
+
+		// 	},
+		// 	fail: (err) => {
+		// 		console.log('0-0-err-0-', err);
+		// 		if (err.errMsg.includes('获取定位权限失败')) {
+		// 			uni.showModal({
+		// 				title: '权限提示',
+		// 				content: '我们需要定位权限来为您规划路线，请在设置中开启',
+		// 				confirmText: '去设置',
+		// 				success: (res) => {
+		// 					if (res.confirm) {
+		// 						// 引导去系统设置
+		// 						// #ifdef APP-PLUS
+		// 						uni.openAppAuthorizeSetting({
+		// 							success(res) {
+		// 								console.log('打开设置成功', res);
+		// 								// 返回设置页面后重新检查权限
+		// 							},
+		// 							fail(err) {
+		// 								console.log('打开设置失败', err);
+		// 								uni.showToast({
+		// 									title: '打开设置失败',
+		// 									icon: 'none',
+		// 								});
+		// 							},
+		// 						});
+		// 						// #endif
+		// 					}
+		// 				},
+		// 			});
+		// 		}
+		// 	},
+		// });
+		//
+	};
+	const getAddress = (type) => {
+		bdMapPlugin.selectionLocation((e) => {
+			const res = JSON.parse(e);
+			console.log('选择地址', res);
+			if (res.location?.latitude) {
+				if (type == 'start') {
+					mylocationinfo.value = res;
+					// getcityid({ district: '', city: res.city }, 'start');
+				} else {
+					endlocationinfo.value = res;
+					// getcityid({ district: '', city: res.city }, 'end');
+				}
+				// 同时满足起点和终点条件时调用路线查询
+				if (mylocationinfo.value.location?.latitude && endlocationinfo.value.location?.latitude) {
+					setChat(`查询${mylocationinfo.value.name}到${endlocationinfo.value.name}的路况`);
+					getRouteByLngLatFun();
+				}
+			}
+		});
+	};
+
+	// 打开地图模式
+	const handleMapMode = () => {
+		uni.setStorageSync('mapmodedata', {
+			mylocationinfo: JSON.stringify(mylocationinfo.value),
+			endlocationinfo: JSON.stringify(endlocationinfo.value),
+			routeByLngLat: JSON.stringify({
+				totalDistance: routeByLngLat.value.totalDistance,
+				totalTime: routeByLngLat.value.totalTime
+			}),
+		})
+		uni.navigateTo({
+			url: '/pages_B/mapmode/index',
+			// success: () => {
+			// 	uni.$on('mapmodedata1',()=>{
+			// 		uni.$emit('mapmodedata', {
+			// 			mylocationinfo: JSON.stringify(mylocationinfo.value),
+			// 			endlocationinfo: JSON.stringify(endlocationinfo.value),
+			// 			routeByLngLat: JSON.stringify({
+			// 				totalDistance: routeByLngLat.value.totalDistance,
+			// 				totalTime: routeByLngLat.value.totalTime
+			// 			}),
+			// 		});
+			// 	})
+			// }
+		})
+	};
+
+	const startWeatherNow = ref<any>({});
+	const endWeatherNow = ref<any>({});
+	const expandAllServiceAreas = ref(false);
+	const toggleServiceAreas = () => {
+		expandAllServiceAreas.value = !expandAllServiceAreas.value;
+	};
+
+	const timelineNodes = computed(() => {
+		const sections = routeByLngLat.value?.sections ?? [];
+		const entry1 = sections.find((it : any) => it?.entryExitType === 1) ?? { name: '', lanes: [] };
+		const entry2 = sections.find((it : any) => it?.entryExitType === 2) ?? { name: '', lanes: [] };
+
+		const serviceAreaList = routeByLngLat.value?.serviceAreaList ?? [];
+		const serviceNum = serviceAreaList.length;
+		const firstServiceArea = serviceAreaList[0] ?? { serviceAreaName: '', detailList: [], distance: 0 };
+
+		const distance1 = to1Decimal(entry1?.startDistance ?? 0);
+		const distance3 = to1Decimal(entry2?.startDistance ?? 0);
+
+		// ========= 生成“服务区节点数组” =========
+		// 折叠：1 个节点
+		// 展开：N 个节点（左侧 km 也随之展开）
+		const serviceNodes = (() => {
+			if (!serviceNum) return [];
+
+			if (!expandAllServiceAreas.value) {
+				// 折叠：只显示第一个服务区
+				return [
+					{
+						id: firstServiceArea.id,
+						dotType: 'km',
+						km: extractTo1Decimal(firstServiceArea?.distance ?? 0),
+						dotClass: 'dot-km dot-green',
+						lineClass: 'line-solid',
+						title: `${firstServiceArea?.serviceAreaName}${handleEstimate(firstServiceArea)}等${serviceNum}个服务区`,
+						titleClass: 'title-success',
+						rightText: '展开途径服务区',
+						rightClass: '3', //绿色
+						rightArrow: true,
+						onRightTextClick: toggleServiceAreas,
+						panel: 'service',
+						// 面板复用你之前的渲染：传数组也行
+						serviceAreas: firstServiceArea.detailList ? firstServiceArea.detailList.slice(0, 5) : [],
+					},
+				];
+			}
+
+			// 展开：每个服务区一个节点（左侧 km 对应各自 distance）
+			return serviceAreaList.map((sa : any, idx : number) => ({
+				id: sa.id,
+				dotType: 'km',
+				km: extractTo1Decimal(sa?.distance ?? 0),
+				dotClass: 'dot-km dot-green',
+				lineClass: 'line-solid',
+				title: `${sa?.serviceAreaName}${handleEstimate(sa)}` || `服务区${idx + 1}`,
+				titleClass: 'title-success',
+				// 只在第一个节点放“收起”按钮，避免每行都有
+				rightText: idx === 0 ? '收起' : '',
+				rightClass: '3', //绿色
+				rightArrow: idx === 0,
+				onRightTextClick: idx === 0 ? toggleServiceAreas : undefined,
+				panel: 'service',
+				serviceAreas: sa.detailList ? sa.detailList.slice(0, 5) : [], // 每个节点只渲染自己
+			}));
+		})();
+
+		// ========= 其余节点照旧 =========
+		return [
+			// 起点
+			{
+				dotType: 'flag',
+				flagText: '起',
+				dotClass: 'dot-flag dot-orange',
+				lineClass: 'line-dotted',
+				title: '出发',
+				conditiontxt: `${routeByLngLat.value.startLocation?.weather.condition || ''}`,
+				subTitle: `${routeByLngLat.value.startLocation?.weather.temperature || 0}℃`,
+				rightText: '',
+				rightArrow: false,
+				panel: '',
+				alerts: routeByLngLat.value.startLocation?.weather.alerts || []
+			},
+
+			// 收费站1
+			{
+				dotType: 'km',
+				km: distance1,
+				dotClass: 'dot-km dot-orange',
+				lineClass: 'line-solid',
+				title: entry1.name || '',
+				rightText: '',
+				routinfo: entry1.vehicleControl || '', //部分车辆管制
+				badges: [
+					...(entry1.volumePricingFlag ? [{
+						text: '以量定价',
+						class: 'badge-orange',
+						onClick: toyldj,
+					}] : []),
+					...(entry1.etcNetworkFlag ? [{
+						text: '可办理ETC',
+						class: 'badge-orange'
+					}] : []),
+				],
+				rightClass: '1',
+				rightArrow: true,
+				panel: 'channels',
+				channels: entry1.lanes || [],
+			},
+
+			// 服务区：这里用“数组展开”
+			...serviceNodes,
+
+			// 收费站2
+			{
+				dotType: 'km',
+				km: distance3,
+				dotClass: 'dot-km dot-orange',
+				lineClass: 'line-dotted',
+				title: entry2.name || '',
+				rightText: '',
+				routinfo: entry2.vehicleControl || '',
+				badges: [
+					...(entry2.volumePricingFlag ? [{
+						text: '以量定价',
+						class: 'badge-orange',
+						onClick: toyldj,
+					}] : []),
+					...(entry2.etcNetworkFlag ? [{
+						text: '可办理ETC',
+						class: 'badge-orange'
+					}] : []),
+				],
+				rightArrow: false,
+				panel: 'channels',
+				channels: entry2.lanes || [],
+			},
+
+			// 终点
+			{
+				dotType: 'flag',
+				flagText: '到',
+				dotClass: 'dot-flag dot-green',
+				lineClass: '',
+				title: '到达',
+				conditiontxt: `${routeByLngLat.value.endLocation?.weather.condition || ''}`,
+				subTitle: `${routeByLngLat.value.endLocation?.weather.temperature || 0}℃`,
+				rightText: '',
+				rightArrow: false,
+				panel: '',
+				alerts: routeByLngLat.value.endLocation?.weather.alerts || []
+			},
+		];
+	});
+
+	const toyldj = () => {
+		toNav('/pages_D/volumePricing/discount/index');
+	};
+	const to1Decimal = (v : any) : number => {
+		const n = Number(v);
+		return Number.isFinite(n) ? Number(n.toFixed(1)) : 0;
+	};
+	// 从字符串里提取数字（如 “12.3km”）
+	const extractTo1Decimal = (v : any) : number => {
+		if (v == null) return 0;
+		if (typeof v === 'number') return to1Decimal(v);
+		const m = String(v).match(/-?\d+(\.\d+)?/);
+		return m ? to1Decimal(m[0]) : 0;
+	};
+
+	// 服务区详情跳转
+	const goServiceDetail = (node : any) => {
+		console.log('查看服务区', node);
+		toNav(`/pages_A/stationDetails/index?id=${node.id}`);
+	};
+
+	const routeByLngLat = ref({
+		sections: [],
+		serviceAreaList: [],
+		startLocation: {
+			weather: {
+				temperature: 16,
+			},
+		},
+		endLocation: {
+			weather: {
+				temperature: 16,
+			},
+		},
+	});
+	// 根据经纬度获取路线
+	const getRouteByLngLatFun = async () => {
+		// routeByLngLat.value = [];
+		const params = {
+			startLongitude: mylocationinfo.value.location.longitude || 0,
+			startLatitude: mylocationinfo.value.location.latitude || 0,
+			endLongitude: endlocationinfo.value.location.longitude || 0,
+			endLatitude: endlocationinfo.value.location.latitude || 0,
+			coordType: 2,
+		};
+		console.log('查询路径的参数', params);
+		lxIsSHow.value = true;
+		try {
+			const res : any = await getRouteByLngLat(params);
+			console.log('计算的路径', res);
+			if (res?.code == 200) {
+
+				routeByLngLat.value = res.data;
+
+				serviceInfoList.value = routeByLngLat.value.serviceAreaList.map(item => ({
+					...item,
+					// 提前计算好，这样模板里直接访问属性，不会触发函数执行
+					displayTags: item.detailList ? item.detailList.slice(0, 5) : []
+				})) || [];
+				console.log
+				if (serviceInfoList.value.length) {
+					handleSwiperChange({ detail: { current: 0 } })
+				}
+			}
+		} catch (error) {
+			//TODO handle the exception
+			console.log('路径查询报错');
+		}
+	};
+
+	// 打开导航
+	const handelGoRouter = () => {
+		openAPPLocation({
+			startLocation: {
+				longitude: mylocationinfo.value.location.longitude,
+				latitude: mylocationinfo.value.location.latitude,
+				address: mylocationinfo.value.name,
+			},
+			endLocation: {
+				longitude: endlocationinfo.value.location.longitude,
+				latitude: endlocationinfo.value.location.latitude,
+				address: endlocationinfo.value.name,
+			},
+		});
+	};
+
+	// 选择车辆
+	const carNumber = ref(uni.getStorageSync('carNumber'));
+	const carNumberList = ref<any[]>([]);
+	const carPickerIndex = ref(0);
+	const licensePlateRange = computed(() =>
+		carNumberList.value.map((v) => v?.licensePlate).filter((s : any) => typeof s === 'string' && s.trim().length > 0)
+	);
+
+	// 车辆类型  1：货车  2：客车
+	const vehicleType = ref(2);
+	const onCarPickerChange = (e : any) => {
+		const idx = Number(e?.detail?.value ?? 0);
+		if (!licensePlateRange.value.length) {
+			toast('暂无可选车辆');
+			return;
+		}
+		carPickerIndex.value = idx;
+		const plate = licensePlateRange.value[idx];
+		vehicleType.value = carNumberList.value[idx].vehicleType;
+		carNumber.value = plate;
+		uni.setStorageSync('carNumber', carNumber.value);
+		showMapPoint();
+		getBannerList();
+		getPoints();
+	};
+
+	// 客车聚合点
+	const showMapPoint = async () => {
+		if (vehicleType.value == 1) return;
+		let address = uni.getStorageSync('address');
+		console.log('------------showMapPoint-----------------------');
+		try {
+			let params = {
+				types: [1, 2, 6, 7],
+				keyWord: '',
+				longitude: address.lng,
+				latitude: address.lat,
+				centerLat: address.lat,
+				centerLng: address.lng,
+				zoom: 11,
+				coordType: 2,
+				containerW: 350,
+				containerH: 170,
+			};
+			console.log('------------showMapPoint-----------------------', vehicleType.value != 1);
+			console.log('------------showMapPoint-----------------------', bdMapViewRef.value);
+			if (vehicleType.value != 1 && bdMapViewRef.value) {
+				const res = await postmapServicesList(params);
+				console.log('-----------------------------------', res);
+				console.log('-----------------------------------', params);
+				if (res.data.clusters.length) {
+					let hasList = [];
+					for (let i in res.data.clusters) {
+						hasList = [...hasList, ...res.data.clusters[i].points];
+					}
+					markers.value = hasList.map((item, index) => {
+						item.width = '27';
+						item.stationName = item.name;
+						item.height = '32';
+						item.latitude = Number(item.latitude);
+						item.longitude = Number(item.longitude);
+						item.iconPath = getIconPathByType(item);
+						item.logoUrl = getIconPathByType(item);
+						return item;
+					});
+					console.log(markers.value);
+					setTimeout(() => {
+						bdMapViewRef.value.showMapPoint(JSON.stringify(markers.value), (event) => {
+							console.log('-----------首页聚合点回调-----------', event);
+						});
+					}, 100);
+				} else {
+					// 清除描点
+					// bdMapViewRef.value.removeMapPoint('',event=>{})
+				}
+			}
+		} catch (err) {
+			console.log('-0-0-0-0--0-', err);
+		}
+		// nextTick(() => {
+		// 	if (vehicleType.value != 1 && bdMapViewRef.value) {
+		// 		bdMapViewRef.value.showMapPoint(JSON.stringify(markers.value), (event) => {
+		// 			console.log('-----------首页聚合点回调-----------', event);
+		// 		});
+		// 	}
+		// });
+	};
+	const getIconPathByType = (item) => {
+		const point = item;
+
+		// 1. 优先使用自定义 image（如果存在且有效）
+		if (point?.image && typeof point.image === 'string' && point.image.trim()) {
+			return point.image;
+		}
+		// 2. 根据 type 判断
+		const type = point?.type;
+
+		if (type === 1) {
+			return imgUrl + '1buchong-icon.png';
+		}
+
+		// 其他类型（2～8）统一用 chongqi-icon.png
+		if ([2, 3, 4, 5, 6, 7, 8].includes(type)) {
+			return imgUrl + type + 'chongqi-icon.png';
+		}
+
+		// 3. 默认兜底图标（可选）
+		return imgUrl + '1buchong-icon.png'; // 或者返回 '' 表示不显示图标
+	};
+
+	// 查询车辆列表
+	const getcarList = async () => {
+		const userId = uni.getStorageSync('userInfo')?.id;
+		if (!userId) return;
+		const params = {
+			userId: userId,
+		};
+		const res : any = await getByUserIdAndVehicleAll(params);
+		carNumberList.value = res.data;
+		console.log('查询的车辆信息', res.data);
+		if(!res.data.length){
+			carNumber.value = ''
+			vehicleType.value = 2
+			uni.removeStorageSync('carNumber')
+			return;
+		}
+		if (carNumber.value) {
+			console.log('存在车牌号', carNumber.value);
+			let index = carNumberList.value.findIndex((e) => e.licensePlate == carNumber.value);
+			console.log('缓存的车牌在数据哪里', carNumberList.value[index]);
+			carPickerIndex.value = index;
+			vehicleType.value = carNumberList.value[index].vehicleType;
+		} else {
+			console.log('不存在车牌号', carNumber.value);
+			if (res.data.length) {
+				carNumber.value = res.data[0].licensePlate;
+				vehicleType.value = res.data[0].vehicleType;
+				uni.setStorageSync('carNumber', carNumber.value);
+			}
+		}
+	};
+
+	// 关闭任务
+	const taskStatus = ref(1);
+	const handleCloseTask = () => {
+		taskStatus.value = 2;
+		uni.setStorageSync('mytaskstatus', 2);
+	};
+
+	// 积分任务
+	const taskList = ref([
+		{
+			name: '加入会员',
+			icon: 'vip_icon.png',
+			type: '',
+			route: '/pages_A/chargingPiles/index',
+			info: {
+				getPoint: false,
+				point: '',
+			},
+			path: '/pages_C/member/registeredPersonal',
+		},
+		{
+			name: '绑定车辆',
+			icon: 'bdcl_icon.png',
+			type: '',
+			route: '/pages_D/refuelingRefilling/index',
+			info: {
+				getPoint: false,
+				point: '',
+			},
+			path: '/pages_A/car/addCar',
+		},
+		{
+			name: '完善信息',
+			icon: 'wsxx_icon.png',
+			type: '',
+			route: '/pages_B/hotel/hotelist',
+			info: {
+				getPoint: false,
+				point: '',
+			},
+			path: '/pages_A/personalinformation/personal',
+		},
+	]);
+const getactivitylist = async () => {
+		const res = await getActiveList();
+		if (res.code == 200) {
+			activitylist.value = res.data
+			console.log('-0-00--0-0getactivitylist-0-00-0-0-0-0-',activitylist.value);
+		}
+	};
+	const activitylist = ref<any[]>([])
+	// 查询积分商品
+	const pointsData = ref([]);
+	const getPoints = async () => {
+		let res = await getpageTypeActivityInfo(vehicleType.value == 1 ? 0 : 1);
+		console.log('商品数据', res);
+		if (res.code === 200) {
+			pointsData.value = res.data;
+		}
+	};
+
+	// banner
+	const headerBanners = ref([]);
+	const getBannerList = async () => {
+		let type = vehicleType.value == 1 ? 4 : 3;
+		const weatherWords = weatherNow.value.text;
+		const pattern = /[雨雾晴雪云阴]/g;
+		const matches = weatherWords.match(pattern);
+		const params = {
+			name: matches[0],
+			color: pageTheme.value,
+			// startTime: formatToMinuteWithSec00(now),
+			// endTime: formatToMinuteWithSec00(now),
+		};
+		console.log('轮播图的类型', vehicleType.value, type);
+		let res : any = await bannerList(type, params);
+		console.log('轮播图', res);
+		// headerBanners.value = res.rows.map((item) => item.imageUrl);
+		if (res.code == 200) {
+			headerBanners.value = res.rows.filter((t : any) => t.enabled == 1);
+		}
+	};
+
+	// 积分
+	const getAlljf = () => {
+		if (!isLogin.value) return 0;
+		const info = uni.getStorageSync('userInfo');
+		if (!info.pointsAccount) return 0;
+		return info.pointsAccount.commonPoint || 0;
+	};
+	// 根据业务类型查询金刚列表
+	const businessTypeFun = async (val) => {
+		const now = new Date();
+		const params = {
+			startTime: formatToMinuteWithSec00(now),
+			endTime: formatToMinuteWithSec00(now),
+			secondaryIconPath: val,
+		};
+		const res : any = await getclassify(params);
+		console.log('金刚区数据', res);
+		if (res?.code == 200) {
+			// const truedata = res.data['首页常用'].filter(item => item.enabled == 1 && item.businessType == '0').sort((a, b) => b.priority - a.priority)
+			const truedata = res.data['基础服务'].filter(item => item.businessType == '0');
+			const appdata = truedata.filter((item) => item.showDeviceTypes.includes('0'));
+			lkTabs.value = appdata
+			// lkTabs.value = appdata.filter((item) => item.enabled == 1 && item.secondaryBusinessType === '高速路况');
+			// hcywTabs.value = appdata.filter((item) => item.enabled == 1 && item.secondaryBusinessType === '业务办理');
+			// fwTabs.value = appdata.filter((item) => item.enabled == 1 && item.secondaryBusinessType === '出行服务');
+			// console.log('-0-0---0 fwTabs-0-0--0-0-0', hcywTabs.value);
+		}
+	};
+	const pad2 = (n : number) => String(n).padStart(2, '0');
+	const formatToMinuteWithSec00 = (d : Date) => {
+		const y = d.getFullYear();
+		const m = pad2(d.getMonth() + 1);
+		const day = pad2(d.getDate());
+		const hh = pad2(d.getHours());
+		const mm = pad2(d.getMinutes());
+		return `${y}-${m}-${day} ${hh}:${mm}:00`;
+	};
+
+	// 查询以量定价
+	const tabsyyClick = (item) => {
+		if (item.jumpAddr == '/') return toast('该功能正在快马加鞭赶来的路上');
+		toNav(item.jumpAddr);
+	};
+	// const yhList = ref( [
+	// 	{ name: '“以量定价”差异化收费活动', icon: imgUrl + 'static/yh_bm1.png', hot: '1', jumpType: 0, jumpPage: '/pages_D/volumePricing/discount/index' },
+	// 	// { name: '“货车积分”补贴活动', icon: imgUrl + 'static/yh_bm2.png', hot: '0', route: '' },
+	// ]);
+	const yhList = ref([]);
+	const getyldj = async () => {
+		try {
+			const res = await gethomeconfig({ name: '“以量定价”差异化收费活动', enabled: 1 });
+			console.log('以量定价数据', res);
+			yhList.value = res.rows;
+		} catch (err) {
+			console.log('以量定价错误', err);
+		}
+	};
+const gethome = async (val) => {
+		let params={
+			secondaryIconPath: val,
+		}
+		const res = await getgridMenuhome(params)
+		if(res.code==200){
+			// const truedata = res.rows.filter(item => item.enabled == 1 && item.businessType == '0');
+			const truedata = res.rows.filter(item =>  item.businessType == '0');
+			const appdata = truedata.filter((item) => item.showDeviceTypes.includes('0'));
+			lkTabs.value = appdata
+		}
+	}
+	onShow(() => {
+		// 	isLogin.value = appStore.checkLogin();
+		//  getNewsListFun()
+		nextTick(() => {
+			showMapPoint();
+		});
+		getBannerList();
+		if (uni.getStorageSync('Token')) {
+			gethome(pageTheme.value)
+		}else{
+			businessTypeFun(pageTheme.value);
+		}
+		if (isLogin.value) {
+			getcarList();
+		}
+	});
+	onMounted(() => {
+		getUserAddress();
+		getLocation();
+		getPrSupplyRouteSubscriptionFun();
+		getRoadList();
+		getRoadListsg();
+		getactivitylist()
+		taskStatus.value = uni.getStorageSync('mytaskstatus') || 1;
+		isLogin.value = appStore.checkLogin();
+		setTimeout(() => {
+			handleQuery();
+		}, 300);
+		checkExperiencePopup();
+		openTime();
+		getPoints();
+		if (uni.getStorageSync('Token')) {
+			getPointsinfo();
+			getyldj();
+			gethome(pageTheme.value)
+			getisliwu()
+		}else{
+			businessTypeFun(pageTheme.value);
+		}
+	});
+
+	const weatherNowyujing = ref([])
+	const getgetWeatherWarnings = async (locationId : string) => {
+		let params1 = {
+			locationNameZh: e.district,
+			adm2NameZh: e.city,
+		};
+		const response = await getLocationInfoid(params);
+		const params = {
+			location: locationId,
+		};
+		if (response.code == 200) {
+			const response : any = await getWeatherWarnings(params);
+			weatherNowyujing.value = response.data.alerts || [];
+			getBannerList()
+		}
+	};
+	// 查询天气
+	const getcityid = async (e, type) => {
+		let params = {
+			locationNameZh: e.district,
+			adm2NameZh: e.city,
+		};
+		const response = await getLocationInfoid(params);
+		if (response.code == 200) {
+			const params1 = {
+				key: 'c378003293184af18adad854cc0c12bc',
+				location: response.data.locationId,
+				lang: 'zh-hans',
+				unit: 'm',
+			};
+			const params2 = {
+				location: response.data.locationId,
+			};
+			const response2 : any = await getWeatherWarnings(params2);
+			weatherNowyujing.value = response2.data.alerts || [];
+			const response1 = await getTadayApi(params1);
+			console.log('获取的天气数据', type, response1);
+			if (type == 'now') {
+				weatherNow.value = response1.now;
+				getBannerList();
+				uni.setStorageSync('locationId', response.data.locationId);
+			}
+			if (type === 'start') startWeatherNow.value = response1.now;
+			if (type === 'end') endWeatherNow.value = response1.now;
+		}
+	};
+	const activeComponent = ref('');
+	const home = ref(true);
+	const weatherNow = ref({});
+
+	const toJump = (url : String) => {
+		// 登录校验
+		if (!isLogin.value) {
+			showAlert2(
+				'提示',
+				'本次操作需要您进行登录验证',
+				false,
+				'取消',
+				'确定',
+				(success) => {
+					// #ifdef MP-WEIXIN
+					uni.navigateTo({
+						url: '/pages_A/login/login?fromPage=' + CurrentPage(),
+					});
+					// #endif
+					// #ifdef APP
+					uni.navigateTo({ url: '/pages_A/login_password/login' });
+					// #endif
+				},
+				null
+			);
+			return;
+		}
+		uni.navigateTo({
+			url: url,
+		});
+	};
+	//获取当前位置 //遍历获取code
+	const getUserAddress = () => {
+		const address = uni.getStorageSync('address');
+		console.log('用户当前位置', address);
+		cityDw.value = address.city;
+		getcityid(address, 'now');
+		nowlocationInfo(address.lat, address.lng);
+	};
+
+	// 逆编码查询当前详情位置
+	const nowlocationInfo = async (latitude, longitude) => {
+		try {
+			let res = await DBReverseGeocodingPoi(longitude, latitude);
+			console.log('当前位置详细信息', res);
+			let name = res.pois.length ? res.pois[0].addr : res.addressComponent.city;
+			mylocationinfo.value = {
+				name,
+				city: res.addressComponent.city,
+				address: res.formatted_address,
+				location: {
+					longitude: res.location.lng,
+					latitude: res.location.lat,
+				},
+			};
+			getcityid({ district: res.addressComponent.district, city: res.addressComponent.city }, 'start');
+		} catch (error) {
+			console.error('DBReverseGeocodingPoi接口请求出错:', error);
+			// 从本地存储获取地址信息
+			const address = uni.getStorageSync('address');
+			if (address) {
+				mylocationinfo.value = {
+					name: address.city + addres.district,
+					city: address.city,
+					address: address.standardAddress,
+					location: {
+						longitude: address.lng,
+						latitude: address.lat,
+					},
+				};
+				getcityid({ district: address.district, city: address.city }, 'start');
+			}
+		}
+	};
+	const informationMatchFun = (url : String) => {
+		// 登录校验
+		if (!isLogin.value) {
+			showAlert2(
+				'提示',
+				'本次操作需要您进行登录验证',
+				false,
+				'取消',
+				'确定',
+				(success) => {
+					// #ifdef MP-WEIXIN
+					uni.navigateTo({
+						url: '/pages_A/login/login?fromPage=' + CurrentPage(),
+					});
+					// #endif
+					// #ifdef APP
+					uni.navigateTo({ url: '../login_password/login' });
+					// #endif
+				},
+				null
+			);
+			return;
+		}
+		uni.navigateTo({
+			url: url,
+		});
+	};
+	const onoff = () => {
+		home.value = true;
+		activeComponent.value = null;
+	};
+	const serviceFun = (componentName : string) => {
+		// 点击同一组件时可切换显示/隐藏（可选逻辑）
+		if (activeComponent.value == componentName) {
+			activeComponent.value = null;
+			// home.value=true
+			return;
+		}
+		// 重置所有状态，只激活当前组件
+		activeComponent.value = componentName;
+		home.value = false;
+	};
+	// 父组件收到消息：来自子组件的消息
+	const handleParentMethod = (componentName : string) => {
+		activeComponent.value = componentName;
+		// if(activeComponent.value  == componentName){
+		//  activeComponent.value = null;
+		//  home.value=true
+		// }else{
+		//  activeComponent.value = componentName;
+		// }
+	};
+
+	// 一键救援
+	const updateClicksVolume = () => {
+		let linkUrl = `https://www.sx96113.com/dljy-h5/#/pages/safetytips/safetytips`;
+		console.log('-----', isLogin.value);
+		if (!isLogin.value) {
+			showAlert2(
+				'提示',
+				'本次操作需要您进行登录验证',
+				false,
+				'取消',
+				'确定',
+				(success) => {
+					// #ifdef MP-WEIXIN
+					uni.navigateTo({
+						url: '/pages_A/login/login?fromPage=' + CurrentPage(),
+					});
+					// #endif
+					// #ifdef APP
+					uni.navigateTo({ url: '/pages_A/login_password/login' });
+					// #endif
+				},
+				null
+			);
+			return;
+		} else {
+			toNav('/pages_A/roadRescue/index');
+			// uni.navigateTo({
+			// 	url: '/pages_A/raffleH5/index?linkUrl=' + encodeURIComponent(linkUrl),
+			// })
+			// var params = {
+			// 	'sourceType': '26',
+			// 	"userId": uni.getStorageSync('userInfo') ? uni.getStorageSync('userInfo').id : '',
+			// }
+			// updateClickVolume(params).then(res =>{
+			// }).catch(err=>{
+
+			// })
+		}
+	};
+	const getNewsListFun = async () => {
+		let params = {
+			pageNum: 1,
+			pageSize: 20,
+			type: 'HEADLINE',
+			userId: uni.getStorageSync('userInfo').id,
+		};
+		const res = await getNewsList(params);
+		if (res?.code == '0') {
+			newArray.value = res.page.records.map((item) => item.title);
+		}
+	};
+	const navLink = (appid : string) => {
+		// 登录校验
+		// if (!isLogin.value) {
+		// 	showAlert2(
+		// 		'提示',
+		// 		'本次操作需要您进行登录验证',
+		// 		false,
+		// 		'取消',
+		// 		'确定',
+		// 		(success) => {
+		// 			// #ifdef MP-WEIXIN
+		// 			uni.navigateTo({
+		// 				url: '/pages_A/login/login?fromPage=' + CurrentPage(),
+		// 			});
+		// 			// #endif
+		// 			// #ifdef APP
+		// 			uni.navigateTo({ url: '/pages_A/login_password/login' });
+		// 			// #endif
+		// 		},
+		// 		null
+		// 	);
+		// 	return;
+		// }
+
+		// if (appid == 'wxe442a27a2747b061') {
+		// 	sateLayerRef.value.open({
+		// 		address: '',
+		// 		appId: 'wxe442a27a2747b061',
+		// 		appSrcId: 'gh_95045762f7a8',
+		// 		enterprise: '陕西高速公路电子收费有限公司',
+		// 		name: 'ETC申请',
+		// 		state: '01',
+		// 		status: '01',
+		// 	});
+		// }
+		// if (appid == 'wxf52b8d2bb696e5f4') {
+		// 	sateLayerRef.value.open({
+		// 		address: '',
+		// 		appId: 'wxf52b8d2bb696e5f4',
+		// 		appSrcId: 'gh_dd4bedd2010f',
+		// 		enterprise: '行云数聚（北京）科技有限公司',
+		// 		name: '通行费补缴',
+		// 		state: '01',
+		// 		status: '01',
+		// 	});
+		// }
+		// if (appid == 'wxa153df20e8888c68') {
+		// 	sateLayerRef.value.open({
+		// 		address: '/pages/appointment/view/index/index',
+		// 		appId: 'wxa153df20e8888c68',
+		// 		appSrcId: 'gh079c162b7d29',
+		// 		enterprise: '陕西蓝德智慧交通科技有限公司',
+		// 		name: '绿通预约',
+		// 		state: '01',
+		// 		status: '01',
+		// 	});
+		// }
+
+		// if (appid == 'wx00a6d2bbd6cf9160') {
+		// 	sateLayerRef.value.open({
+		// 		address: '',
+		// 		appId: 'wx00a6d2bbd6cf9160',
+		// 		appSrcId: '',
+		// 		enterprise: '中国交通通信信息中心',
+		// 		name: '运政办理',
+		// 		state: '01',
+		// 		status: '01',
+		// 	});
+		// }
+
+		// if (appid == 'https://yjglfp.sx12122.cn/') {
+		// 	uni.navigateTo({
+		// 		url: '/pages_A/raffleH5/index?linkUrl=' + encodeURIComponent(appid),
+		// 	});
+		// }
+		// if (appid == 'https://gaoguantong.ruitong369.com/GaoGuanTongServer/gaoguantongHTML/html/direction/12122/MainTest.html?wxH5=1') {
+		// 	uni.navigateTo({
+		// 		url: '/pages_A/raffleH5/index?linkUrl=' + encodeURIComponent(appid),
+		// 	});
+		// }
+		if (appid == 'https://yjglfp.sx12122.cn/') {
+			uni.navigateTo({
+				url: '/pages_A/raffleH5/index?linkUrl=' + encodeURIComponent(appid),
+			});
+		} else if (appid == 'https://gaoguantong.ruitong369.com/GaoGuanTongServer/gaoguantongHTML/html/direction/12122/MainTest.html?wxH5=1') {
+			uni.navigateTo({
+				url: '/pages_A/raffleH5/index?linkUrl=' + encodeURIComponent(appid),
+			});
+		} else {
+			sateLayerRef.value.open(appStore.MiniProgramConfig[appid]);
+		}
+	};
+	const searchChange = () => { };
+
+	const getPrSupplyRouteSubscriptionFun = async () => {
+		if (isLogin.value) {
+			const res = await getPrSupplyRouteSubscription();
+			datObj.value = res.data;
+			listPrSupplySourceFun();
+		} else {
+			listPrSupplySourceFuns();
+		}
+		// const res = await getPrSupplyRouteSubscription()
+		// datObj.value = res.data
+		// if (res.data.id== null || res.data.id == '') {
+		// 	listPrSupplySourceFuns()
+		// }else{
+		// 	listPrSupplySourceFun()
+		// }
+	};
+
+	const listPrSupplySourceFun = async () => {
+		let params = {
+			pageNum: 1,
+			pageSize: 1,
+			loadingCity: datObj.value.loadingCity,
+			loadingDistrict: datObj.value.loadingDistrict,
+			loadingProvince: datObj.value.loadingProvince,
+			unloadingCity: datObj.value.unloadingCity,
+			unloadingDistrict: datObj.value.unloadingDistrict,
+			unloadingProvince: datObj.value.unloadingProvince,
+			bodyworkLenMax: datObj.value.bodyworkLenMax,
+			bodyworkLenMin: datObj.value.bodyworkLenMin,
+			carType: '',
+		};
+		const res = await listPrSupplySource(params);
+		console.log('查询的订单数据：', res.rows);
+		dataList.value = res.rows;
+		if (res.rows.length == 0) {
+			listPrSupplySourceFuns();
+		}
+	};
+
+	const listPrSupplySourceFuns = async () => {
+		let data = {
+			pageNum: 1,
+			pageSize: 1,
+		};
+		const res = await listPrSupplySource(data);
+		dataList.value = res.rows;
+		isshow.value = false;
+	};
+
+	// 获取道路事件列表（保持不变）
+	const getRoadList = async () => {
+		const params = {
+			eventType: '04',
+		};
+		let res = await getEvents(params);
+		eventList.value = res.clazz.list[0];
+	};
+
+	const getRoadListsg = async () => {
+		const params = {
+			eventType: '03',
+		};
+		let res = await getEvents(params);
+		bannerCard.value = res.clazz.list;
+	};
+
+
+
+	const swiperHeight = ref(500); // 有底部的预估高度 480，无底部预估 260，可根据实际UI微调
+	const swiperCurrent = ref(0);
+	const hasBottomData = (item : any) => {
+		let num = 0
+		if (item.serviceAreaActivityList && item.serviceAreaActivityList.length) {
+			num++
+		}
+		if (item.gasStationList && item.gasStationList.length) {
+			num++
+		}
+		if (item.chargingStationList && item.chargingStationList.length) {
+			num++
+		}
+		return num
+		// return (item.serviceAreaActivityList && item.serviceAreaActivityList.length) || (item.gasStationList && item.gasStationList.length) ||(item.chargingStationList && item.chargingStationList.length)
+	};
+	const handleSwiperChange = (e : any) => {
+		const currentIdx = e.detail.current;
+		swiperCurrent.value = e.detail.current
+		const currentItem = serviceInfoList.value[currentIdx];
+		let targetHeight = 290; // 基础高度
+		if (hasBottomData(currentItem) == 3) {
+			targetHeight = 500; // 展开时的高度
+		} else if (hasBottomData(currentItem) == 2) {
+			targetHeight = 400; // 展开时的高度
+		} else if (hasBottomData(currentItem) == 1) {
+			targetHeight = 315; // 展开时的高度
+		} else {
+			targetHeight = 290; // 只有头部信息时的高度 (建议根据设计稿实际高度调整)
+		}
+		nextTick(() => {
+			swiperHeight.value = targetHeight
+		})
+	};
+	/* -------------start--------------数字人初始化-------------start-------------- */
+	const bdDigitalMan = ref(null);
+	const setBdDigitalMan = (instance) => {
+		bdDigitalMan.value = instance;
+		console.log('---indexPage setBdDigitalMan success---');
+
+		bdDigitalMan.value.onSubtitles((event) => {
+			console.log('-开始--bdDigitalManSpeech---');
+			bobaoShow.value = true
+		})
+		bdDigitalMan.value.onSpeechEnd((res) => {
+			emits('stopWakeUp');
+			recognizer.start();
+			bobaoShow.value = false
+		})
+	};
+	defineExpose({
+		setBdDigitalMan,
+	});
+
+	/* -------------start--------------大模型请求-------------start-------------- */
+	const chatSSEClientRef = ref(null);
+	const answerText = ref('');
+	const qureyShow = ref(true);
+	const chatCot = ref([]);
+	const queryTextName = computed(() => {
+		return (cot) => {
+			let title = '大模型';
+			console.log();
+			if (cot && Array.isArray(cot) && cot.length) {
+				if (cot[0].outputs) {
+					title = cot[0].outputs.name;
+				}
+			}
+			return title;
+		};
+	});
+	const setChat = async (query) => {
+		answerText.value = '';
+		qureyShow.value = true;
+		chatCot.value = [];
+		const requestTime = formatTimestamp(new Date().getTime() - 1000, 'YYYY-MM-DD HH:mm:ss');
+		console.log('requestTime', requestTime);
+		try {
+			const tokenRes = await getOpenToken(requestTime);
+			if (tokenRes.status === 200) {
+				start(tokenRes.result, requestTime, query);
+			} else {
+				toast(tokenRes.message);
+			}
+			console.log('-----tokenRes-->', tokenRes);
+		} catch (e) {
+			console.log('------->', e);
+			toast(e.message);
+		}
+	};
+	const start = (token, requestTime, query) => {
+		console.log('----0-0--start---0-00--0-0');
+		// const messageId = getUUID()
+		try {
+			let params = {
+				isAutoSpeech: false,
+				playType: 1,
+				url: aiUrl + '/copilot/v1/openApi/chat',
+				copilotAk: 'copilot_ak_4qZ84MGWrRoXcMwY',
+				assistantId: '118',
+				requestTime: requestTime,
+				copilotToken: token,
+				"removeRegularList":chatStore.removeRegularList,
+				"ttsConfig": chatStore.ttsConfig,
+				"endWidthSymbol":chatStore.endWidthSymbol,
+				body: JSON.stringify({
+					type: 'IM_CLICK',
+					assistantId: 118,
+					query: query,
+					sessionId: getUUID(),
+					// skillId:skillData.value.skill_id || undefined,
+
+					params: {
+						userCode: getToken(), // 用户token
+						// 'user_info': formData.value || undefined,
+						userLat: uni.getStorageSync('address').lat || '',
+						userLon: uni.getStorageSync('address').lng || '',
+						useLon: uni.getStorageSync('address').lng || '',
+						member_id: uni.getStorageSync('userInfo').id || '',
+						"originLat":mylocationinfo.value.location?.latitude,//起始点纬度
+						"originLon":mylocationinfo.value.location?.longitude,//起始点经度
+						"desLat":endlocationinfo.value.location?.latitude,//终点纬度
+						"desLon":endlocationinfo.value.location?.longitude,//终点经度
+						// 'member_id':'131',
+						// 'memberType': uni.getStorageSync('userInfo').memberType || '1',
+						// mobile:parseTokens(uni.getStorageSync('Token'))?.member_phone,
+					},
+				}),
+			};
+			console.log('--0-0-params1', JSON.parse(params.body));
+			bdDigitalMan.value.requestLargeModelData(params, (res) => {
+				let data = typeof res.data === 'string' ? JSON.parse(res.data) : res.data;
+				// console.log('模型返回-->', data);
+				chatCot.value = data.data.cot;
+				if (data.code == 100) {
+					answerText.value = answerText.value + (data.data.answer || '');
+				} else {
+					answerText.value = data.data.answer;
+					qureyShow.value = false;
+
+					// 停止播放
+					// bdDigitalMan.value.bdDigitalManSpeechInterrupt((event) => { });
+				}
+			});
+		} catch (err) {
+			console.log('111111111111111111-----------', err);
+		}
+	};
+	const bobaoShow = ref(false);
+	const startTalk = ()=>{
+		bobaoShow.value = false;
+		bdDigitalMan.value.interrupt(event=>{
+			console.log('-------打断讲话-------',event);
+		})
+	}
+	// 开始播报
+	const stokValue = (text)=>{
+		bdDigitalMan.value.speak({
+			  ttsConfig: chatStore.ttsConfig,
+			  "content": text,
+			  "regularList": chatStore.regularList
+		},(datas)=>{
+			bobaoShow.value = true
+		});
+	}
+	/* -------------end--------------大模型请求-------------end-------------- */
+	// 收费站信息查询
+	// const getList = async () => {
+	// 	const params = {
+	// 		latitude: latitude.value,
+	// 		longitude: longitude.value,
+	// 		operationalStatus: '01',
+	// 		pageNum: 1,
+	// 		pageSize: 1,
+	// 	};
+
+	// 	try {
+	// 		const res = await getgetTollStationByIdList(params);
+	// 		const records = res.rows[0];
+	// 		stationList.value = records;
+	// 	} catch (error: any) {}
+	// };
+	const gasCoumStationList = (arr) => {
+		let newArr = []
+		for (let i in arr) {
+			if (arr[i].oilName.indexOf('92') != -1 || arr[i].oilName.indexOf('95') != -1) {
+				newArr.push(arr[i])
+			}
+		}
+		return newArr
+	}
+	// 服务区信息查询
+	const getServiceList = async () => {
+		let params = {
+			latitude: latitude.value,
+			longitude: longitude.value,
+			pageNum: 1,
+			pageSize: 5,
+			operationalStatus: '01',
+		};
+		const res = await gethomefwq(params);
+		console.log("查询的服务区", res)
+		serviceInfoList.value = res.data.map(item => ({
+			...item,
+			// 提前计算好，这样模板里直接访问属性，不会触发函数执行
+			displayTags: item.detailList ? item.detailList.slice(0, 5) : []
+		})) || [];
+		if (serviceInfoList.value.length) {
+			handleSwiperChange({ detail: { current: 0 } })
+		}
+		// getServiceDetail(records.id);
+	};
+
+	// // 获取站点详情
+	// const getServiceDetail = async (id : any) => {
+	// 	const res : any = await getServiceAreaById(id);
+	// };
+
+	// 去加油
+	const goJyDetail = (item) => {
+		toNav('/pages_D/refuelingRefilling/details?merId=' + item.stationId);
+	};
+
+	// 去充电
+	const goCdDetail = (item) => {
+		toNav('/pages_A/chargingPiles/queryDetail?id=' + item.stationId);
+	};
+
+	// 服务区详情
+	const handleFwqDetail = (item) => {
+		toNav('/pages_A/stationDetails/index?id=' + item.id)
+	}
+</script>
+<style scoped lang="scss">
+	.bbView{
+		flex: 1;
+		flex-direction: row; 
+		justify-content: flex-end;
+		.bbView-Box{
+			width: 210rpx;
+			position: relative;
+		}
+		.bbView-Box-bg{
+			width: 210rpx;
+			height: 82rpx;
+		}
+		.bbView-Box-view{
+			position: absolute;
+			top: 0;
+			left: 0;
+			width: 210rpx;
+			height: 82rpx;
+			display: flex;
+			flex-direction: row;
+			align-items: center;
+			justify-content: center;
+			
+			.bbView-Box-view-img{
+				width: 30rpx;
+				height: 30rpx;
+			}
+			.bbView-Box-view-text{
+				font-size: 24rpx;
+				margin-left: 10rpx;
+			}
+		}
+	}
+	
+	
+	.star-overlay {
+		position: absolute;
+		bottom: 0;
+		left: 0;
+		right: 0;
+		background: rgba(193,141,0,0.5);
+		padding: 6rpx 0;
+		align-items: center;
+		border-bottom-left-radius: 12rpx;
+		border-bottom-right-radius: 12rpx;
+	}
+	
+	.star-text {
+		color: #ffffff;
+		font-size: 20rpx;
+	}
+	.lxBottomTetx {
+		flex-direction: row;
+		align-items: center;
+		padding-bottom: 20rpx;
+
+		.lxBottomTetx-text {
+			font-size: 24rpx;
+
+		}
+	}
+
+	.swiper_dot {
+		flex-direction: row;
+		padding-top: 20rpx;
+		margin-top: 12rpx;
+
+		.swiper_dot_item {
+			width: 12rpx;
+			height: 12rpx;
+			border-radius: 50%;
+			background: #D8D8D8;
+			margin-right: 12rpx;
+		}
+
+		.swiper_dot_active {
+			width: 32rpx;
+			height: 12rpx;
+			border-radius: 27rpx;
+			background: #628F2F;
+			margin-right: 12rpx;
+		}
+	}
+
+	.digiTalBox {
+		width: 10rpx;
+		height: 10rpx;
+		position: absolute;
+		top: -999rpx;
+		left: -999rpx;
+	}
+
+	.service-card {
+		width: 650rpx;
+		background-color: #ffffff;
+		border-radius: 24rpx;
+		padding: 24rpx;
+		margin: 20rpx;
+		margin-top: 0rpx;
+		padding-bottom: 32rpx;
+
+		// margin: 20rpx;
+		box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.05);
+		position: relative;
+
+		.header-section {
+			flex-direction: row;
+			/* nvue 默认 column，需显式声明 row */
+			position: relative;
+			min-height: 190rpx;
+		}
+		/* 右下角印章样式 */
+		.watermark {
+			position: absolute;
+			right: 0rpx;
+			top: 150rpx;
+			width: 96rpx;
+			height: 96rpx;
+			z-index: 1;
+			// transform: rotate(-15deg);
+			// opacity: 0.6;
+		}
+
+		.image-wrapper {
+			position: relative;
+			width: 190rpx;
+			height: 190rpx;
+		}
+
+		.status-badge {
+			position: absolute;
+			top: 0;
+			left: 0;
+			background-color: #628f2f;
+			padding: 4rpx 16rpx;
+			border-top-left-radius: 16rpx;
+			border-bottom-right-radius: 16rpx;
+		}
+
+		.status-badge-text {
+			color: #ffffff;
+			font-size: 22rpx;
+		}
+
+		.info-content {
+			flex: 1;
+			margin-left: 24rpx;
+		}
+
+		.title-row {
+			flex-direction: row;
+			// justify-content: space-between;
+			align-items: center;
+			// margin-bottom: 6rpx;
+		}
+
+		.title-text {
+			font-size: 36rpx;
+			font-weight: bold;
+			color: #333333;
+		}
+		.direction {
+			font-size: 26rpx;
+			color: #666;
+			margin-left: 16rpx;
+		}
+		.distance-text {
+			font-size: 26rpx;
+			color: #999999;
+		}
+
+		.address-text {
+			flex: 1;
+			font-size: 24rpx;
+			color: #666666;
+			line-height: 36rpx;
+			
+			lines: 1;
+			text-overflow: ellipsis;
+			overflow: hidden;
+			white-space: nowrap;
+		}
+
+		.tag-group {
+			flex-direction: row;
+			flex-wrap: wrap;
+		}
+
+		.tag-item {
+			flex-direction: row;
+			align-items: center;
+			// background-color: #f0f9f1;
+			padding: 6rpx 12rpx;
+			border-radius: 40rpx;
+			margin-right: 12rpx;
+			margin-bottom: 8rpx;
+		}
+
+		.tag-text {
+			font-size: 24rpx;
+			color: #628f2f;
+			margin-left: 4rpx;
+		}
+
+		.bottom-section {
+			width: 600rpx;
+			justify-content: space-between;
+			align-items: flex-start;
+			flex-wrap: nowrap;
+		}
+
+		.promo-box {
+			flex: 1;
+			flex-direction: row;
+			align-items: center;
+			padding-top: 30rpx;
+		}
+
+		.promo-title {
+			line-height: 40rpx;
+			font-size: 24rpx !important;
+			color: #333333;
+			font-weight: 500;
+		}
+
+		.promo-text {
+			font-size: 24rpx !important;
+			color: #333333;
+			line-height: 40rpx;
+			font-weight: 500;
+			lines: 1;
+			white-space: nowrap;
+			text-overflow: ellipsis;
+		}
+
+		.action-cards {
+			flex: 1;
+			// flex-direction: row;
+		}
+
+		.cardd {
+			width: 600rpx;
+			padding: 20rpx;
+			border-radius: 16rpx;
+			flex-direction: row;
+			align-items: center;
+			justify-content: space-between;
+			margin-top: 20rpx;
+
+			.iconK {
+				color: #47DFDA;
+				background-color: #EAFFFF;
+				border: 2rpx solid #47DFDA;
+
+				&-text {
+					color: #fff;
+					background-color: #47DFDA;
+				}
+			}
+
+			.card-icon-item {
+				width: 130rpx;
+				height: 36rpx;
+				border-radius: 8rpx 8rpx 8rpx 8rpx;
+				border: 2rpx solid none;
+				display: flex;
+				flex-direction: row;
+				font-size: 24rpx;
+
+				.card-icon-item-text {
+					width: 40rpx;
+					height: 36rpx;
+					line-height: 36rpx;
+					text-align: center;
+					font-size: 24rpx;
+					color: #FFFFFF;
+					border-radius: 8rpx;
+					font-weight: 700;
+				}
+
+				.card-icon-item-num {
+					width: 76rpx;
+					line-height: 36rpx;
+					text-align: center;
+					font-weight: 400;
+					color: #47DFDA;
+					font-size: 24rpx;
+				}
+			}
+		}
+
+		.gas-card {
+			background-color: #fff4ef;
+		}
+
+		.charge-card {
+			background-color: #eaf1ff;
+		}
+
+		.card-label {
+			font-size: 26rpx;
+			color: #666666;
+			margin-right: 20rpx;
+		}
+
+		.price-row {
+			flex-direction: row;
+			align-items: flex-end;
+		}
+
+		.price-num {
+			font-size: 36rpx;
+			line-height: 36rpx;
+			font-weight: bold;
+			color: #333333;
+		}
+
+		.price-unit {
+			font-size: 22rpx;
+			color: #666666;
+			margin-left: 4rpx;
+			line-height: 26rpx;
+		}
+
+		.card-btn {
+			flex-direction: row;
+			align-items: center;
+		}
+
+		.btn-text {
+			font-size: 24rpx;
+			font-weight: bold;
+			margin-right: 4rpx;
+		}
+
+		.orange-text {
+			color: #ff5405;
+		}
+
+		.blue-text {
+			color: #4881f5;
+		}
+	}
+
+	.iconText {
+		font-size: 24rpx;
+		color: #999999;
+	}
+
+	.szrBox {
+		padding: 10rpx 30rpx 20rpx 30rpx;
+		position: relative;
+		.bobaoClass{
+			position: absolute;
+			right: 0rpx;
+			width: 193rpx;
+			height: 62rpx;
+			background: linear-gradient( 135deg, #E3F6E7 0%, #FEFEFE 100%);
+			box-shadow: -3rpx 2rpx 13rpx 0rpx rgba(107,141,73,0.5);
+			border-radius: 47rpx ;
+			line-height: 62rpx;
+			text-align: center;
+		}
+		.querBoxTitle {
+			flex: 1;
+			height: 44rpx;
+			display: flex;
+			flex-direction: row;
+			align-items: center;
+
+			.querBoxTitle-text {
+				flex: 1;
+				padding-left: 20rpx;
+				height: 28rpx;
+				line-height: 28rpx;
+				font-weight: 400;
+				font-size: 28rpx;
+				color: #333333;
+				text-align: left;
+			}
+		}
+
+		.textAi {
+			font-size: 26rpx;
+			padding: 20rpx 0;
+			color: #666666;
+		}
+
+		.szrBox-text {
+			font-size: 28rpx;
+			line-height: 40rpx;
+			color: #333333;
+		}
+
+		.szrBox-text2 {
+			flex: 1;
+			font-size: 28rpx;
+			line-height: 40rpx;
+			color: #333333;
+			lines: 1;
+			text-overflow: ellipsis;
+			overflow: hidden;
+			white-space: nowrap;
+		}
+
+		.szrBox-but {
+			text-align: center;
+			font-size: 24rpx;
+		}
+	}
+
+	.szrBox-A {
+		flex: 1;
+		display: flex;
+		flex-direction: row;
+		justify-content: space-between;
+		align-items: center;
+	}
+
+	.orderBox-close {
+		width: 70rpx;
+		height: 70rpx;
+		// margin: 0 auto;
+		// position: absolute;
+		// bottom: -70rpx;
+		// left: 315rpx;
+	}
+
+	.tex28_66_b {
+		font-size: 28rpx;
+		color: #666666;
+		font-weight: bold;
+	}
+
+	.orderBox {
+		width: 700rpx;
+		height: 880rpx;
+		position: relative;
+
+		.orderBox-bgImg {
+			position: absolute;
+			top: 0;
+			left: 0;
+			width: 700rpx;
+			height: 880rpx;
+		}
+
+		.orderBox-box {
+			position: absolute;
+			top: 0;
+			left: 0;
+			z-index: 1;
+			width: 700rpx;
+			height: 880rpx;
+		}
+
+		.fontBox {
+			// width: 100%;
+			display: inline-block;
+			font-size: 34rpx;
+			font-weight: bold;
+			letter-spacing: 3rpx;
+			color: #ffffff;
+			margin-bottom: 30rpx;
+			text-align: center;
+			padding: 20rpx 0 0 0;
+		}
+
+		.timer {
+			width: 636rpx;
+			height: 63rpx;
+			background-color: #ffffff;
+			border-radius: 28rpx;
+			border: solid 1rpx #e1e1e1;
+			flex-direction: row;
+			align-items: center;
+			justify-content: space-between;
+			padding: 0 20rpx;
+			margin: 0 auto;
+		}
+
+		.fontText1 {
+			display: inline-block;
+			width: 48rpx;
+			height: 48rpx;
+			background-color: #f3f5f9;
+			border-radius: 4rpx;
+			line-height: 48rpx;
+			text-align: center;
+			font-size: 28rpx;
+			letter-spacing: 3rpx;
+			color: #333333;
+			font-weight: bold;
+		}
+
+		.fontText2 {
+			font-size: 28rpx;
+			color: #999999;
+			margin: 0 6rpx;
+		}
+
+		.station {
+			margin-top: 70rpx;
+			width: 700rpx;
+			flex-direction: row;
+			align-items: center;
+			justify-content: center;
+
+			.station-text1 {
+				font-size: 30rpx;
+				font-weight: bold;
+				letter-spacing: 3rpx;
+				color: #666666;
+			}
+
+			.station-text2 {
+				max-width: 500rpx;
+				font-size: 30rpx;
+				font-weight: bold;
+				letter-spacing: 3rpx;
+				color: #333333;
+			}
+		}
+
+		.codeBox {
+			width: 440rpx;
+			height: 440rpx;
+			margin: 0 auto;
+			margin-top: 40rpx;
+		}
+
+		.tips {
+			width: 480rpx;
+			height: 60rpx;
+			background-color: #f0f0f0;
+			text-align: center;
+			line-height: 60rpx;
+			font-size: 28rpx;
+			letter-spacing: 3rpx;
+			color: #666666;
+			margin-top: 20rpx;
+		}
+	}
+
+	/* ==================== 基础样式重置与工具类 ==================== */
+	.page-container {
+		width: 750rpx;
+		min-height: 100vh;
+		/* background: #F5F5F4; nvue 不支持 transparent */
+		flex-direction: column;
+		align-items: center;
+	}
+
+	.m-t-40 {
+		margin-top: 40rpx;
+	}
+
+	.m-t-20 {
+		margin-top: 20rpx;
+	}
+
+	.m-t-10 {
+		margin-top: 10rpx;
+	}
+
+	.m-b-30 {
+		margin-bottom: 30rpx;
+	}
+
+	.m-b-20 {
+		margin-bottom: 20rpx;
+	}
+
+	.m-b-15 {
+		margin-bottom: 15rpx;
+	}
+
+	.fs-24 {
+		font-size: 24rpx;
+	}
+
+	.col3 {
+		color: #333333;
+	}
+
+	.col6 {
+		color: #666666;
+	}
+
+	.fw-400 {
+		font-weight: 400;
+	}
+
+	/* Flex 快捷类 */
+	.fl-ce-ce {
+		flex-direction: row;
+		align-items: center;
+		justify-content: center;
+	}
+
+	.flex {
+		flex-direction: row;
+	}
+
+	.flex-col {
+		flex-direction: column;
+	}
+
+	.ali-cen {
+		align-items: center;
+	}
+
+	.fl-ce-sb {
+		flex-direction: row;
+		align-items: center;
+		justify-content: space-between;
+	}
+
+	/* 文本截断（nvue 仅支持单行省略） */
+	.tex-no-wrap {
+		/* nvue 的单行文本溢出处理 */
+		lines: 1;
+		text-overflow: ellipsis;
+	}
+
+	/* nvue 无法实现多行文本省略，只能保证容器高度 */
+	.g-line2,
+	.s-line2 {
+		lines: 2;
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
+
+	/* ==================== 顶部导航 ==================== */
+	.nav-container {
+		position: fixed;
+		top: 0;
+		left: 0;
+		right: 0;
+		// background-image: linear-gradient(to bottom, #edfcf0, #fcfffc);
+	}
+
+	.nav-left {
+		flex-direction: column;
+	}
+
+	.weather_box {
+		flex-direction: row;
+		align-items: center;
+
+		.weather_box_icon {
+			margin-left: 10rpx;
+			width: 90rpx;
+			height: 40rpx;
+			line-height: 40rpx;
+			text-align: center;
+			border-radius: 8rpx;
+			background: #ffffff;
+			box-sizing: border-box;
+			border: 1px solid #fd4848;
+			font-size: 20rpx;
+			font-weight: 500;
+			color: #fd4848;
+		}
+
+		.weather-icon {
+			width: 48rpx;
+			height: 48rpx;
+			margin-right: 12rpx;
+		}
+
+		.weather_info {
+			align-items: flex-end;
+
+			.weather-text {
+				font-weight: 400;
+				font-size: 36rpx;
+				color: #333333;
+			}
+
+			.weather-cs {
+				font-weight: 400;
+				font-size: 20rpx;
+				color: #909599;
+				text-align: right;
+			}
+		}
+	}
+
+	.titleIcon {
+		font-size: 24rpx;
+		line-height: 30rpx;
+		padding: 0 4rpx;
+		border-radius: 10rpx;
+		margin-right: 8rpx;
+	}
+
+	.titleText {
+		font-weight: 400;
+		font-size: 36rpx;
+		color: #333333;
+		margin-left: 10rpx;
+		margin-right: 10rpx;
+	}
+
+	.kfImg {
+		width: 48rpx;
+		height: 48rpx;
+		// margin-right: 10rpx;
+	}
+
+	.qhImg {
+		width: 32rpx;
+		height: 32rpx;
+		// margin-left: 10rpx;
+	}
+
+	.titleSelectImage {
+		width: 32rpx;
+		height: 32rpx;
+	}
+
+	.title-text {
+		font-size: 30rpx;
+		font-weight: 500;
+	}
+
+	.search-view {
+		width: 750rpx;
+		padding-top: 25rpx;
+		padding-bottom: 25rpx;
+		padding-left: 32rpx;
+		padding-right: 32rpx;
+		flex-direction: row;
+		align-items: center;
+		justify-content: space-between;
+	}
+
+	.search-view-item {
+		width: 580rpx;
+		height: 70rpx;
+		border-radius: 40rpx;
+		flex-direction: row;
+		align-items: center;
+		justify-content: space-between;
+		padding-right: 35rpx;
+		background-color: rgba(255, 255, 255, 0.7);
+		/* 设置默认背景色 */
+	}
+
+	.theme-switcher {
+		flex-direction: row;
+		align-items: center;
+		/* 垂直堆叠切换皮肤文字 */
+		flex-direction: column;
+		justify-content: center;
+	}
+
+	.pf-img {
+		width: 44rpx;
+		height: 40rpx;
+		margin-bottom: 4rpx;
+	}
+
+	.theme-switcher .fs-24 {
+		text-align: center;
+		line-height: 28rpx;
+	}
+
+	.exp-popup1 {
+		width: 690rpx;
+		height: 980rpx;
+		margin: 0 auto;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		position: relative;
+
+		.exp-popup__card1 {
+			width: 690rpx;
+			height: 980rpx;
+			position: absolute;
+			left: 0;
+			top: 0;
+		}
+
+		.lw-vox {
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+			justify-content: space-around;
+			z-index: 1;
+			margin-top: 310rpx;
+
+			.lw-vox-text-1 {
+				font-weight: 700;
+				font-size: 30rpx;
+				color: #A1591F;
+				line-height: 41rpx;
+			}
+
+			.lw-avi {
+				width: 200rpx;
+				height: 200rpx;
+				border-radius: 0rpx 0rpx 0rpx 0rpx;
+				margin-top: 30rpx;
+				margin-bottom: 30rpx;
+			}
+
+			.lw-vox-text-2 {
+				font-weight: 400;
+				font-size: 24rpx;
+				color: #4D2402;
+				line-height: 33rpx;
+			}
+		}
+
+		.order-close-wrap1 {
+			width: 51rpx;
+			height: 51rpx;
+			position: absolute;
+			bottom: 0rpx;
+			left: 320rpx;
+
+			.orderBox-close1 {
+				width: 51rpx;
+				height: 51rpx;
+			}
+		}
+	}
+
+	/* ==================== 悬浮和背景图 ==================== */
+	.kf-box {
+		position: fixed;
+		top: 560rpx;
+		right: 10rpx;
+		z-index: 9;
+		flex-direction: column;
+		align-items: center;
+
+		.kf-img {
+			width: 100rpx;
+			height: 100rpx;
+		}
+
+		.kf-text {
+			font-weight: 400;
+			font-size: 20rpx;
+			color: #628f2f;
+		}
+	}
+
+	/* 积分模块 */
+	.jf_box {
+		width: 702rpx;
+		height: 98rpx;
+		flex-direction: row;
+		align-items: center;
+		justify-content: space-between;
+
+		.jf_img {
+			height: 58rpx;
+			margin-right: 20rpx;
+		}
+
+		.jf_text {
+			font-weight: 400;
+			font-size: 28rpx;
+			color: #6e6e6e;
+		}
+
+		.jf_text2 {
+			display: inline-block;
+			flex: 1;
+		}
+
+		.jf_text1 {
+			color: #628f2f;
+		}
+
+		.jf_btn {
+			width: 88rpx;
+			height: 40rpx;
+			// background: #efefef;
+			background: #ff9b36;
+			border-radius: 8rpx;
+			margin-left: 20rpx;
+
+			.jf_btn_text {
+				text-align: center;
+				line-height: 40rpx;
+				font-weight: 400;
+				font-size: 24rpx;
+				// color: #909599;
+				color: #ffffff;
+			}
+		}
+	}
+
+	/* 头部图片 */
+	.header-box {
+		// flex-direction: row;
+
+		// position: relative;
+		// z-index: 2;
+		width: 702rpx;
+		height: 388rpx;
+
+		.top-swiper {
+			// position: absolute;
+			// top: 0;
+			// left: 0;
+			// right: 0;
+			// bottom: 0;
+			// width: 702rpx;
+			// height: 388rpx;
+			background: red;
+		}
+
+		.top-img {
+			width: 702rpx;
+			height: 388rpx;
+			border-radius: 20rpx;
+		}
+	}
+
+	.mask {
+		position: absolute;
+		left: 0;
+		right: 0;
+		bottom: 0;
+		height: 150rpx;
+		/* 替换复杂的渐变和模糊效果 */
+		background-image: linear-gradient(to bottom, rgba(255, 255, 255, 0), rgba(255, 255, 255, 0.9));
+	}
+
+	// 猴子模块
+	.monkey_box {
+		width: 702rpx;
+		height: 300rpx;
+		position: relative;
+		top: 0rpx;
+		z-index: 1;
+		.maQp{
+			width: 454rpx;
+			height: 121rpx;
+			position: absolute;
+			z-index: 3;
+			top: 0;
+			left: 150rpx;
+			
+			.maQp-View{
+				width: 454rpx;
+				height: 121rpx;
+				position: relative;
+				.maQp-bg{
+					top: 0;
+					left: 0;
+					position: absolute;
+					width: 454rpx;
+					height: 121rpx;
+					border-radius: 0rpx 0rpx 0rpx 0rpx;
+				}
+				.maQp-View-center{
+					width: 454rpx;
+					height: 121rpx;
+					top: 0;
+					left: 0;
+					position: absolute;
+					display: flex;
+					flex-direction: row;
+					align-items: center;
+					padding-left: 50rpx;
+					.maQp-View-icon{
+						width: 40rpx;
+						height: 40rpx;
+					}
+					.maQp-View-text{
+						font-weight: 400;
+						font-size: 22rpx;
+						margin-left: 10rpx;
+					}
+				}
+			}
+		}
+		.monkey_box_bg {
+			width: 702rpx;
+			height: 238rpx;
+			position: absolute;
+			bottom: 0;
+			left: 0;
+			z-index: 1;
+		}
+
+		.monkey_box_img {
+			height: 266rpx;
+			position: absolute;
+			top: 0;
+			left: -20rpx;
+			z-index: 2;
+		}
+
+		.monkey_box_count {
+			width: 472rpx;
+			height: 238rpx;
+			position: absolute;
+			bottom: 0;
+			right: 24rpx;
+			flex-direction: column;
+			align-items: center;
+			justify-content: center;
+
+			.monkey_box_count_tips {
+				font-weight: 400;
+				font-size: 24rpx;
+				color: #8dab77;
+				margin-bottom: 22rpx;
+			}
+
+			.monkey_box_count_bottom {
+				width: 472rpx;
+				flex-direction: row;
+				justify-content: flex-end;
+				margin-top: 20rpx;
+
+				.monkey_box_count_bottom_item {
+					font-size: 24rpx;
+					margin-right: 30rpx;
+				}
+			}
+
+		}
+	}
+
+	/* ==================== 主内容区 ==================== */
+	.page-view {
+		position: relative;
+		z-index: 2;
+		padding-left: 24rpx;
+		padding-right: 24rpx;
+		flex-direction: column;
+		margin-top: 20rpx;
+	}
+
+	.card {
+		width: 702rpx;
+		/* 750 - 30*2 */
+		border-radius: 32rpx;
+		flex-direction: column;
+		background-image: linear-gradient(to top left, #ebf8ee, #fefefe);
+		// box-shadow: 0rpx 2rpx 8rpx 0rpx var(--label-color);
+		margin-bottom: 32rpx;
+	}
+
+	// card新渐变色
+	.card1 {
+		background-image: linear-gradient(to right, #ebf8ee, #fefefe);
+	}
+
+	.card_icon_card_header {
+		width: 702rpx;
+		flex-direction: row;
+		justify-content: space-between;
+		padding-right: 24rpx;
+
+		.card_icon_card_header_lt {
+			position: relative;
+			width: 230rpx;
+			height: 74rpx;
+			flex-direction: row;
+			align-items: flex-start;
+			justify-content: center;
+			padding-top: 8rpx;
+
+			.card_icon_card_header-img {
+				width: 230rpx;
+				height: 74rpx;
+				position: absolute;
+				top: 0;
+				left: 0;
+				right: 0;
+				bottom: 0;
+			}
+
+			.title_text_primary {
+				font-family: DingTalk, DingTalk;
+				font-weight: normal;
+				font-size: 32rpx;
+				color: #ffffff;
+			}
+
+			.card_title_icon {
+				width: 16rpx;
+				height: 16rpx;
+				margin-left: 8rpx;
+			}
+		}
+
+		.card_icon_card_header_rt_map {
+			width: 209rpx;
+			height: 48rpx;
+			margin-top: 10rpx;
+		}
+
+		.card_icon_card_header_rt {
+			flex: 1;
+			flex-direction: row;
+			justify-content: space-between;
+			align-items: center;
+
+			.card_icon_card_header_rt_r {
+				flex-direction: row;
+				align-items: center;
+				justify-content: center;
+
+				.card_icon_card_header_rt_r_txt {
+					font-size: 24rpx;
+					color: #909599;
+					margin-right: 10rpx;
+				}
+			}
+
+			.card_icon_card_header_rt_img {
+				width: 114rpx;
+				height: 25rpx;
+			}
+		}
+	}
+
+	.card_item {
+		width: 702rpx;
+		flex-direction: column;
+		align-items: center;
+		margin-top: 24rpx;
+	}
+
+	// 导航信息
+	.router_info {
+		flex-direction: column;
+		align-items: center;
+
+		.router_info_times {
+			width: 702rpx;
+			flex-direction: row;
+			align-items: flex-end;
+			padding-left: 32rpx;
+			margin-bottom: 24rpx;
+
+			.router_info_times_1 {
+				font-weight: 500;
+				font-size: 36rpx;
+				color: #333333;
+			}
+
+			.router_info_times_2 {
+				font-size: 32rpx;
+				color: #333333;
+			}
+
+			.router_info_times_3 {
+				font-size: 28rpx;
+				color: #333333;
+			}
+		}
+
+		.router_info_length {
+			width: 702rpx;
+			padding-left: 32rpx;
+			flex-direction: row;
+			flex-wrap: nowrap;
+			margin-bottom: 51rpx;
+
+			.router_info_length_item {
+				height: 40rpx;
+				background: #07c07d;
+				border-radius: 8rpx;
+				padding-left: 20rpx;
+				padding-right: 20rpx;
+				margin-right: 20rpx;
+
+				.router_info_length_item_text {
+					font-weight: 400;
+					font-size: 24rpx;
+					color: #ffffff;
+					line-height: 40rpx;
+				}
+			}
+
+			.bg_o {
+				background: #ff9b36;
+			}
+		}
+
+		.router_info_timeline {
+			width: 634rpx;
+
+			.timeline_item {
+				flex-direction: row;
+
+				.timeline_item_l {
+					width: 60rpx;
+					margin-right: 24rpx;
+					align-items: center;
+					position: relative;
+
+					.timeline_item_l_dot {
+						width: 60rpx;
+						height: 60rpx;
+						background: #ff9b36;
+						border-radius: 50%;
+						align-items: center;
+						justify-content: center;
+						position: absolute;
+						z-index: 2;
+					}
+
+					.timeline_item_l_dot_s {
+						width: 46rpx;
+						height: 46rpx;
+						background: #ff9b36;
+						border-radius: 50%;
+						align-items: center;
+						justify-content: center;
+						position: absolute;
+						z-index: 5;
+					}
+
+					.timeline_item_l_line {
+						flex: 1;
+						width: 24rpx;
+						background: #ff9b36;
+						margin-top: 5rpx;
+					}
+
+					.timeline_item_l_lines {
+						flex: 1;
+						width: 1rpx;
+						margin-top: 5rpx;
+						border-left-color: #ff9b36;
+						border-left-width: 1rpx;
+						border-left-style: dashed;
+					}
+
+					.timeline_item_l_dot_text {
+						font-size: 24rpx;
+						color: #ffffff;
+					}
+
+					.timeline_item_l_dot_text1 {
+						font-size: 20rpx;
+						color: #ffffff;
+					}
+				}
+
+				.timeline_item_r {
+					flex: 1;
+
+					.timeline_item_r_title {
+						height: 60rpx;
+						margin-bottom: 15rpx;
+						flex-direction: row;
+						align-items: center;
+
+						.timeline_item_r_title_text {
+							font-weight: 500;
+							font-size: 28rpx;
+							color: #333333;
+							margin-right: 24rpx;
+						}
+
+						.timeline_item_r_title_weatherimg {
+							width: 32rpx;
+							height: 32rpx;
+							margin-right: 10rpx;
+						}
+
+						.timeline_item_r_title_weathertxt {
+							font-weight: 400;
+							font-size: 28rpx;
+							color: #333333;
+						}
+
+						.timeline_item_r_title_other {
+							flex: 1;
+							flex-direction: row;
+							align-items: center;
+							justify-content: space-between;
+
+							.timeline_item_r_title_other_l {
+								flex-direction: row;
+								align-items: center;
+
+								.timeline_item_r_title_other_l_txt {
+									font-weight: 400;
+									font-size: 24rpx;
+									color: #909599;
+								}
+
+								.timeline_item_r_title_other_l_angle {}
+							}
+
+							.timeline_item_r_title_other_btn {
+								height: 40rpx;
+								background: #628f2f;
+								border-radius: 8rpx;
+								padding-left: 20rpx;
+								padding-right: 20rpx;
+
+								.timeline_item_r_title_other_btn_txt {
+									font-weight: 400;
+									font-size: 24rpx;
+									color: #ffffff;
+									line-height: 40rpx;
+								}
+							}
+						}
+					}
+
+					.timeline_item_r_info {
+						background: #efefef;
+						border-radius: 12rpx;
+						margin-bottom: 49rpx;
+						padding-top: 24rpx;
+						padding-right: 24rpx;
+						padding-bottom: 24rpx;
+						padding-left: 24rpx;
+
+						.timeline_item_r_info_etc {
+							flex-direction: row;
+							align-items: center;
+
+							.timeline_item_r_info_etc_txt {
+								width: 96rpx;
+								font-weight: 400;
+								font-size: 24rpx;
+								color: #333333;
+								margin-right: 20rpx;
+							}
+
+							.timeline_item_r_info_etc_dot {
+								flex: 1;
+								flex-direction: row;
+								align-items: center;
+
+								.timeline_item_r_info_etc_dot_item {
+									width: 24rpx;
+									height: 24rpx;
+									background: #07c07d;
+									border-radius: 4rpx;
+									margin-right: 10rpx;
+								}
+							}
+
+							.timeline_item_r_info_etc_time {
+								font-weight: 400;
+								font-size: 24rpx;
+								color: #ef4519;
+							}
+
+							.timeline_item_r_info_etc_imgs {
+								flex: 1;
+								flex-direction: row;
+								align-items: center;
+
+								.timeline_item_r_info_etc_imgs1 {
+									width: 40rpx;
+									height: 40rpx;
+									margin-right: 20rpx;
+								}
+							}
+
+							.timeline_item_r_info_etc_btn {
+								height: 40rpx;
+								background: #07c07d;
+								border-radius: 8rpx;
+								padding-left: 20rpx;
+								padding-right: 20rpx;
+
+								.timeline_item_r_info_etc_btn_txt {
+									font-weight: 400;
+									font-size: 24rpx;
+									color: #ffffff;
+									line-height: 40rpx;
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+
+		.router_go_btn {
+			width: 498rpx;
+			height: 88rpx;
+			border-radius: 18rpx;
+			border-width: 2rpx;
+			border-style: solid;
+			border-color: #628f2f;
+			margin-top: 45rpx;
+			margin-bottom: 40rpx;
+
+			.router_go_btn_text {
+				font-weight: 500;
+				font-size: 28rpx;
+				color: #628f2f;
+				text-align: center;
+				line-height: 88rpx;
+			}
+		}
+	}
+
+	/* 九宫格 (替换为 Flex) */
+	.grid-box {
+		width: 702rpx;
+		/* 690 - 30*2 */
+		flex-direction: row;
+		justify-content: flex-start;
+		/* 使用 space-around 模拟 grid-gap */
+		flex-wrap: wrap;
+
+		.grid-box-item {
+			flex-direction: column;
+			align-items: center;
+			justify-content: center;
+			// margin-left: 15rpx;
+			// margin-right: 15rpx;
+			margin-bottom: 32rpx;
+
+			.grid-box-img {
+				width: 100rpx;
+				height: 100rpx;
+				margin-bottom: 10rpx;
+			}
+
+			.grid-box-text {
+				font-weight: 400;
+				font-size: 24rpx;
+				color: #333333;
+				word-break: keep-all;
+			}
+		}
+	}
+
+	// 旅行信息
+	.card_lx {
+		width: 702rpx;
+		height: 248rpx;
+		// background-image: linear-gradient(to bottom right, #ebf8ee, #fefefe);
+		// box-shadow: 0rpx 2rpx 8rpx 0rpx #d3e7d1;
+		border-radius: 32rpx;
+		flex-direction: column;
+		align-items: center;
+
+		.lx_info {
+			width: 654rpx;
+			flex-direction: row;
+			justify-content: space-between;
+
+			.lx_info_img {
+				width: 200rpx;
+				height: 156rpx;
+				margin-right: 20rpx;
+			}
+
+			.lx_info_texts {
+				flex: 1;
+				height: 156rpx;
+				justify-content: space-between;
+
+				.lx_info_title {
+					font-weight: 400;
+					font-size: 28rpx;
+					color: #333333;
+				}
+
+				.lx_info_time {
+					font-weight: 400;
+					font-size: 24rpx;
+					color: #6e6e6e;
+				}
+
+				.lx_info_rinfo {
+					flex-direction: row;
+					align-items: center;
+					justify-content: space-between;
+
+					.lx_info_rinfo_text {
+						font-weight: 400;
+						font-size: 24rpx;
+						color: #6e6e6e;
+					}
+
+					.lx_info_rinfo_text1 {
+						flex: 1;
+						text-align: left;
+						color: #ff9b36;
+					}
+
+					.lx_info_rinfo_btn {
+						width: 128rpx;
+						height: 48rpx;
+						background: #ff9b36;
+						border-radius: 10rpx;
+
+						.lx_info_rinfo_btn_text {
+							font-weight: 400;
+							font-size: 28rpx;
+							color: #ffffff;
+							text-align: center;
+							line-height: 48rpx;
+						}
+					}
+				}
+			}
+		}
+	}
+
+	// 接单列表
+	.card_order {
+		width: 654rpx;
+		height: 222rpx;
+		background: linear-gradient(to left, #f8fcf9, #edfff1);
+		box-shadow: 0rpx 2rpx 8rpx 0rpx #d3e7d1;
+		border-radius: 16rpx;
+		margin-bottom: 32rpx;
+		padding-left: 24rpx;
+		padding-right: 24rpx;
+		padding-top: 32rpx;
+		padding-bottom: 32rpx;
+		justify-content: space-between;
+
+		.card_order_t {
+			flex-direction: row;
+			align-items: center;
+
+			.card_order_t_start,
+			.card_order_t_end {
+				flex: 1;
+				font-weight: 500;
+				font-size: 36rpx;
+				color: #628f2f;
+				lines: 1;
+				overflow: hidden;
+				text-overflow: ellipsis;
+			}
+
+			.card_order_t_type {
+				max-width: 160rpx;
+				font-weight: 500;
+				font-size: 36rpx;
+				color: #ff9b36;
+				lines: 1;
+				overflow: hidden;
+				text-overflow: ellipsis;
+			}
+		}
+
+		.card_order_time {
+			flex-direction: row;
+			align-items: center;
+
+			.card_order_time_txt {
+				font-weight: 400;
+				font-size: 28rpx;
+				color: #333333;
+				margin-right: 34rpx;
+			}
+		}
+
+		.card_order_user {
+			flex-direction: row;
+			align-items: center;
+			justify-content: space-between;
+
+			.card_order_user_txt {
+				font-weight: 400;
+				font-size: 28rpx;
+				color: #333333;
+				margin-right: 62rpx;
+			}
+
+			.card_order_user_txt1 {
+				flex: 1;
+				font-weight: 400;
+				font-size: 28rpx;
+				color: #333333;
+			}
+
+			.card_order_user_btn {
+				width: 148rpx;
+				height: 52rpx;
+				background: #ff9b36;
+				border-radius: 10rpx;
+
+				.card_order_user_btn_txt {
+					font-weight: 400;
+					font-size: 28rpx;
+					color: #ffffff;
+					text-align: center;
+					line-height: 52rpx;
+				}
+			}
+		}
+	}
+
+	.card_order_more {
+		width: 498rpx;
+		height: 88rpx;
+		border-radius: 20rpx;
+		border: 2rpx solid #628f2f;
+		margin-bottom: 32rpx;
+
+		.card_order_more_txt {
+			font-weight: 500;
+			font-size: 28rpx;
+			color: #628f2f;
+			text-align: center;
+			line-height: 88rpx;
+		}
+	}
+
+	// 任务列表
+	.rw_list {
+		.rw_item {
+			width: 654rpx;
+			height: 88rpx;
+			background-image: linear-gradient(to bottom right, #ebf8ee, #fefefe);
+			border-radius: 16rpx;
+			flex-direction: row;
+			align-items: center;
+			justify-content: space-between;
+			padding-left: 20rpx;
+			padding-right: 28rpx;
+			position: relative;
+			margin-bottom: 29rpx;
+			border-bottom-width: 3rpx;
+			border-bottom-style: solid;
+			border-bottom-color: #8dab77;
+
+			&:last-child {
+				margin-bottom: 0;
+			}
+
+			.rw_item_img {
+				width: 76rpx;
+				height: 76rpx;
+				margin-right: 20rpx;
+			}
+
+			.rw_item_text {
+				flex: 1;
+				text-align: left;
+				font-weight: 400;
+				font-size: 28rpx;
+				color: #333333;
+			}
+
+			.rw_item_btn {
+				width: 146rpx;
+				height: 48rpx;
+				background-color: #ff9b36;
+				border-radius: 10rpx;
+
+				.rw_item_btn_text {
+					text-align: center;
+					line-height: 48rpx;
+					font-weight: 400;
+					font-size: 24rpx;
+					color: #ffffff;
+				}
+			}
+
+			.rw_item_btn-1 {
+				width: 148rpx;
+				height: 52rpx;
+				background: #efefef;
+				border-radius: 8rpx;
+				display: flex;
+				align-items: center;
+				justify-content: center;
+
+				.rw_item_btn_text-1 {
+					font-weight: 400;
+					font-size: 24rpx;
+					color: #909599;
+				}
+			}
+		}
+	}
+
+	// 小标题
+	.card_sm_head {
+		width: 654rpx;
+		flex-direction: row;
+		align-items: center;
+		justify-content: space-between;
+		margin-top: 21rpx;
+		margin-bottom: 20rpx;
+
+		.card_sm_head_l {
+			flex-direction: row;
+			align-items: flex-start;
+
+			.card_sm_head_sicon {
+				width: 28rpx;
+				height: 32rpx;
+			}
+
+			.card_sm_head_text {
+				font-family: DingTalk, DingTalk;
+				font-weight: normal;
+				font-size: 32rpx;
+				color: #628f2f;
+				margin-right: 8rpx;
+			}
+
+			.card_sm_head_icon {
+				width: 16rpx;
+				height: 16rpx;
+			}
+		}
+	}
+
+	.card_sm_head_r {
+		flex-direction: row;
+		align-items: center;
+
+		.card_sm_head_r_text {
+			font-weight: 400;
+			font-size: 24rpx;
+			color: #909599;
+			margin-right: 10rpx;
+		}
+
+		.card_sm_head_r_aright {
+			width: 18rpx;
+			height: 18rpx;
+		}
+
+		.card_sm_head_r_icon {
+			width: 80rpx;
+			height: 18rpx;
+		}
+	}
+
+	// 优惠通行活动
+	.card_yh_item {
+		width: 654rpx;
+		height: 164rpx;
+		background-image: linear-gradient(to bottom right, #fefefe, #ebf8ee);
+		box-shadow: 0rpx 2rpx 8rpx 0rpx #d3e7d1;
+		border-radius: 16rpx;
+		flex-direction: row;
+		align-items: center;
+		justify-content: space-between;
+		padding-left: 12rpx;
+		padding-right: 24rpx;
+
+		.card_yh_item_img {
+			width: 140rpx;
+			height: 140rpx;
+		}
+
+		.card_yh_item_c {
+			flex: 1;
+			height: 140rpx;
+			margin-left: 24rpx;
+			justify-content: space-around;
+
+			.card_yh_item_c_txt {
+				font-weight: 500;
+				font-size: 28rpx;
+				color: #333333;
+			}
+
+			.card_yh_item_c_txt1 {
+				font-weight: 400;
+				font-size: 24rpx;
+				color: #909599;
+			}
+		}
+
+		.card_yh_item_btn {
+			width: 128rpx;
+			height: 52rpx;
+			background: #ff9b36;
+			border-radius: 10rpx;
+
+			.card_yh_item_btn_txt {
+				font-weight: 400;
+				font-size: 28rpx;
+				color: #ffffff;
+				text-align: center;
+				line-height: 52rpx;
+			}
+		}
+	}
+
+	// 福利信息
+	.card_goods_list {
+		width: 654rpx;
+		flex-direction: row;
+		align-items: center;
+		justify-content: space-between;
+		margin-bottom: 33rpx;
+
+		.card_goods_item {
+			width: calc(654rpx / 4 - 10rpx);
+			flex-direction: column;
+			align-items: center;
+
+			.card_goods_item_img {
+				width: calc(654rpx / 4 - 10rpx);
+				height: 164rpx;
+				align-items: center;
+				justify-content: center;
+
+				.card_goods_item_img_1 {
+					width: calc(654rpx / 4 - 10rpx);
+					height: 100rpx;
+				}
+			}
+
+			.card_goods_item_title {
+				font-weight: 400;
+				font-size: 24rpx;
+				color: #333333;
+				lines: 1;
+				overflow: hidden;
+				text-overflow: ellipsis;
+				text-align: center;
+			}
+
+			.card_goods_item_jf {
+				flex-direction: row;
+				align-items: center;
+				justify-content: center;
+
+				.card_goods_item_jf_num {
+					font-weight: 400;
+					font-size: 28rpx;
+					color: #ff9b36;
+				}
+
+				.card_goods_item_jf_icon {
+					width: 27rpx;
+					height: 21rpx;
+				}
+			}
+		}
+	}
+
+	.route_card {
+		width: 470rpx;
+		flex-direction: row;
+		justify-content: center;
+		align-items: center;
+		// margin-bottom: 28rpx;
+
+		.route-item {
+			width: 150rpx;
+			align-items: center;
+			flex-direction: column;
+
+			.route-place {
+				font-weight: 400;
+				font-size: 32rpx;
+				color: #333333;
+				white-space: nowrap;
+				lines: 1;
+				overflow: hidden;
+				text-overflow: ellipsis;
+			}
+
+			.route-location {
+				font-weight: 400;
+				font-size: 24rpx;
+				color: #909599;
+				margin-top: 10rpx;
+				lines: 1;
+				white-space: nowrap;
+				overflow: hidden;
+				text-overflow: ellipsis;
+			}
+		}
+	}
+
+	.arrow2_img {
+		width: 110rpx;
+		height: 20rpx;
+		margin-left: 6rpx;
+		margin-right: 6rpx;
+	}
+
+	.arrow_img {
+		width: 140rpx;
+		height: 26rpx;
+		margin-left: 30rpx;
+		margin-right: 30rpx;
+	}
+
+	/* ====== 高速路况：截图风格时间轴 ====== */
+	.route-timeline {
+		width: 634rpx;
+		margin-bottom: 10rpx;
+	}
+
+	.tl-item {
+		width: 634rpx;
+		flex-direction: row;
+	}
+
+	.tl-left {
+		width: 68rpx;
+		align-items: center;
+	}
+
+	.tl-dot {
+		flex-direction: row;
+		align-items: center;
+		justify-content: center;
+		border-radius: 999rpx;
+	}
+
+	.dot-flag {
+		width: 46rpx;
+		height: 46rpx;
+	}
+
+	.dot-km {
+		width: 60rpx;
+		height: 60rpx;
+		flex-direction: column;
+	}
+
+	.dot-red {
+		background: #ef4519;
+	}
+
+	.dot-orange {
+		background: #ff9b36;
+	}
+
+	.dot-green {
+		background: #07c07d;
+	}
+
+	.flag-text {
+		font-size: 24rpx;
+		color: #ffffff;
+		font-weight: 600;
+	}
+
+	.km-val {
+		font-size: 22rpx;
+		color: #ffffff;
+		font-weight: 600;
+		line-height: 24rpx;
+	}
+
+	.km-unit {
+		font-size: 18rpx;
+		color: #ffffff;
+		line-height: 18rpx;
+	}
+
+	.tl-line {
+		flex: 1;
+		margin-top: -6rpx;
+		margin-bottom: -6rpx;
+	}
+
+	.line-solid {
+		width: 24rpx;
+		background: #ff9b36;
+		border-radius: 999rpx;
+	}
+
+	.line-dotted {
+		width: 0;
+		border-width: 2rpx;
+		border-style: dashed;
+		border-color: #ff9b36;
+	}
+
+	.tl-right {
+		width: 566rpx;
+		padding-left: 18rpx;
+		padding-bottom: 26rpx;
+	}
+
+	.tl-head {
+		height: 60rpx;
+		flex-direction: row;
+		align-items: center;
+		justify-content: space-between;
+		margin-bottom: 12rpx;
+	}
+
+	.tl-title-wrap {
+		flex-direction: row;
+		align-items: center;
+		// flex: 1;
+	}
+
+	.tl-title {
+		font-size: 30rpx;
+		color: #333333;
+		font-weight: 600;
+		lines: 1;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		margin-right: 24rpx;
+	}
+
+	.title-danger {
+		color: #ff4d4f;
+		font-weight: 600;
+	}
+
+	.title-success {
+		color: #07c07d;
+		font-weight: 600;
+	}
+
+	.tl-sub {
+		margin-left: 12rpx;
+		font-size: 28rpx;
+		color: #333333;
+	}
+
+	.tq_tag {
+		flex: 1;
+		flex-direction: row;
+
+		.tq_tag_text {
+			height: 40rpx;
+			border-radius: 8rpx;
+			border: 2rpx solid #FD4848;
+			line-height: 36rpx;
+			padding-left: 10rpx;
+			padding-right: 10rpx;
+			font-size: 20rpx;
+			font-weight: 500;
+			color: #FD4848;
+			margin-left: 24rpx;
+		}
+	}
+
+	.tl-right-text {
+		flex-direction: row;
+		align-items: center;
+	}
+
+	.tl-right-text1 {
+		font-weight: 400;
+		font-size: 24rpx;
+	}
+
+	.rt-muted {
+		color: #909599;
+	}
+
+	.rt-danger {
+		color: #ef4519;
+	}
+
+	.rt-success {
+		color: #07c07d;
+	}
+
+	.tl-arrow {
+		margin-left: 6rpx;
+		font-size: 24rpx;
+		color: #909599;
+	}
+
+	.tl-panel {
+		border-radius: 16rpx;
+	}
+
+	.rout_box {
+		flex: 1;
+		background: #efefef;
+		border-radius: 12rpx;
+		flex-direction: column;
+		padding-top: 19rpx;
+		padding-right: 20rpx;
+		padding-bottom: 19rpx;
+		padding-left: 20rpx;
+		margin-top: 20rpx;
+
+		.rout_title {
+			flex-direction: row;
+			align-items: center;
+			margin-bottom: 20rpx;
+
+			.rout_img {
+				width: 34rpx;
+				height: 34rpx;
+				margin-right: 10rpx;
+			}
+
+			.rout_text {
+				font-weight: 500;
+				font-size: 24rpx;
+				color: #333333;
+			}
+		}
+
+		.rout_count {
+			background: #ffffff;
+			border-radius: 12rpx;
+			padding-top: 12rpx;
+			padding-bottom: 12rpx;
+			padding-left: 17rpx;
+			padding-right: 17rpx;
+
+			.rout_count_txt {
+				font-weight: 400;
+				font-size: 24rpx;
+				color: #333333;
+			}
+		}
+	}
+
+	.tl-panel_scroll {
+		flex: 1;
+		flex-direction: row;
+		justify-content: flex-start;
+		white-space: nowrap;
+	}
+
+	.tl-panel-gray {
+		background: #efefef;
+		padding-top: 16rpx;
+		padding-bottom: 16rpx;
+		padding-left: 18rpx;
+		padding-right: 18rpx;
+		flex-direction: row;
+		align-items: center;
+	}
+
+	.ch-row {
+		display: inline-block;
+		margin-right: 8rpx;
+	}
+
+	.ch-name {
+		font-size: 24rpx;
+		color: #333333;
+	}
+
+	.ch-bars {
+		flex: 1;
+		flex-direction: row;
+		align-items: center;
+	}
+
+	.bar {
+		width: 40rpx;
+		height: 40rpx;
+		border-radius: 4rpx;
+	}
+
+	.bar-green {
+		background: #07c07d;
+	}
+
+	.bar-red {
+		background: #ef4519;
+	}
+
+	/* 占用车道那行：右侧时间 */
+	.tl-panel-lane .lane-row {
+		flex-direction: row;
+		align-items: center;
+	}
+
+	.lane-time {
+		margin-left: 14rpx;
+		font-size: 24rpx;
+		color: #ef4519;
+		lines: 1;
+		word-break: keep-all;
+	}
+
+	/* 服务区绿色面板 */
+	.tl-panel-green {
+		background: rgba(7, 192, 125, 0.19);
+		padding: 16rpx;
+		flex-direction: row;
+		align-items: center;
+		justify-content: space-between;
+	}
+
+	.svc-icons {
+		flex-direction: row;
+		align-items: center;
+	}
+
+	.svc-icon {
+		width: 52rpx;
+		height: 52rpx;
+		background: rgba(255, 255, 255, 0.8);
+		border-radius: 10rpx;
+		align-items: center;
+		justify-content: center;
+		margin-right: 10rpx;
+	}
+
+	.svc-btn {
+		height: 56rpx;
+		padding-left: 18rpx;
+		padding-right: 18rpx;
+		background: #25c17a;
+		border-radius: 12rpx;
+		align-items: center;
+		justify-content: center;
+	}
+
+	.svc-btn_txt {
+		color: #ffffff;
+		font-size: 24rpx;
+	}
+
+	.tl-spacer {
+		height: 12rpx;
+	}
+
+	/* 右侧信息区：文字 + 按钮并排 */
+	.tl-right-area {
+		flex-direction: row;
+		align-items: center;
+		margin-bottom: 18rpx;
+
+		/* 胶囊按钮 */
+		.tl-badge {
+			height: 40rpx;
+			padding-left: 8rpx;
+			padding-right: 8rpx;
+			border-radius: 8rpx;
+			font-size: 20rpx;
+			border: 2rpx solid;
+			line-height: 36rpx;
+			margin-right: 20rpx;
+			background-color: #ffffff;
+		}
+	}
+
+	.badge-green {
+		background: #628f2f;
+	}
+
+	.badge-orange {
+		background: #ff9b36;
+	}
+
+	/* 向右小三角 */
+	.tl-arrow-tri {
+		width: 16rpx;
+		height: 16rpx;
+		margin-left: 8rpx;
+	}
+
+	.mt25 {
+		margin-top: -25rpx;
+	}
+
+	.service-img {
+		width: 40rpx;
+		height: 40rpx;
+	}
+
+	/*---------------------------------路径导航结束----------------------------*/
+
+	/* 出行体验官弹窗容器 */
+	.exp-popup {
+		width: 580rpx;
+		padding: 40rpx 30rpx 0;
+		box-sizing: border-box;
+		align-items: center;
+		background-color: transparent;
+	}
+
+	/* 整张卡片背景图 */
+	.exp-popup__card {
+		width: 520rpx;
+		border-radius: 24rpx;
+		overflow: hidden;
+	}
+
+	/* 按钮区域：略微悬浮在卡片底部 */
+	.exp-popup__btn-wrap {
+		width: 364rpx;
+		height: 98rpx;
+		margin-top: -122rpx;
+		margin-bottom: 56rpx;
+		position: relative;
+	}
+
+	/* 按钮背景图 */
+	.exp-popup__btn-bg {
+		width: 364rpx;
+		height: 98rpx;
+		border-radius: 999rpx;
+	}
+
+	/* 按钮文字 */
+	.exp-popup__btn-text {
+		position: absolute;
+		left: 0;
+		top: 0;
+		width: 364rpx;
+		height: 98rpx;
+		text-align: center;
+		line-height: 98rpx;
+		font-size: 30rpx;
+		color: #ffffff;
+		font-weight: 600;
+	}
+
+	/* 关闭按钮 */
+	.exp-popup__close {
+		width: 96rpx;
+		height: 96rpx;
+		margin-bottom: 30rpx;
+	}
+</style>
