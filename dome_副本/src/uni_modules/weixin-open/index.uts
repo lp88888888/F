@@ -1,9 +1,0 @@
-// weixin-open 插件统一入口文件
-
-// 根据不同平台导入对应的实现
-
-// #ifdef APP-HARMONY
-import { launchMiniProgram,registerApp } from './utssdk/app-harmony/index.uts';
-// #endif
-
-export { launchMiniProgram,registerApp };
