@@ -1,0 +1,211 @@
+<template>
+	<view class="container" style="height: 800rpx;">
+		<!-- 标题区域 -->
+		<view class="header">
+			<view class="title">
+				<!-- <view>沿途共计<text class="count">3</text>个ETC网点</view> -->
+				<view style="flex-direction: row;align-items: center;">
+					<text class="title-text">沿途共计</text>
+					<text class="count">{{fwqlist.length}}</text>
+					<text class="title-text">个ETC网点</text>
+				</view>
+				<u-icon name="close" color="#000" size="20" @click="onClose"></u-icon>
+			</view>
+
+			<!-- 状态标签列表 -->
+			<view class="tag-list">
+				<text v-for="item in invoiceList " :key="item.id" class="tag" :class="{ active: item.id === activeTag }"
+					@click="activeTag = item.id">
+					{{ item.rkname }}
+				</text>
+			</view>
+		</view>
+		<scroll-view scroll-y="true" style="flex: 1;background-color:  #EFF1F6;" :show-scrollbar="false">
+			<view v-for="item in fwqlist " :key="item.id" class="station-item">
+				<view class="content">
+					<view class="content-1"></view>
+					<view class="content-2">
+						<text class="name">{{ item.rkname }}</text>
+						<text class="address">陕西省渭南市临渭区良田街道渭南西服务区...</text>
+					</view>
+					<view class="content-3">
+						<text class="distance">5.72km</text>
+						<image :src="imgUrl+'img/daohang.png'" mode="aspectFill" class="icon"></image>
+					</view>
+
+				</view>
+			</view>
+		</scroll-view>
+	</view>
+</template>
+
+<script setup lang="ts">
+	import { ref, reactive } from 'vue'
+	import { imgUrl } from '../../../config';
+	// 标签列表
+	const invoiceList = ref([
+		{ id: 1, rkname: '全部' },
+		{ id: 2, rkname: '绕城包年网点' },
+		{ id: 3, rkname: '收费站网点' },
+		{ id: 4, rkname: '服务区网点' }
+	])
+
+	// 收费站列表
+	const fwqlist = ref([
+		{ id: 1, rkname: '泾阳北' },
+		{ id: 2, rkname: '泾阳北' },
+		{ id: 3, rkname: '泾阳北' },
+		{ id: 4, rkname: '泾阳北' }
+	])
+
+	// 当前选中标签
+	const activeTag = ref(1)
+
+	// 关闭事件
+	const emit = defineEmits<{
+		(e : 'call-parent', data : string) : void
+	}>()
+	
+	// 关闭事件
+	const onClose = () => {
+		emit('closetab')
+	}
+</script>
+
+<style scoped lang="scss">
+	.container {
+		height: 800rpx;
+		position: relative;
+		background: #EFF1F6;
+		border-radius: 36rpx 36rpx 0rpx 0rpx;
+		border: 3px solid #FFFFFF;
+	}
+
+	.header {
+		flex-shrink: 0; /* 防止收缩 */
+		padding: 20rpx;
+		background: #fff;
+		border-radius: 16rpx;
+		box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.1);
+	}
+
+	.title {
+		flex-direction: row;
+		justify-content: space-between;
+		align-items: center;
+		font-weight: bold;
+		font-size: 28rpx;
+		color: #000000;
+		margin-bottom: 29rpx;
+	}
+
+	.count {
+		color: #FF9600;
+		font-weight: bold;
+		margin: 0 8rpx;
+	}
+	.title-text{
+		font-weight: bold;
+		font-size: 28rpx;
+		color: #000000;
+	}
+	.tag-list {
+		flex-direction: row;
+		gap: 20rpx;
+		flex-wrap: wrap;
+	}
+
+	.tag {
+		margin-right: 20rpx;
+		padding-left: 30rpx;
+		padding-right: 30rpx;
+		text-align: center;
+		line-height: 56rpx;
+		height: 56rpx;
+		background: #F7F8FA;
+		border-radius: 16rpx;
+		font-weight: bold;
+		font-size: 24rpx;
+		color: #000000;
+
+		&.active {
+			padding-left: 10rpx;
+			padding-right: 10rpx;
+			height: 56rpx;
+			background: #FFFAF2;
+			border-radius: 16rpx;
+			border: 1px solid #FF9600;
+			font-weight: bold;
+			font-size: 24rpx;
+			color: #FF9600;
+		}
+	}
+
+	.station-item {
+		position: relative;
+		height: 200rpx;
+		margin: 20rpx 30rpx;
+		background: #fff;
+		border-radius: 16rpx;
+		overflow: hidden;
+		box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.1);
+		flex-direction: row;
+		align-items: center;
+	}
+	.content {
+		padding: 30rpx;
+		color: #333;
+		border-radius: 30rpx;
+		flex-direction: row;
+	}
+
+	.content-1 {
+		width: 12rpx;
+		height: 12rpx;
+		background: linear-gradient(-40deg, #FF9600, #F4AA31);
+		border-radius: 50%;
+		margin-right: 10rpx;
+		margin-top: 20rpx;
+	}
+	.content-2{
+		flex-direction: row;
+		justify-content: space-between;
+		flex-direction: column;
+	}
+	.content-3{
+		flex-direction: row;
+		align-items: center;
+		justify-content: space-between;
+		flex-direction: column;
+	}
+	
+	.row {
+		flex-direction: row;
+		justify-content: space-between;
+		align-items: center;
+	}
+
+	.name {
+		font-size: 34rpx;
+		font-weight: bold;
+		color: #000;
+	}
+
+	.distance {
+		font-size: 28rpx;
+		color: #666;
+		margin: 16rpx 0;
+		color: #FF9600;
+	}
+
+	.address {
+		font-size: 24rpx;
+		color: #999;
+	}
+
+	.icon {
+		width: 32rpx;
+		height: 32rpx;
+		margin-left: 16rpx;
+	}
+</style>

@@ -1,0 +1,2290 @@
+{
+	"easycom": {
+		"autoscan": true,
+		"custom": {
+			"^u--(.*)": "@/uni_modules/uview-plus/components/u-$1/u-$1.vue",
+			"^up-(.*)": "@/uni_modules/uview-plus/components/u-$1/u-$1.vue",
+			"^u-([^-].*)": "@/uni_modules/uview-plus/components/u-$1/u-$1.vue",
+			"^ser-(.*)": "@/components/ser-$1/ser-$1.vue"
+		}
+	},
+	"pages": [
+		// #ifdef APP
+		{
+			"path": "pages/guide/judge",
+			"style": {
+				"enablePullDownRefresh": false,
+				"onReachBottomDistance": 100,
+				"navigationStyle": "custom",
+				"app-plus": {
+					"contentAdjust": false,
+					"bounce": "none"
+				}
+			}
+		},
+		{
+			"path": "pages/guide/guide",
+			"style": {
+				"enablePullDownRefresh": false,
+				"onReachBottomDistance": 100,
+				"navigationStyle": "custom",
+				"app-plus": {
+					"contentAdjust": false,
+					"bounce": "none"
+				}
+			}
+		},
+		// #endif
+		{
+			"path": "pages/home/home",
+			"style": {
+				"navigationBarTitleText": "首页",
+				"navigationStyle": "custom",
+				"componentPlaceholder": {
+					"old-index": "view",
+					"red-index": "view"
+				}
+			}
+		},
+		{
+			"path": "pages/service/index",
+			"style": {
+				"navigationBarTitleText": "服务",
+				"navigationStyle": "custom"
+			}
+		},
+		{
+			"path": "pages/points/index",
+			"style": {
+				"navigationBarTitleText": "积分",
+				"navigationStyle": "custom"
+			}
+		},
+		{
+			"path": "pages/individual/individual",
+			"style": {
+				"navigationBarTitleText": "个人中心",
+				"navigationStyle": "custom"
+			}
+		},
+		{
+			"path": "pages/mapSearch/index",
+			"style": {
+				"navigationBarTitleText": "选择位置",
+				"navigationStyle": "custom"
+			}
+		},
+		{
+			"path": "pages/mapSearch/indexBD",
+			"style": {
+				"navigationBarTitleText": "选择位置",
+				"navigationStyle": "custom"
+			}
+		}
+	],
+	"subPackages": [{
+			"root": "pages_A",
+			"pages": [{
+					"path": "login/login",
+					"style": {
+						"navigationBarTitleText": "登录",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "login_password/login",
+					"style": {
+						"navigationBarTitleText": "密码登录",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "login_password/add_phone",
+					"style": {
+						"navigationBarTitleText": "绑定手机号",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "login_phone/login",
+					"style": {
+						"navigationBarTitleText": "验证码登录",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "personalinformation/personal",
+					"style": {
+						"navigationBarTitleText": "个人信息",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "setting/setting",
+					"style": {
+						"navigationBarTitleText": "系统信息",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "setting/notice",
+					"style": {
+						"navigationBarTitleText": "通知设置",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "setting/themeswitcher",
+					"style": {
+						"navigationBarTitleText": "主题色选择",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "setting/systemPermission",
+					"style": {
+						"navigationBarTitleText": "系统权限管理",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "setting/cancellation",
+					"style": {
+						"navigationBarTitleText": "注销账号",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "all_product/index",
+					"style": {
+						"navigationBarTitleText": "所有商品",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "points/givegift",
+					"style": {
+						"navigationBarTitleText": "送礼物",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "points/PaymentSuccessful",
+					"style": {
+						"navigationBarTitleText": "支付成功",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "points/fqpaysuccess",
+					"style": {
+						"navigationBarTitleText": "支付成功",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "points/seckill",
+					"style": {
+						"navigationBarTitleText": "秒杀",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "points/newsdetail",
+					"style": {
+						"navigationBarTitleText": "资讯管理",
+						"navigationBarBackgroundColor": "#FFFFFF"
+					}
+				},
+				{
+					"path": "station/index",
+					"style": {
+						"navigationBarTitleText": "服务区",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "stationDetails/index",
+					"style": {
+						"navigationBarTitleText": "服务区详情",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "toll/index",
+					"style": {
+						"navigationBarTitleText": "收费站",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "correct/index",
+					"style": {
+						"navigationBarTitleText": "路况纠错",
+						"navigationBarBackgroundColor": "#F7EEE1"
+					}
+				},
+				{
+					"path": "map/index",
+					"style": {
+						"navigationBarTitleText": "路况地图"
+					}
+				},
+				{
+					"path": "mapInfo/index",
+					"style": {
+						"navigationBarTitleText": "路况信息"
+					}
+				},
+				{
+					"path": "order/index",
+					"style": {
+						"navigationBarTitleText": "商品订单",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "order/myorder",
+					"style": {
+						"navigationBarTitleText": "我的订单",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "invoice/index",
+					"style": {
+						"navigationBarTitleText": "我的发票",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "invoice/details",
+					"style": {
+						"navigationBarTitleText": "",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "invoice/invoiceTitle",
+					"style": {
+						"navigationBarTitleText": "",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "invoice/invoice",
+					"style": {
+						"navigationBarTitleText": "查看电子发票"
+					}
+				},
+				{
+					"path": "vip/index",
+					"style": {
+						"navigationBarTitleText": "会员中心",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "benefit/index",
+					"style": {
+						"navigationBarTitleText": "会员权益",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "car/addCar",
+					"style": {
+						"navigationBarTitleText": "新增车辆",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "car/myCar",
+					"style": {
+						"navigationBarTitleText": "我的车辆",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "car/info",
+					"style": {
+						"navigationBarTitleText": "车辆详情",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "address/index",
+					"style": {
+						"navigationBarTitleText": "收货地址",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "address/edit",
+					"style": {
+						"navigationBarTitleText": "编辑地址",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "address/city",
+					"style": {
+						"navigationBarTitleText": "选择城市",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "message/index",
+					"style": {
+						"navigationBarTitleText": "消息",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "coupon/index",
+					"style": {
+						"navigationBarTitleText": "优惠券",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "partner/index",
+					"style": {
+						"navigationBarTitleText": "合伙人",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "tollInvoice/index",
+					"style": {
+						"navigationBarTitleText": "通行费发票",
+						"navigationStyle": "custom"
+					}
+				},
+				// {
+				// 	"path": "tollInvoice/associated",
+				// 	"style": {
+				// 		"navigationBarTitleText": "关联车辆",
+				// 		"navigationStyle": "custom"
+				// 	}
+				// },
+				{
+					"path": "tollInvoice/query",
+					"style": {
+						"navigationBarTitleText": "通行费率查询",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "tollInvoice/artificial",
+					"style": {
+						"navigationBarTitleText": "人工车道开票"
+					}
+				},
+				{
+					"path": "tollInvoice/Invoicing",
+					"style": {
+						"navigationBarTitleText": "人工车道开票"
+					}
+				},
+				{
+					"path": "tollInvoice/association",
+					"style": {
+						"navigationBarTitleText": "关联发票抬头"
+					}
+				},
+				{
+					"path": "greenPass/index",
+					"style": {
+						"navigationBarTitleText": "绿通预约"
+					}
+				},
+				{
+					"path": "greenPass/refund",
+					"style": {
+						"navigationBarTitleText": "申请退费"
+					}
+				},
+				{
+					"path": "greenPass/discount",
+					"style": {
+						"navigationBarTitleText": "优惠记录"
+					}
+				},
+				{
+					"path": "roadRescue/homepage",
+					"style": {
+						"navigationBarTitleText": "",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "roadRescue/index",
+					"style": {
+						"navigationBarTitleText": "道路救援",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "roadRescue/workOrder",
+					"style": {
+						"navigationBarTitleText": "历史工单"
+					}
+				},
+				{
+					"path": "roadRescue/oderList",
+					"style": {
+						"navigationBarTitleText": "工单详情"
+					}
+				},
+				{
+					"path": "roadRescue/oneClickRescue",
+					"style": {
+						"navigationBarTitleText": "一键救援"
+					}
+				},
+				{
+					"path": "pointslist/index",
+					"style": {
+						"navigationBarTitleText": "积分明细",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "pointslist/enterprise",
+					"style": {
+						"navigationBarTitleText": "企业积分明细",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "pointslist/pointsdal",
+					"style": {
+						"navigationBarTitleText": "积分明细详情",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "evaluate/index",
+					"style": {
+						"navigationBarTitleText": "晒得评价"
+					}
+				},
+				{
+					"path": "evaluate/comment",
+					"style": {
+						"navigationBarTitleText": "评价"
+					}
+				},
+				{
+					"path": "weather/index",
+					"style": {
+						"navigationBarTitleText": "天气详情",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "weather/warning",
+					"style": {
+						"navigationBarTitleText": "天气预警详情",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "points/details",
+					"style": {
+						"navigationBarTitleText": "积分商品详情",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "points/submitOrder",
+					"style": {
+						"navigationBarTitleText": "提交订单",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "points/payOrder",
+					"style": {
+						"navigationBarTitleText": "提交订单",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "points/evaluate",
+					"style": {
+						"navigationBarTitleText": "评价列表"
+					}
+				},
+				{
+					"path": "pricingVolume/index",
+					"style": {
+						"navigationBarTitleText": "以量定价"
+					}
+				},
+				{
+					"path": "xieyi/privacy_agreement",
+					"style": {
+						"navigationBarTitleText": "隐私协议"
+					}
+				},
+				{
+					"path": "orderDetails/index",
+					"style": {
+						"navigationBarTitleText": "订单详情",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "orderDetails/cancelOrder",
+					"style": {
+						"navigationBarTitleText": "订单详情",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "orderDetails/logistics",
+					"style": {
+						"navigationBarTitleText": "物流",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "shoppingCart/index",
+					"style": {
+						"navigationBarTitleText": "购物车"
+					}
+				},
+				{
+					"path": "chargingPiles/index",
+					"style": {
+						"navigationBarTitleText": "充电桩查询",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "chargingPiles/queryList",
+					"style": {
+						"navigationBarTitleText": "充电桩查询"
+					}
+				},
+				{
+					"path": "chargingPiles/orderList",
+					"style": {
+						"navigationBarTitleText": "订单查询"
+					}
+				},
+				{
+					"path": "chargingPiles/orderDetail",
+					"style": {
+						"navigationBarTitleText": "订单详情"
+					}
+				},
+				{
+					"path": "chargingPiles/queryDetail",
+					"style": {
+						"navigationBarTitleText": "查看详情"
+					}
+				},
+				{
+					"path": "chargingPiles/chargeing",
+					"style": {
+						"navigationBarTitleText": "充电中",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "etcInvoice/bindEtc",
+					"style": {
+						"navigationBarTitleText": "绑定ETC卡",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "etcInvoice/etcCards",
+					"style": {
+						"navigationBarTitleText": "选择ETC卡",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "etcInvoice/headIndex",
+					"style": {
+						"navigationBarTitleText": "关联发票抬头",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "etcInvoice/success",
+					"style": {
+						"navigationBarTitleText": "关联发票抬头",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "etcInvoice/makeIndex",
+					"style": {
+						"navigationBarTitleText": "关联发票抬头",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "chargingPiles/planning",
+					"style": {
+						"navigationBarTitleText": "路线规划"
+					}
+				},
+				{
+					"path": "raffleH5/index",
+					"style": {
+						"navigationBarTitleText": " "
+					}
+				},
+				// "navigationStyle": "custom"
+				{
+					"path": "etcbranch/index",
+					"style": {
+						"navigationBarTitleText": "ETC网点"
+					}
+				},
+				{
+					"path": "wallet/index",
+					"style": {
+						"navigationBarTitleText": "钱包",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "wallet/withdraw",
+					"style": {
+						"navigationBarTitleText": "提现"
+					}
+				},
+				{
+					"path": "wallet/withdrawsucceed",
+					"style": {
+						"navigationBarTitleText": "",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "mystore/index",
+					"style": {
+						"navigationBarTitleText": "我的小店",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "promotionOrder/index",
+					"style": {
+						"navigationBarTitleText": "推广订单",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "pay/index",
+					"style": {
+						"navigationBarTitleText": "支付订单",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "gascharging/index",
+					"style": {
+						"navigationBarTitleText": "加气站",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "gascharging/details",
+					"style": {
+						"navigationBarTitleText": "加气站详情",
+						"navigationStyle": "custom"
+					}
+				}
+			]
+		},
+		{
+			"root": "pages_B",
+			"pages": [{
+					"path": "directRetail/shopCar",
+					"style": {
+						"navigationBarTitleText": "购物车",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "directRetail/payment",
+					"style": {
+						"navigationBarTitleText": "支付订单",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "directRetail/search",
+					"style": {
+						"navigationBarTitleText": "搜索",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "directRetail/index",
+					"style": {
+						"navigationBarTitleText": "服务区零售",
+						"navigationStyle": "custom"
+					}
+				},
+				// {
+				// 	"path": "directRetail/home",
+				// 	"style": {
+				// 		"navigationBarTitleText": "服务区零售",
+				// 		"navigationStyle": "custom"
+				// 	}
+				// },
+				{
+					"path": "directRetail/list",
+					"style": {
+						"navigationBarTitleText": "订单列表",
+						"navigationStyle": "custom"
+					}
+				},
+				// {
+				// 	"path": "directRetail/collection",
+				// 	"style": {
+				// 		"navigationBarTitleText": "我的收藏",
+				// 		"navigationStyle": "custom"
+				// 	}
+				// },
+				// {
+				// 	"path": "directRetail/list",
+				// 	"style": {
+				// 		"navigationBarTitleText": "服务区零售",
+				// 		"navigationStyle": "custom"
+				// 	}
+				// },
+				{
+					"path": "directRetail/newCollection",
+					"style": {
+						"navigationBarTitleText": "我的收藏",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "directRetail/merchants",
+					"style": {
+						"navigationBarTitleText": "商家详情",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "directRetail/nearMerchants",
+					"style": {
+						"navigationBarTitleText": "附近商家",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "directRetail/shopDetail",
+					"style": {
+						"navigationBarTitleText": "商品详情",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "directRetail/orderAdd",
+					"style": {
+						"navigationBarTitleText": "提交订单",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "directRetail/orderDetail",
+					"style": {
+						"navigationBarTitleText": "订单详情",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "directRetail/afterSalesApply",
+					"style": {
+						"navigationBarTitleText": "申请售后",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "directRetail/refundApply",
+					"style": {
+						"navigationBarTitleText": "申请退款"
+					}
+				},
+				// "navigationStyle": "custom"
+				{
+					"path": "directRetail/afterSalesProgress",
+					"style": {
+						"navigationBarTitleText": "售后进度查询",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "directRetail/logistics",
+					"style": {
+						"navigationBarTitleText": "查看物流",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "scenicSpotTicket/index",
+					"style": {
+						"navigationBarTitleText": "景区门票",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "scenicSpotTicket/detail",
+					"style": {
+						"navigationBarTitleText": "景区详情",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "dining/search",
+					"style": {
+						"navigationBarTitleText": "搜索",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "dining/index",
+					"style": {
+						"navigationBarTitleText": "餐饮美食",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "dining/goodsDetail",
+					"style": {
+						"navigationBarTitleText": "商品详情",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "dining/paySuccess",
+					"style": {
+						"navigationBarTitleText": "支付成功",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "dining/serviceEvaluation",
+					"style": {
+						"navigationBarTitleText": "服务评价"
+					}
+				},
+				{
+					"path": "dining/orderDetail",
+					"style": {
+						"navigationBarTitleText": "订单详情",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "dining/orderList",
+					"style": {
+						"navigationBarTitleText": "订单列表",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "dining/orderAdd",
+					"style": {
+						"navigationBarTitleText": "确认支付",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "dining/diningDetail",
+					"style": {
+						"navigationBarTitleText": "餐厅详情",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "dining/diningHome",
+					"style": {
+						"navigationBarTitleText": "餐厅主页",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "scenicSpotTicket/addOrder",
+					"style": {
+						"navigationBarTitleText": "预定",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "scenicSpotTicket/contactsList",
+					"style": {
+						"navigationBarTitleText": "联系人",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "scenicSpotTicket/addContacts",
+					"style": {
+						"navigationBarTitleText": "新增联系人",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "scenicSpotTicket/paySuccess",
+					"style": {
+						"navigationBarTitleText": "支付成功",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "scenicSpotTicket/confirmOrder",
+					"style": {
+						"navigationBarTitleText": "确认支付",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "scenicSpotTicket/cardRights",
+					"style": {
+						"navigationBarTitleText": "权益卡",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "scenicSpotTicket/cardAnnual",
+					"style": {
+						"navigationBarTitleText": "年卡",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "scenicSpotTicket/myOlderList",
+					"style": {
+						"navigationBarTitleText": "我的",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "scenicSpotTicket/detailOrder",
+					"style": {
+						"navigationBarTitleText": "我的",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "rentCar/index",
+					"style": {
+						"navigationBarTitleText": "租车首页",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "rentCar/rentCarDetails",
+					"style": {
+						"navigationBarTitleText": "租车详情",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "rentCar/appointment",
+					"style": {
+						"navigationBarTitleText": "我的预约",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "rentCar/carDetail",
+					"style": {
+						"navigationBarTitleText": "车辆详情"
+					}
+				},
+				{
+					"path": "rentCar/cancel",
+					"style": {
+						"navigationBarTitleText": "取消预定"
+					}
+				},
+				{
+					"path": "rentCar/refund",
+					"style": {
+						"navigationBarTitleText": "退租"
+					}
+				},
+				{
+					"path": "rentCar/orderSubmit",
+					"style": {
+						"navigationBarTitleText": "提交订单",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "rentCar/orderDetail",
+					"style": {
+						"navigationBarTitleText": "订单详情",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "rentCar/add",
+					"style": {
+						"navigationBarTitleText": "新增订单 ",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "rentCar/businessDetail",
+					"style": {
+						"navigationBarTitleText": "商家详情",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "hotel/hotelist",
+					"style": {
+						"navigationBarTitleText": "酒店住宿",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "hotel/collect",
+					"style": {
+						"navigationBarTitleText": "我的收藏",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "hotel/homeDetails",
+					"style": {
+						"navigationBarTitleText": "酒店列表2",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "hotel/homereserve",
+					"style": {
+						"navigationBarTitleText": "酒店列表3",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "hotel/hotelDetails",
+					"style": {
+						"navigationBarTitleText": "酒店列表4",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "hotel/maphotel",
+					"style": {
+						"navigationBarTitleText": "酒店住宿 ",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "hotel/odertk",
+					"style": {
+						"navigationBarTitleText": "退款申请 ",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "hotel/order",
+					"style": {
+						"navigationBarTitleText": "订单",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "hotel/orderCancel",
+					"style": {
+						"navigationBarTitleText": "取消订单",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "hotel/orderDetails",
+					"style": {
+						"navigationBarTitleText": "订单详情 ",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "hotel/orderEvaluate",
+					"style": {
+						"navigationBarTitleText": "服务评价",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "mapmode/index",
+					"style": {
+						"navigationBarTitleText": "地图模式",
+						"navigationStyle": "custom"
+					}
+				}
+			]
+		},
+		{
+			"root": "pages_C",
+			"pages": [{
+					"path": "member/index",
+					"style": {
+						"navigationBarTitleText": "会员中心",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "member/registeredEnterprises",
+					"style": {
+						"navigationBarTitleText": "企业会员注册",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "member/registeredPersonal",
+					"style": {
+						"navigationBarTitleText": "个人会员注册",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "member/interests",
+					"style": {
+						"navigationBarTitleText": "会员权益",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "member/redeemPoints",
+					"style": {
+						"navigationBarTitleText": "里程换积分",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "member/PointsRules",
+					"style": {
+						"navigationBarTitleText": "积分规则",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "member/earnPoints",
+					"style": {
+						"navigationBarTitleText": "赚积分",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "member/rankingList",
+					"style": {
+						"navigationBarTitleText": "积分榜单",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "coupon/index",
+					"style": {
+						"navigationBarTitleText": "我的卡包",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "xieyi/privacy",
+					"style": {
+						"navigationBarTitleText": "隐私协议"
+					}
+				},
+				{
+					"path": "xieyi/index",
+					"style": {
+						"navigationBarTitleText": "协议"
+					}
+				},
+				{
+					"path": "evaluation/add",
+					"style": {
+						"navigationBarTitleText": "评价",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "evaluation/list",
+					"style": {
+						"navigationBarTitleText": "评价列表",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "evaluation/success",
+					"style": {
+						"navigationBarTitleText": "评价成功",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "scanQrPay/index",
+					"style": {
+						"navigationBarTitleText": "扫码付",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "scanQrPay/selectCar",
+					"style": {
+						"navigationBarTitleText": "缴费车辆选择",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "scanQrPay/orderList",
+					"style": {
+						"navigationBarTitleText": "订单列表",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "scanQrPay/orderDetail",
+					"style": {
+						"navigationBarTitleText": "订单详情",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "scanQrPay/pay",
+					"style": {
+						"navigationBarTitleText": "支付订单",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "scanQrPay/paySuccess",
+					"style": {
+						"navigationBarTitleText": "支付订单",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "enterprise/index",
+					"style": {
+						"navigationBarTitleText": "我的企业",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "enterprise/myenteprise",
+					"style": {
+						"navigationBarTitleText": "我的企业",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "enterprise/joinEnteprise",
+					"style": {
+						"navigationBarTitleText": "我的企业"
+					}
+				},
+				{
+					"path": "enterprise/userReview",
+					"style": {
+						"navigationBarTitleText": "我的企业",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "enterprise/myApply",
+					"style": {
+						"navigationBarTitleText": "我的申请",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "enterprise/bindcar",
+					"style": {
+						"navigationBarTitleText": "绑定车辆",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "enterprise/carInfo",
+					"style": {
+						"navigationBarTitleText": "车辆详情",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "enterprise/entercar",
+					"style": {
+						"navigationBarTitleText": "企业车辆",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "enterprise/myreview",
+					"style": {
+						"navigationBarTitleText": "我的审核",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "carOwner/carDetails",
+					"style": {
+						"navigationBarTitleText": "活动详情",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "carOwner/selfDrive",
+					"style": {
+						"navigationBarTitleText": "趣旅行",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "carOwner/index",
+					"style": {
+						"navigationBarTitleText": "车主旅游季活动",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "carOwner/tourismcheckin",
+					"style": {
+						"navigationBarTitleText": "打卡有礼",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "carOwner/addOrder",
+					"style": {
+						"navigationBarTitleText": "填写订单",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "carOwner/addTraveler",
+					"style": {
+						"navigationBarTitleText": "添加出行人",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "truckFestival/index",
+					"style": {
+						"navigationBarTitleText": "货车节",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "truckFestival/components/Exchangebenefits",
+					"style": {
+						"navigationBarTitleText": "兑换福利",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "truckFestival/pointsdetail",
+					"style": {
+						"navigationBarTitleText": "积分明细",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "truckFestival/clockIn",
+					"style": {
+						"navigationBarTitleText": "打卡赚积分",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "truckFestival/mileage",
+					"style": {
+						"navigationBarTitleText": "里程赚积分",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "truckFestival/pointsRankingList",
+					"style": {
+						"navigationBarTitleText": "榜单赚积分",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "truckFestival/pointsInvitation",
+					"style": {
+						"navigationBarTitleText": "邀请赚积分",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "truckFestival/highSpeedList",
+					"style": {
+						"navigationBarTitleText": "高速社群",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "carOwner/carOrderDetail",
+					"style": {
+						"navigationBarTitleText": "车主节详情",
+						"navigationStyle": "custom"
+					}
+				}
+
+			]
+		},
+		{
+			"root": "pages_D",
+			"pages": [{
+					"path": "informationMatch/index",
+					"style": {
+						"navigationBarTitleText": "信息撮合",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "informationMatch/addSubscribe",
+					"style": {
+						"navigationBarTitleText": "添加订阅路线",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "informationMatch/detail",
+					"style": {
+						"navigationBarTitleText": "货源详情",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "informationMatch/orderList",
+					"style": {
+						"navigationBarTitleText": "货源订单列表",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "informationMatch/orderDetail",
+					"style": {
+						"navigationBarTitleText": "货源订单详情",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "newCar/index",
+					"style": {
+						"navigationBarTitleText": "新车",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "newCar/brandList",
+					"style": {
+						"navigationBarTitleText": ""
+					}
+				},
+				{
+					"path": "newCar/orderDetail",
+					"style": {
+						"navigationBarTitleText": "订单详情",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "volumePricing/activity/apply",
+					"style": {
+						"navigationBarTitleText": "活动申请",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "volumePricing/activityDetails/index",
+					"style": {
+						"navigationBarTitleText": "活动详情",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "volumePricing/carlist/index",
+					"style": {
+						"navigationBarTitleText": "车辆列表"
+					}
+				},
+				{
+					"path": "volumePricing/bindCar/bindCar",
+					"style": {
+						"navigationBarTitleText": "添加车辆",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "volumePricing/myCar/myCar",
+					"style": {
+						"navigationBarTitleText": "我的车辆",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "volumePricing/myApply/index",
+					"style": {
+						"navigationBarTitleText": "我的申请"
+					}
+				},
+				{
+					"path": "volumePricing/myApplyDetails/index",
+					"style": {
+						"navigationBarTitleText": "详情",
+						"navigationBarBackgroundColor": "#D6EAFF"
+					}
+				},
+				{
+					"path": "volumePricing/passesNum/index",
+					"style": {
+						"navigationBarTitleText": "通行次数"
+					}
+				},
+				{
+					"path": "volumePricing/improve/index",
+					"style": {
+						"navigationBarTitleText": "完善信息"
+					}
+				},
+				{
+					"path": "volumePricing/feedbackList/index",
+					"style": {
+						"navigationBarTitleText": "意见反馈"
+					}
+				},
+				{
+					"path": "volumePricing/feedbackDetails/index",
+					"style": {
+						"navigationBarTitleText": "反馈详情"
+					}
+				},
+				{
+					"path": "volumePricing/discount/index",
+					"style": {
+						"navigationBarTitleText": "以量优惠",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "volumePricing/myDiscount/index",
+					"style": {
+						"navigationBarTitleText": "我的优惠"
+					}
+				},
+				{
+					"path": "volumePricing/discountStatistics/index",
+					"style": {
+						"navigationBarTitleText": "优惠统计"
+					}
+				},
+				{
+					"path": "volumePricing/submitOpinions/index",
+					"style": {
+						"navigationBarTitleText": "提交意见"
+					}
+				},
+				{
+					"path": "volumePricing/Corporate/index",
+					"style": {
+						"navigationBarTitleText": "我的信息"
+					}
+				},
+				{
+					"path": "volumePricing/review/index",
+					"style": {
+						"navigationBarTitleText": "提交成功",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "volumePricing/detail/index",
+					"style": {
+						"navigationBarTitleText": "详情"
+					}
+				},
+				{
+					"path": "volumePricing/information/index",
+					"style": {
+						"navigationBarTitleText": "我的信息"
+					}
+				},
+				{
+					"path": "newCar/marketActivity",
+					"style": {
+						"navigationBarTitleText": "市场活动"
+					}
+				},
+				{
+					"path": "newCar/activityDetails",
+					"style": {
+						"navigationBarTitleText": "活动详情",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "newCar/activityApply",
+					"style": {
+						"navigationBarTitleText": "活动报名",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "newCar/activityApplyList",
+					"style": {
+						"navigationBarTitleText": "我的报名"
+					}
+				},
+				{
+					"path": "repair/carRepair",
+					"style": {
+						"navigationBarTitleText": "汽车维修",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "repair/myAppointment",
+					"style": {
+						"navigationBarTitleText": "我的预约",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "repair/shopDetails",
+					"style": {
+						"navigationBarTitleText": "门店详情"
+					}
+				},
+				{
+					"path": "repair/repairDetails",
+					"style": {
+						"navigationBarTitleText": "",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "repair/ScheduleRepair",
+					"style": {
+						"navigationBarTitleText": "",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "newCar/dealer",
+					"style": {
+						"navigationBarTitleText": "4s店"
+					}
+				},
+				{
+					"path": "newCar/typeList",
+					"style": {
+						"navigationBarTitleText": "车型列表"
+					}
+				},
+				{
+					"path": "newCar/carType",
+					"style": {
+						"navigationBarTitleText": "车型大全",
+						"navigationBarBackgroundColor": "#F8F9FB"
+					}
+				},
+				{
+					"path": "newCar/hostSell",
+					"style": {
+						"navigationBarTitleText": "热销榜",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "newCar/detail",
+					"style": {
+						"navigationBarTitleText": "车辆详情",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "newCar/myTestDrive",
+					"style": {
+						"navigationBarTitleText": "我的试驾",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "newCar/orderList",
+					"style": {
+						"navigationBarTitleText": "我的试驾",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "newCar/dealerDetail",
+					"style": {
+						"navigationBarTitleText": "4s店详情"
+					}
+				},
+				// "navigationStyle": "custom"
+				{
+					"path": "usedCar/index",
+					"style": {
+						"navigationBarTitleText": "二手车交易",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "usedCar/carList",
+					"style": {
+						"navigationBarTitleText": "全部车源",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "usedCar/carDetail",
+					"style": {
+						"navigationBarTitleText": "车辆详情",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "usedCar/carInfo",
+					"style": {
+						"navigationBarTitleText": "车辆基本信息"
+					}
+				},
+				{
+					"path": "usedCar/marketActivity",
+					"style": {
+						"navigationBarTitleText": "置换补贴"
+					}
+				},
+				{
+					"path": "usedCar/activityDetails",
+					"style": {
+						"navigationBarTitleText": "活动详情",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "usedCar/brand",
+					"style": {
+						"navigationBarTitleText": "品牌"
+					}
+				},
+				{
+					"path": "usedCar/series",
+					"style": {
+						"navigationBarTitleText": "车系"
+					}
+				},
+				{
+					"path": "usedCar/orderAdd",
+					"style": {
+						"navigationBarTitleText": "新增预约",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "usedCar/orderList",
+					"style": {
+						"navigationBarTitleText": "我的预约",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "usedCar/orderDetail",
+					"style": {
+						"navigationBarTitleText": "预约详情",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "usedCar/orderEvaluate",
+					"style": {
+						"navigationBarTitleText": "服务评价"
+					}
+				},
+				{
+					"path": "usedCar/appraisal",
+					"style": {
+						"navigationBarTitleText": "估价",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "usedCar/sellCar",
+					"style": {
+						"navigationBarTitleText": "高价卖车",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "usedCar/oldForNew",
+					"style": {
+						"navigationBarTitleText": "以旧换新",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "usedCar/merchantsList",
+					"style": {
+						"navigationBarTitleText": "门店列表",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "usedCar/merchantsMapList",
+					"style": {
+						"navigationBarTitleText": "门店列表"
+					}
+				},
+				{
+					"path": "usedCar/merchantsDetail",
+					"style": {
+						"navigationBarTitleText": "门店详情"
+					}
+				},
+				{
+					"path": "busTicket/index",
+					"style": {
+						"navigationBarTitleText": "",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "busTicket/orderFilling",
+					"style": {
+						"navigationBarTitleText": "填写订单",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "busTicket/queryCar",
+					"style": {
+						"navigationBarTitleText": "查询车票",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "busTicket/list",
+					"style": {
+						"navigationBarTitleText": "订单查询",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "busTicket/details",
+					"style": {
+						"navigationBarTitleText": "订单详情",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "busTicket/contactsList",
+					"style": {
+						"navigationBarTitleText": "联系人"
+					}
+				},
+				{
+					"path": "busTicket/addContacts",
+					"style": {
+						"navigationBarTitleText": "新增联系人"
+					}
+				},
+				{
+					"path": "refuelingRefilling/tabyq",
+					"style": {
+						"navigationBarTitleText": "选择加油",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "refuelingRefilling/index",
+					"style": {
+						"navigationBarTitleText": "加油",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "refuelingRefilling/details",
+					"style": {
+						"navigationBarTitleText": "加油详情",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "refuelingRefilling/order",
+					"style": {
+						"navigationBarTitleText": "加油订单",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "refuelingRefilling/orderDetails",
+					"style": {
+						"navigationBarTitleText": "加油订单",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "refuelingRefilling/Payment",
+					"style": {
+						"navigationBarTitleText": "支付完成",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "JumpStart/weizhilist",
+					"style": {
+						"navigationBarTitleText": "换电充气",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "JumpStart/maplist",
+					"style": {
+						"navigationBarTitleText": "换电充气查询",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "refuelingRefilling/orderCancel",
+					"style": {
+						"navigationBarTitleText": "取消订单"
+					}
+				},
+				{
+					"path": "refuelingRefilling/coupon",
+					"style": {
+						"navigationBarTitleText": "优惠券"
+					}
+				},
+				{
+					"path": "inspection/index",
+					"style": {
+						"navigationBarTitleText": "检测站",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "inspection/details",
+					"style": {
+						"navigationBarTitleText": "检测站详情",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "snapShare/index",
+					"style": {
+						"navigationBarTitleText": "随手拍",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "snapShare/form",
+					"style": {
+						"navigationBarTitleText": "表单",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "snapShare/record",
+					"style": {
+						"navigationBarTitleText": "上传记录",
+						"navigationStyle": "custom"
+					}
+				}
+			]
+		},
+		{
+			"root": "pages_E",
+			"pages": [{
+					"path": "digitalHuman/index",
+					"style": {
+						"navigationBarTitleText": "智途数字人",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "supermarket/index",
+					"style": {
+						"navigationBarTitleText": "服务超市",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "directretail/index",
+					"style": {
+						"navigationBarTitleText": "直营零售活动",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "digitalHuman/openAi",
+					"style": {
+						"navigationBarTitleText": "智途数字人",
+						"navigationStyle": "custom",
+						"safearea": {
+							"bottom": {
+								"enable": false // 关闭底部安全区适配
+							},
+							"background": "transparent"
+						},
+						"app-plus": {
+							"titleNView": false // 隐藏原生导航栏（如需全屏）
+						}
+					}
+				},
+				// #ifdef APP
+				{
+					"path": "digitalHuman/address",
+					"style": {
+						"navigationBarTitleText": "导航"
+					}
+				},
+				// "navigationStyle": "custom"
+				// #endif
+				{
+					"path": "passwordSettings/index",
+					"style": {
+						"navigationBarTitleText": "密码设置",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "passwordSettings/forgetPassword",
+					"style": {
+						"navigationBarTitleText": "忘记密码",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "experience/index",
+					"style": {
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "experience/registration",
+					"style": {
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "experience/information",
+					"style": {
+						"navigationBarTitleText": ""
+					}
+				},
+				{
+					"path": "experience/suggestedDetails",
+					"style": {
+						"navigationBarTitleText": ""
+					}
+				},
+				{
+					"path": "experience/suggest",
+					"style": {
+						"navigationBarTitleText": "我的建议"
+					}
+				},
+				{
+					"path": "service/carlife",
+					"style": {
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "globalsearch/index",
+					"style": {
+						"navigationStyle": "custom",
+						"navigationBarTitleText": "全局搜索"
+					}
+				},
+				{
+					"path": "globalsearch/shopsearch",
+					"style": {
+						"navigationStyle": "custom",
+						"navigationBarTitleText": "商城搜索"
+					}
+				},
+				{
+					"path": "evaluate/index",
+					"style": {
+						"navigationBarTitleText": "评价中心",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "evaluate/alreadyrated",
+					"style": {
+						"navigationBarTitleText": "全部评价",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "oldindex/index",
+					"style": {
+						"navigationBarTitleText": "适老版首页",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "redindex/index",
+					"style": {
+						"navigationBarTitleText": "红色首页"
+					}
+				}
+			]
+		},
+		{
+			"root": "pages_F",
+			"pages": [{
+					"path": "voting/index",
+					"style": {
+						"navigationBarTitleText": "",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "dome/index",
+					"style": {
+						"navigationBarTitleText": ""
+					}
+				},
+				{
+					"path": "voting/contribute",
+					"style": {
+						"navigationBarTitleText": "",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "voting/contributeDetail",
+					"style": {
+						"navigationBarTitleText": "",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "voting/detail",
+					"style": {
+						"navigationBarTitleText": "",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "voting/activityRule",
+					"style": {
+						"navigationBarTitleText": "",
+						"navigationStyle": "custom"
+					}
+				}, {
+					"path": "appointment/myAppointment",
+					"style": {
+						"navigationBarTitleText": "我的预约",
+						"navigationStyle": "custom"
+					}
+				},{
+					"path": "appointment/oldfornewsdetail",
+					"style": {
+						"navigationBarTitleText": "以旧换新详情",
+						"navigationStyle": "custom"
+					}
+				},{
+					"path": "appointment/onsitevaluation",
+					"style": {
+						"navigationBarTitleText": "上门估价详情",
+						"navigationStyle": "custom"
+					}
+				},{
+					"path": "errorcorrection/mycorrections",
+					"style": {
+						"navigationBarTitleText": "我的纠错",
+						"navigationStyle": "custom"
+					}
+				},{
+					"path": "errorcorrection/index",
+					"style": {
+						"navigationBarTitleText": "纠错信息",
+						"navigationStyle": "custom"
+					}
+				},{
+					"path": "errorcorrection/scusses",
+					"style": {
+						"navigationBarTitleText": "纠错成功",
+						"navigationStyle": "custom"
+					}
+				},{
+					"path": "myInvoice/index",
+					"style": {
+						"navigationBarTitleText": "我的发票",
+						"navigationStyle": "custom"
+					}
+				},{
+					"path": "myInvoice/invoice",
+					"style": {
+						"navigationBarTitleText": "填写发票信息"
+					}
+				},{
+					"path": "myInvoice/scusses",
+					"style": {
+						"navigationBarTitleText": "提交成功",
+						"navigationStyle": "custom"
+					}
+				},{
+					"path": "myInvoice/invoicingcenter",
+					"style": {
+						"navigationBarTitleText": "发票中心",
+						"navigationStyle": "custom"
+					}
+				},{
+					"path": "myInvoice/invoicedetails",
+					"style": {
+						"navigationBarTitleText": "发票详情"
+					}
+				}
+			]
+		}
+	],
+	"lazyCodeLoading": "requiredComponents",
+	"globalStyle": {
+		"navigationBarBackgroundColor": "#FFFFFF",
+		"navigationBarTextStyle": "black",
+		"backgroundTextStyle": "light",
+		"backgroundColorTop": "#eeeeee"
+	}
+}
+// "tabBar": {
+// 	"custom": true,
+// 	"color": "#666666",
+// 	"selectedColor": "#5870d8",
+// 	"list": [{
+// 		"pagePath": "pages/home/home"
+// 	}, {
+// 		"pagePath": "pages/service/index"
+// 	}, {
+// 		"pagePath": "pages/points/index"
+// 	}, {
+// 		"pagePath": "pages/individual/individual"
+// 	},
+	"condition" : { //模式配置，仅开发期间生效
+		"current": 0, //当前激活的模式(list 的索引项)
+		"list": [
+			{
+				"name": "", //模式名称
+				"path": "", //启动页面，必选
+				"query": "" //启动参数，在页面的onLoad函数里面得到
+			}
+		]
+	}]
+// }

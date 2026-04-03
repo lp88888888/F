@@ -1,0 +1,1206 @@
+<template>
+  <view class="conView" :style="{height:systemInfo().windowHeight+'px',width:'750rpx'}" @click="uni.hideKeyboard()">
+	  <image class="absImage" :style="{height:systemInfo().windowHeight+'px',width:'750rpx'}" :src="icoUrl + 'BdDigitalMan/page-bg.png'" mode=""></image>
+	  <up-gap height="20"></up-gap>
+	  <view id="topAllView" class="topAllView" @click="uni.hideKeyboard()">
+		  <!-- 顶部背景 -->
+		  <up-gap height="80"></up-gap>
+		<view class="tooBack" :style="{height: isSkillShow?'630rpx':'286rpx'}">
+			<image class="tooBack-bg" :src="icoUrl+'BdDigitalMan/card-icon.png'" :lazy-load="true" mode=""></image>
+			<view class="tooBack-venter" :style="{height: isSkillShow?'630rpx':'286rpx'}">
+				<view class="tooBack-venter-topks">
+					<text class="textFont1">Hi. 我是"速小猴"</text>
+					<text  class="textFont2">{{chatStore.helloText}}</text>
+				</view>
+				<view class="tooBack-venter-botBox" :style="{height: isSkillShow?'290rpx':'76rpx'}">
+					<view class="tooBack-venter-bot">
+						<view class="tooBack-venter-bot-text">
+							<text class="fontText1">专属技能</text>
+							<text class="fontText2">点击感兴趣的技能，开始提问吧</text>
+							<image class="imagesBox" :src="`${icoUrl}BdDigitalMan/${isSkillShow?'dmIcon2-close':'dmIcon2'}.png`" @click="isSkillShow = !isSkillShow" :lazy-load="true" mode=""></image>
+						</view>
+					</view>
+					<swiper class="tooBack-venter-botBox-sw" :indicator-dots="false" :current="currentIndex" @change="swiperChange" :autoplay="false" :interval="3000" :duration="1000">
+						<swiper-item class="botBox-sw" v-for="(item,index) in skillResult" :key="index" >
+							<view class="swiper-item" :style="{background:skillId == el.id?themeStore.themeColors.$DigitaButColor2:'transparent'}" v-for="(el,indx) in item" :key="indx" @click="skillId = el.id">
+								<image class="swiper-item-icon" :src="el.iconUrl" mode=""></image>
+								<text class="swiper-item-text">{{el.skillName}}</text>
+							</view>
+						</swiper-item>
+					</swiper>
+					<view class="tooBack-venter-botBox-lot">
+						<view :class="[currentIndex == index?'lotItemActive':'lotItem']" v-for="(item,index) in skillResult" :key="index"></view>
+					</view>
+				</view>
+				<scroll-view class="scroll-view_H" scroll-x="true" :show-scrollbar="false" v-if="isSkillShow">
+					<view class="h-item" v-for="(item,index) in questionList" :key="index" @click="querySelect(item.guidingQuestion)">
+						<text class="h-item-text" :style="{color:themeStore.themeColors.$DigitaColor}">{{item.guidingQuestion}}</text>
+						<image class="h-item-img" :src="icoUrl+'BdDigitalMan/dmIcon6.png'" mode=""></image>
+					</view>
+				</scroll-view>
+			</view>
+		</view>
+		<image class="tooBack-mokeyBox" v-if="bobaoShow" :src="icoUrl+'BdDigitalMan/bobao_2.gif'" :lazy-load="true" mode=""></image>
+		<image class="tooBack-mokeyBox" v-else :src="icoUrl+'BdDigitalMan/idle_2.gif'" :lazy-load="true" mode=""></image>
+		<image class="tooBack-call" :src="icoUrl+'BdDigitalMan/call-icon.png'" :lazy-load="true" mode="" @click="callShow= true"></image>
+		<view class="tooBack-back" @click="toBack">
+			<up-icon name="arrow-left" size="22"></up-icon>
+		</view>
+	  </view>
+		 
+		<MessageList ref="msgListRef" :height="messHeight" @butChange="addMessage" @followClick="addMessage" @formSubmit="formSubmit" @stopTalk="stopTalk" @kfAiOpen="kfAiOpen" @skillId="skillIdChange" @etcId="etcIdChange" @carNumber="carNumChange"></MessageList>
+		<MessageButton ref="msgButtonRef" @startTalk="startTalk" @inputChange="addMessage" @callOpen="callShow= true" @kfOpen="kfShow=true"></MessageButton>
+		<CallAiHuman v-if="callShow" @close="callClose"></CallAiHuman>
+		<up-popup :show="kfShow" mode="bottom" z-index="999" closeable @close="kfShow = false" round="10">
+			<view class="kfBox">
+				<text class="kfBox-title" style="font-weight: bold;">选择业务类型</text>
+				<view class="kfBox-tabs">
+					<up-tabs v-if="list1.length" :list="list1" @change="kfTabsChange" keyName="dictLabel" :current="kfCurrent" lineWidth="28" :lineColor="themeStore.themeColors.$DigitaColor" :activeStyle="{fontSize:'32rpx',color:'#000',fontWeight:'bold'}" :inactiveStyle="{fontSize:'32rpx'}" ></up-tabs>
+				</view>
+				<view class="kfBox-center">
+					<view class="kfBox-center-item" v-for="(item,index) in kfItemList" :key="index" @click="kfOpen(item)">
+						<image class="kfBox-center-item-img" :src="item.iconUrl" mode=""></image>
+						<text class="kfBox-center-item-text">{{item.businessContent}}</text>
+					</view>
+				</view>
+				<view class="kfBox-bottom" :style="{background: themeStore.themeColors.$DigitaBgColor1}" @click="openKf()">
+					<image class="kfBox-bottom-img" :src="icoUrl+'BdDigitalMan/dmIcon9.png'" mode=""></image>
+					<text class="kfBox-bottom-text" :style="{color:themeStore.themeColors.$DigitaColor}">没有我要找的业务，联系平台专属客服</text>
+					<text class="kfBox-bottom-but" :style="{background: themeStore.themeColors.$DigitaButColor1}">去联系</text>
+				</view>
+			</view>
+		</up-popup>
+		<up-popup :show="kfItemShow" mode="bottom" z-index="999" closeable @close="kfItemShow = false" round="10">
+			<view class="boolBox" :style="{background: themeStore.themeColors.$DigitaBgColor2}">
+				<view v-if="kfItemObj.manualChannel == 1" class="boolBox-img">
+					<image class="boolBox-image" :src="kfItemObj.qrCode" @click="$previewItemImage(kfItemObj.qrCode)" mode="widthFix"></image>
+					<text class="boolBox-img-text">点击长按保存</text>
+				</view>
+				<view class="boolBox-cneter" v-if="kfItemObj.manualChannel == 0">
+					<text class="boolBox-cneter-title">{{kfItemObj.businessContent}}</text>
+					<text class="boolBox-cneter-text">竭诚为您服务~</text>
+					<view class="boolBox-cneter-card">
+						<image class="boolBox-cneter-card-img" :src="imgUrl+'BdDigitalMan/dmIcon10.png'" mode=""></image>
+						<view class="boolBox-cneter-card-box">
+							<text class="boolBox-cneter-card-box-text">电话客服</text>
+							<text class="boolBox-cneter-card-box-tel">{{kfItemObj.contactPhone}}</text>
+						</view>
+					</view>
+					<text class="boolBox-cneter-but" @click="makePhoneCall(kfItemObj.contactPhone)">立即拨打</text>
+				</view>
+			</view>
+		</up-popup>
+		<view class="stopBoxView" v-if="bobaoShow" @click="stopBobo">
+			<up-icon :name="icoUrl+'BdDigitalMan/dmIcon11.png'" size="22"></up-icon>
+			<text class="stopBoxView-text">停止播报</text>
+		</view>
+		<BdDigitalManView v-if="!callShow" ref="bdDigitalMan" class="digiTalBox" ></BdDigitalManView>
+	</view>
+</template>
+
+<script setup lang="ts">
+import { ref, computed } from "vue";
+import { deepClone } from "@/uni_modules/uview-plus";
+import { imgUrl,aiUrl } from "@/config";
+import gaoChatSSEClientNvue from '@/uni_modules/gao-ChatSSEClient/components/gao-ChatSSEClient/gao-ChatSSEClientNvue.nvue';
+import MessageButton from "./components/MessageButtonN.nvue";
+import MessageList from "./components/MessageListN.nvue";
+import CallAiHuman from "./components/CallAiHuman.nvue";
+import CallAiHumanNew from "./components/CallAiHumanNew.nvue";
+import { cached } from '@/utils/imgCache'
+import { toBack, toNav } from "@/utils/route";
+import { onLoad,onShow, onReady ,onHide} from "@dcloudio/uni-app";
+import {digitalHumanToken} from '@/utils/auth';
+import { ChatStore } from "@/store/modules/chat";
+import { toast } from "@/utils/common";
+import { getOpenToken, openChat } from "@/api/openApi";
+import { voiceToken, voiceTotext } from "@/api/language";
+import { getToken } from "@/utils/token";
+
+import { formatTimestamp, getUUID,systemInfo, openLocation,openAPPLocation ,makePhoneCall,$previewItemImage,parseToken,parseTokens,fixQuotes } from "@/utils/util";
+import { useElementRects } from '@/utils/useElementRect';
+import {$kfMessageChange} from '@/utils/chatMessage';
+import { manualServiceList,skillList ,getDict } from "@/api/config";
+
+	// 主题 使用 （主题颜色 var( --theme-color)）（组件 componentColor.$pageBgColor） 图标地址（icoUrl）
+	import { useTheme } from '@/composables/useTheme';
+	const { themeStore, pageTheme } = useTheme();
+	const icoUrl = ref(themeStore.imgUrl);
+
+const bobaoShow = ref(false);
+const { queryAll } = useElementRects(['#topAllView'])
+const chatSSEClientRef = ref(null);
+const msgListRef = ref(null);
+const msgButtonRef = ref(null);
+const callShow = ref(false);
+
+const chatStore = ChatStore();
+const bdDigitalMan = ref(null);
+const telText = ref(null);
+const queryText = ref("");
+const uuid = getUUID();
+const gaoSss = ref(null);
+const topHeught = ref(100);
+const formData = ref(null);
+const isTextAre = ref(false);
+const aiData = ref(null);
+
+// 
+const skillId = ref(0);
+const currentIndex = ref(0);
+const isSkillShow = ref(true);
+const anualServiceDataList = ref([]); // 客服列表
+const skillDataList = ref([]); // 列表
+
+	const kfItemShow = ref(false);
+	const kfItemObj = ref({});
+	const kfCurrent = ref(0)
+	const kfDictValue = ref(0)
+	const kfShow = ref(false);
+	const kfDict = ref([]);
+	const list1 = computed(()=>{
+		let arr = kfDict.value.filter((item => item.dictValue != '4'))
+		return arr
+	});
+	//
+	const kfItemList = computed(()=>{
+		let arr = chatStore.anualServiceDataList.filter((item => item.businessType == kfDictValue.value))
+		return arr
+	});
+	const getkfDict = async ()=>{
+		let res = await getDict('customer_business_type');
+		if(res.code == 200){
+			
+			kfDict.value = res.data;
+			kfDictValue.value = res.data[0].dictValue
+		}
+	}
+	const kfTabsChange = (event)=>{
+		kfCurrent.value = event.index;
+		kfDictValue.value = event.dictValue
+	}
+	const kfOpen = (item)=>{
+		console.log('=======',item);
+		kfItemObj.value = item
+		kfItemShow.value = true;
+	}
+	const openKf = ()=>{
+		let arr = chatStore.anualServiceDataList.filter((item => item.businessType == '4'))
+		// #ifdef APP-PLUS    
+		  let sweixin = null    
+		  plus.share.getServices(res=>{    
+		      sweixin = res.find(i => i.id === 'weixin')    
+		      if(sweixin){    
+		          sweixin.openCustomerServiceChat({    
+		              corpid: 'ww9b8cea23f9dd42fd',    
+		              url: 'https://work.weixin.qq.com/kfid/kfcb259be3a3bff95fe',    
+		          },suc=>{    
+		              console.log("success",JSON.stringify(res))    
+		          },err=>{    
+		              console.log("error",JSON.stringify(err))    
+		          })    
+		      }else{    
+		          plus.nativeUI.alert('当前环境不支持微信操作!')    
+		      }    
+		  },function(){    
+		      uni.showToast({title: "获取服务失败，不支持该操作。"+JSON.stringify(e), icon: 'error'})    
+		  })    
+		// #endif
+		// if(arr.length){
+		// 	kfItemObj.value = arr[0]
+		// 	kfItemShow.value = true;
+		// }else{
+		// 	toast('暂无配置')
+		// }
+	}
+const kfAiOpen = (event)=>{
+	if(event.type == 'all'){
+		kfShow.value = true
+	}else{
+		kfOpen(event.item)
+	}
+}
+const querySelect = (text) =>{
+	msgButtonRef.value.messageValue = text
+}
+
+const skillResult = computed(()=>{
+	let arr = skillDataList.value.filter(item => item.id != 0 && item.skillName != '通用');
+	let newArr = [];
+	for (let i = 0; i < arr.length; i += 4) {
+	  newArr.push(arr.slice(i, i + 4));
+	}
+	return newArr
+});
+const questionList = computed(()=>{
+	let arr = skillDataList.value.filter(item => item.id  == skillId.value)
+	if(arr.length){
+		return arr[0].questionList
+	}else{
+		return []
+	}
+})
+const swiperChange = (e)=>{
+	currentIndex.value = e.detail.current
+}
+const stopItemBoIndex = ref(null);
+
+const stopTalk = (event)=>{
+	stopItemBoIndex.value = event.index
+	if(event.isBobaoShow){
+		startTalk()
+	}else{
+		stokValue(event.text)
+	}
+}
+const skillData = ref({});
+// 选择开票类型
+const skillIdChange = (obj) =>{
+	skillData.value = obj
+	addMessage({msgText:obj.skill_name,type:'text'})
+}
+const etcData = ref({});
+// 选择etc
+const etcIdChange = (event) =>{
+	etcData.value = event.obj
+	if(event.skillId) skillData.value.skill_id = event.skillId
+	addMessage({msgText:event.obj.plateNum,type:'text'})
+}
+const plateNum = ref({});
+// 选择车牌号（一级公路）
+const carNumChange = (event) =>{
+	plateNum.value = event.text
+	if(event.skillId) skillData.value.skill_id = event.skillId
+	addMessage({msgText:event.text,type:'text'})
+}
+
+
+const formSubmit = (obj) =>{
+  formData.value = obj.formData
+  if(uni.getStorageSync('address')){
+  	  formData.value.fault = {
+  	  	address: uni.getStorageSync('address').standardAddress,
+  	  	longitude: uni.getStorageSync('address').lng,
+  	  	latitude: uni.getStorageSync('address').lat
+  	  }
+	  formData.value.destination = {
+	  	address: uni.getStorageSync('address').standardAddress,
+	  	longitude: uni.getStorageSync('address').lng,
+	  	latitude: uni.getStorageSync('address').lat
+	  }
+  }
+  addMessage({msgText:obj.msgText,type:'text',clearType:true})
+} 
+const messHeight = computed(()=>{
+	let total = systemInfo().windowHeight - topHeught.value - 110 ;
+	if(!isSkillShow.value){
+		total = total + 190
+	}
+	return `${total || 500}px`
+})
+
+const myTextClick = ()=>{
+	
+} 
+// 发送消息
+const addMessage = (objs: Objs) => {
+	isSkillShow.value = false;
+	msgButtonRef.value.closeStopk()
+	let obj: Objs = { type: "text" };
+	
+	if (objs.msgText) {
+	  obj.msgText = objs.msgText;
+	  obj.type = "text";
+	  queryText.value = objs.msgText;
+	  chatStore.setUserMessage(deepClone(obj));
+	  msgListRef?.value?.scrollToBottom();
+	  
+	  if(objs.clearType){
+	  	skillData.value = {}
+	  }
+	  
+	  setTimeout(() => {
+	    addKfMessage(deepClone(obj));
+	  }, 100);
+	}
+	console.log("object", objs);
+	if (objs.voice) {
+		skillData.value = {}
+	  obj.voice = objs.voice;
+	  obj.duration = objs.duration;
+	  obj.type = "voice";
+	  obj.voiceState = objs.voiceState;
+	  // chatStore.setUserMessage(deepClone(obj))
+	  uploadPcm(objs);
+	}
+};
+
+const addKfMessage = (obj: Objs) => {
+  console.log("--------obj---------", obj);
+  let msgText = obj.msgText || "";
+  if (obj.voice) {
+    let newObj: NewObj = {
+      type: "text",
+    };
+
+    let arr = chatStore.dataList.filter(
+      (item) =>
+        item.name.indexOf(obj.voiceState) != -1 || obj.voiceState.indexOf(item.name) != -1
+    );
+    if (arr.length) {
+      if (arr[0].richText) {
+        newObj.type = "richText";
+        newObj.msgText = arr[0].richText;
+      } else {
+        newObj.msgText = "你好，该功能暂未开通";
+      }
+      chatStore.setServiceMessage(newObj);
+    } else {
+      newObj.msgText = "你好，请描述所需办理的业务";
+      chatStore.setServiceMessage(newObj);
+    }
+  } else {
+    setChat(obj);
+  }
+  msgListRef?.value?.scrollToBottom();
+  msgListRef.value.isStopScroll = false
+  console.log('-009098099-0988990-=0=-0-=啊啊啊啊啊啊啊啊啊啊啊啊啊09-00', msgListRef.value.isStopScroll);
+};
+const uploadPcm = (data) => {
+  plus.io.resolveLocalFileSystemURL(data.voice, (entry) => {
+    entry.file(file => {
+      const reader = new plus.io.FileReader()
+      reader.onloadend = e => {
+  		getVoictToText(e.target.result.split(',')[1], data);
+  	}
+      reader.readAsDataURL(file)
+    })
+  });
+};
+// 语音转文字
+const getVoictToText = async (base64Speech, datas) => {
+  try {
+    const tokRes = await voiceToken();
+    const accessToken = tokRes.access_token || null;
+    if (accessToken) {
+		const res = await voiceTotext(accessToken, base64Speech);
+		if (res.err_no == 0) {
+			  let valueText = res.result.join()
+			  if(!valueText) return toast('未识别出文字');
+				let obj = {
+				  msgText: res.result.join(),
+				  type: "text",
+				};
+				queryText.value = valueText
+				chatStore.setUserMessage(deepClone(obj));
+				msgListRef?.value?.scrollToBottom();
+				setChat(obj)
+		} else {
+		  toast(e.err_msg);
+		}
+    } else {
+      toast(tokRes.error);
+    }
+  } catch (e) {
+    toast(e.error);
+  }
+};
+
+
+const setChat = async (messageObj) => {
+	console.log("---messageObj---",messageObj);
+  
+  const requestTime = formatTimestamp(new Date().getTime() - 1000, "YYYY-MM-DD HH:mm:ss");
+  console.log("requestTime", requestTime);
+  try {
+    const tokenRes = await getOpenToken(requestTime);
+    if (tokenRes.status === 200) {
+		startTalk()
+		setTimeout(()=>{
+			start(tokenRes.result, requestTime);
+		},100)
+     
+    } else {
+      toast(tokenRes.message);
+    }
+	console.log('-----tokenRes-->',tokenRes);
+  } catch (e) {
+	  console.log('------->',e);
+    toast(e.message);
+  }
+};
+const stopBobo = ()=>{
+	startTalk()
+}
+const startTalk = ()=>{
+	bobaoShow.value = false;
+	if(stopItemBoIndex.value){
+		chatStore.list[stopItemBoIndex.value].isBobaoShow = false
+		stopItemBoIndex.value = null
+	}
+	bdDigitalMan.value.bdDigitalManSpeechInterrupt(event=>{
+		console.log('-------打断讲话-------',event);
+	})
+}
+const start = (token, requestTime) => {
+	
+	const messageId = getUUID()
+	msgListRef?.value?.lodSet(true);
+	msgListRef.value.isStopScroll = false
+	isTextAre.value = false
+	
+	let params = {
+		// isAutoSpeech:true,
+		playType:1,
+		"url":aiUrl+'/copilot/v1/openApi/chat',
+		"copilotAk": "copilot_ak_4qZ84MGWrRoXcMwY",
+		"assistantId":'118',
+		"requestTime": requestTime,
+		"copilotToken": token,
+		"removeRegularList":chatStore.removeRegularList,
+		"ttsConfig": chatStore.ttsConfig,
+		"endWidthSymbol":chatStore.endWidthSymbol,
+		"body": JSON.stringify({
+			type: 'IM_CLICK',
+			assistantId:118,
+			query: queryText.value,
+			sessionId: uuid,
+			skillId:skillData.value.skill_id || undefined,
+			params: {
+			  userCode: getToken(), // 用户token
+			  'user_info':formData.value || undefined,
+			  userLat:uni.getStorageSync('address').lat || '',
+			  userLon:uni.getStorageSync('address').lng || '',
+			  useLon:uni.getStorageSync('address').lng || '',
+			  'member_id':uni.getStorageSync('userInfo').id || '',
+			  'memberType':uni.getStorageSync('userInfo').memberType || '1',
+			  mobile:parseToken(uni.getStorageSync('Token'))?.member_phone,
+			  etcCarId:etcData.value.cardId || undefined,
+			  plateNum:plateNum.value || undefined
+			  // skillId:skillData.value.skill_id || undefined
+			},
+		})
+	}
+	console.log('--0-0-params0',params);
+	console.log('--0-0-params1',JSON.parse(params.body));
+	bdDigitalMan.value.requestBdLargeModelData(params,(res)=>{
+		let data = JSON.parse(JSON.parse(res).data)
+		console.log('模型返回-->',data);
+		if(data.code == 100){
+			msgListRef?.value?.lodSet(true);
+			console.log('----',data.data.answer);
+		}else{
+			etcData.value = {};
+			// skillData.value = {};
+			plateNum.value = ''
+			stopItemBoIndex.value = (chatStore.list.length - 1);
+			chatStore.list[stopItemBoIndex.value].isBobaoShow = true;
+			formData.value = null;
+			msgListRef?.value?.lodSet(false);
+			console.log('--------------------');
+			console.log(chatStore.list);
+			msgListRef?.value?.scrollToBottom();
+			if(data.data.data?.action == 'navigation'){
+				setTimeout(() => {
+					// #ifdef APP
+					let start ={"lat": 34.2778,"lng": 108.953098,"address": "西安市"}
+						if(uni.getStorageSync('address')){
+							start.lat = uni.getStorageSync('address').lat
+							start.lng = uni.getStorageSync('address').lng
+							start.address = uni.getStorageSync('address').standardAddress || uni.getStorageSync('address').city
+						}
+						openAPPLocation({
+							startLocation:{
+								longitude:start.lng,
+								latitude:start.lat,
+								address:start.address,
+							},
+							endLocation:{
+								longitude:data.data.data.destination.longitude,
+								latitude:data.data.data.destination.latitude,
+								address:data.data.data.destination.name,
+							}
+						})
+					// #endif
+					// #ifdef MP-WEIXIN
+						openLocation(data.data.data.destination)
+					// #endif
+				},1000)
+			}
+		}
+		// if(data.data?.answer){
+			
+		// }
+		chatStore.setServiceQueryMessage({
+			type:'text',
+			id:messageId,
+			queryId:data.data.queryId,
+			sessionId:data.data.sessionId || '',
+			code:data.code,
+			cot:data.data.cot,
+			msgText:data.data.answer?data.data.answer:'',
+			answer:data.data.answer?data.data.answer:'',
+			aiData:data.data.data || null
+		})
+		console.log('9999999999999-000000000',msgListRef?.value?.isStopScroll);
+		if(!msgListRef?.value?.isStopScroll){
+			msgListRef?.value?.scrollToBottom();
+		}
+		
+	})
+	
+	bdDigitalMan.value.bdDigitalManSubtitlesCallback((event)=>{
+		
+		// bobaoShow.value = true;
+		// const res = JSON.parse(event);
+		
+		// 如果有正在等待的“结束计时器”，立即清除它
+		if (speechTimer) {
+			clearTimeout(speechTimer);
+			speechTimer = null;
+			console.log('检测到新语音流，取消结束计时器');
+		}
+		
+		// 只有在 UI 没显示播报时才设置为 true
+		if (!bobaoShow.value) {
+			bobaoShow.value = true;
+		}
+	})
+	
+	bdDigitalMan.value.bdDigitalManSpeechComplete((res)=>{
+		// console.log('说2完了=----',res);
+		// bobaoShow.value = false;
+		// if(stopItemBoIndex.value){
+		// 	chatStore.list[stopItemBoIndex.value].isBobaoShow = false
+		// 	stopItemBoIndex.value = null
+		// }
+		// msgButtonRef.value.isStopkShow = false;
+		
+		console.log('触发了分句结束，开始 2 秒倒计时等待...');
+		// 先清除旧的（以防万一），再启动新的 2 秒等待
+		if (speechTimer) clearTimeout(speechTimer);
+		
+		speechTimer = setTimeout(() => {
+			// 如果 2 秒内没被 SubtitlesCallback 清除，说明真的播完了
+			handleRealSpeechEnd();
+			speechTimer = null;
+		}, 2000);
+	})
+};
+// 1. 定义一个全局计时器变量
+let speechTimer: ReturnType<typeof setTimeout>| number | null = null;
+
+// 2. 封装统一的“真正结束”方法
+const handleRealSpeechEnd = () => {
+    console.log('--- 确认 2 秒内无新内容，执行真正的结束逻辑 ---');
+    bobaoShow.value = false;
+    if (stopItemBoIndex.value !== null) {
+        chatStore.list[stopItemBoIndex.value].isBobaoShow = false;
+        stopItemBoIndex.value = null;
+    }
+    msgButtonRef.value.isStopkShow = false;
+};
+
+const handleQuery = async () => {
+	try{
+		const result =await queryAll() 
+		if(result){
+			console.log(result);
+			let total  = 15
+			for(let i in result){
+				if(result[i]){
+					total += result[i].height
+				}
+			}
+			topHeught.value = total;
+		}
+	}catch(err){
+		console.log('卡片尺寸shib:', err)
+	}
+}
+const stokValue = (text)=>{
+	if(chatStore.helloText != text){
+		bobaoShow.value = true
+	}
+	bdDigitalMan.value.bdDigitalManSpeech({
+		  ttsConfig: chatStore.ttsConfig,
+		  "content":fixQuotes(text),
+		  "regularList": chatStore.regularList
+	},(datas)=>{
+		console.log('----------------',datas);
+		if(stopItemBoIndex.value){
+			chatStore.list[stopItemBoIndex.value].isBobaoShow = true
+		}
+	});
+	bdDigitalMan.value.bdDigitalManSpeechComplete((res)=>{
+		bobaoShow.value = false
+		text = ''
+		if(stopItemBoIndex.value){
+			chatStore.list[stopItemBoIndex.value].isBobaoShow = false
+			stopItemBoIndex.value = null
+		}
+	})
+}
+const callClose = ()=>{
+	callShow.value = false;
+	setTimeout(()=>{
+		initMan(false)
+	},500)
+	
+}
+// 数字人初始化
+const initMan = (isStok:boolean=true)=>{
+	/*
+	cameraId:  全身=v_full_cam,半身=v_half_cam,上半身=h_shoulder_cam，脸部=h_face_cam
+	*/
+	bdDigitalMan.value.initBdDigitalMan(JSON.stringify({
+		hairId :"coco_02_hair_out", //头发
+		badgeId : "coco_02_badge_out", //眼镜
+		bodyId : "coco_02_body_out",
+		shoesId : "coco_02_shoes_out",
+		cameraId : "v_half_cam",
+		speechPersonId:'LITE_clever_boy',
+		speechSpeed:10,
+		// speechPitch:5,
+		// isAutoAnimoji:false
+	}),(res)=>{
+		console.log("4567890",res);
+		res = JSON.parse(res)
+		// if(res.code == 2){
+		if(res.code == 1){
+			setTimeout(()=>{
+				stokValue(chatStore.helloText)
+			},1000)
+		}
+	});
+}
+
+const getKf = async ()=>{
+	try{
+		const res = await manualServiceList();
+		const res2 = await skillList();
+		if(res.code == 200){
+			chatStore.anualServiceDataList = res.data
+			anualServiceDataList.value = res.data
+		}
+		if(res2.code == 200){
+			skillDataList.value = res2.data
+		}
+	}catch(err){
+		console.log('---------------err-------------------',err);
+	}
+	
+	
+}
+onReady(()=>{
+	initMan(true)
+	nextTick(() => {
+		setTimeout(() => {
+			handleQuery()
+			if(uni.getStorageSync('globalsearchval')){
+				msgButtonRef.value.messageValue = uni.getStorageSync('globalsearchval')
+				uni.removeStorageSync('globalsearchval')
+			}
+		}, 300)
+	})
+})
+onShow(()=>{
+	if(!kfDict.value.length){
+		getkfDict();
+	}
+	getKf()
+})
+onLoad((opticon)=>{
+	
+	chatStore.getConfig()
+})
+onHide(() => {
+	startTalk()
+	// uni.$off('updatevipcardtype');
+	// 	console.log("----onHide----");
+	// 	show.value = false;
+	// 	stopWakeUp()
+});
+</script>
+
+<style lang="scss" scoped>
+	.stopBoxView{
+		position: absolute;
+		bottom: 300rpx;
+		left:275rpx;
+		width: 200rpx;
+		height: 76rpx;
+		background: #FFFFFF;
+		// box-shadow: -3rpx 2rpx 13rpx 0rpx rgba(0,0,0,0.2);
+		border-radius: 54rpx 54rpx 54rpx 54rpx;
+		flex-direction: row;
+		align-items: center;
+		justify-content: center;
+		.stopBoxView-text{
+			font-weight: 400;
+			font-size: 28rpx;
+			color: #646464;
+			margin-left: 10rpx;
+		}
+	}
+	.boolBox{
+		min-height: 800rpx;
+		padding: 28rpx 34rpx;
+		// background: linear-gradient( to bottom, #F6FBF7, #FDFEFD );
+		.boolBox-img{
+			padding: 40rpx 0;
+			flex: 1;
+			align-items: center;
+			.boolBox-img-text{
+				font-weight: 400;
+				font-size: 28rpx;
+				color: #9C9CB7;
+				line-height: 40rpx;
+			}
+			.boolBox-image{
+				flex: 1;
+				width: 600rpx;
+				// height: 600rpx;
+			}
+		}
+		
+		
+		.boolBox-cneter{
+			flex: 1;
+			align-items: center;
+			padding: 40rpx 0;
+			
+			
+			.boolBox-cneter-title{
+				font-weight: 700;
+				font-size: 40rpx;
+				color: #3E3E3E;
+				line-height: 58rpx;
+				text-align: center;
+			}
+			.boolBox-cneter-text{
+				font-weight: 400;
+				font-size: 26rpx;
+				color: #7A7A7A;
+				line-height: 38rpx;
+				text-align: center;
+				margin-top: 20rpx;
+			}
+			.boolBox-cneter-but{
+				
+				width: 420rpx;
+				height: 82rpx;
+				line-height: 82rpx;
+				text-align: center;
+				background: #07C07D;
+				box-shadow: 0rpx 8rpx 50rpx 0rpx #DBFFD8;
+				border-radius: 54rpx 54rpx 54rpx 54rpx;
+				font-weight: 400;
+				font-size: 28rpx;
+				color: #FFFFFF;
+				
+			}
+			.boolBox-cneter-card{
+				margin-top: 70rpx;
+				margin-bottom: 118rpx;
+				width: 662rpx;
+				height: 178rpx;
+				background: #FFFFFF;
+				box-shadow: 0rpx 8rpx 20rpx 0rpx rgba(0,0,0,0.1);
+				border-radius: 4rpx 4rpx 4rpx 4rpx;
+				padding: 0 44rpx;
+				flex-direction: row;
+				align-items: center;
+				.boolBox-cneter-card-img{
+					width: 84rpx;
+					height: 84rpx;
+					margin-right: 20rpx;
+				}
+				.boolBox-cneter-card-box{
+					
+					.boolBox-cneter-card-box-text{
+						font-weight: 500;
+						font-size: 36rpx;
+						color: #424242;
+						line-height: 52rpx;
+						margin-bottom: 10rpx;
+					}
+					.boolBox-cneter-card-box-tel{
+						font-weight: 400;
+						font-size: 32rpx;
+						color: #979797;
+						line-height: 46rpx;
+					}
+				}
+			}
+		}
+	}
+	
+	.kfBox{
+		min-height: 700rpx;
+		padding: 28rpx 34rpx;
+		
+		.kfBox-title{
+			text-align:center;
+			font-weight: 500;
+			font-size: 32rpx;
+			color: #000000;
+		}
+		
+		.kfBox-tabs{
+			padding: 30rpx 0;
+		}
+		
+		
+		.kfBox-center{
+			min-height: 400rpx;
+			flex-direction: row;
+			flex-wrap: wrap;
+			.kfBox-center-item{
+				margin-bottom: 20rpx;
+				margin-right: 25rpx;
+				width: 196rpx;
+				height: 64rpx;
+				background: linear-gradient( to left, #FDF8EE, #FFFCF2 );
+				border-radius: 4rpx 4rpx 4rpx 4rpx;
+				border: 2rpx solid #FF890B;
+				position: relative;
+				.kfBox-center-item-img{
+					width: 26rpx;
+					height: 26rpx;
+					position: absolute;
+					left: 12rpx;
+					bottom: 12rpx;
+				}
+				.kfBox-center-item-text{
+					text-align: center;
+					line-height: 64rpx;
+					font-weight: 700;
+					font-size: 24rpx;
+					color: #222222;
+				}
+			}
+			
+		}
+		.kfBox-bottom{
+			flex: 1;
+			flex-direction: row;
+			justify-content: space-between;
+			align-items: center;
+			height: 102rpx;
+			// background: linear-gradient( to right, #E3F6E7 , #FEFEFE );
+			border-radius: 26rpx 26rpx 26rpx 26rpx;
+			.kfBox-bottom-img{
+				width: 80rpx;
+				height:80rpx;
+			}
+			.kfBox-bottom-text{
+				font-weight: 400;
+				font-size: 28rpx;
+				color: #628F2F;
+				line-height: 34rpx;
+			}
+			.kfBox-bottom-but{
+				width: 106rpx;
+				height: 46rpx;
+				line-height: 46rpx;
+				text-align: center;
+				// background: linear-gradient( to right, #80A653, #B2D38A);
+				border-radius: 58rpx 58rpx 58rpx 58rpx;
+				font-weight: 400;
+				font-size: 24rpx;
+				color: #FFFFFF;
+			}
+		}
+	}
+	.conView{
+		position: relative;
+		top: 0;
+		right: 0;
+		bottom: 0;
+		left: 0;
+	}
+.pos{
+	position: absolute;
+	z-index: 9;
+	left: 0;
+	top: 400rpx;
+	background: red;
+	width: 750rpx;
+	height: 750rpx;
+}
+.listCard{
+	width: 750rpx;
+	height: 40rpx;
+	position: absolute;
+	left: 0;
+	bottom: 0;
+	background: #FFFFFF ;
+	border-radius: 20rpx 20rpx 0 0;
+}
+.pagView{
+	width:750rpx;
+	height:750rpx;
+	position: relative;
+	.imgs{
+		width:750rpx;
+		height:750rpx;
+		position: absolute;
+		top: 0;
+		left: 0;
+		z-index: -1;
+	}
+	
+}
+
+.tooBack{
+	width: 702rpx;
+	// min-height: 286rpx;
+	position: relative;
+	margin: 0 24rpx;
+	.tooBack-bg{
+		width: 702rpx;
+		height: 286rpx;
+		position: absolute;
+		top: 0;
+		left: 0;
+		right: 0;
+		bottom: 0;
+	}
+	.tooBack-venter{
+		width: 702rpx;
+		// min-height: 286rpx;
+		position: absolute;
+		top: 0;
+		left: 0;
+		right: 0;
+		bottom: 0;
+		.tooBack-venter-topks{
+			width: 702rpx;
+			height: 210rpx;
+			padding: 50rpx 0 30rpx 32rpx;
+			
+			.textFont1{
+				font-weight: 500;
+				font-size: 42rpx;
+				color: #333333;
+				line-height: 63rpx;
+			}
+			.textFont2{
+				width: 460rpx;
+				font-weight: 400;
+				font-size: 24rpx;
+				color: #6E6E6E;
+				line-height: 38rpx;
+			}
+		}
+		.scroll-view_H {
+			white-space: nowrap;
+			width: 702rpx;
+			flex-direction: row;
+			padding-top: 40rpx;
+			.h-item{
+				padding: 16rpx 24rpx;
+				height: 60rpx;
+				background: #FAFFFC;
+				border-radius: 30rpx;
+				margin-right: 24rpx;
+				flex-direction: row;
+				align-items:center;
+				box-shadow: 0rpx 4rpx 10rpx 0rpx rgba(237,235,235,0.3);
+				.h-item-text{
+					font-weight: 400;
+					font-size: 28rpx;
+					// color: #07C07D;
+					// line-height: 42rpx;
+				}
+				.h-item-img{
+					width: 16rpx;
+					height: 16rpx;
+					margin-left: 10rpx;
+				}
+			}
+			
+		}
+		.tooBack-venter-botBox{
+			width: 702rpx;
+			
+			background: #FFFFFF;
+			border-radius: 38rpx;
+			
+			
+			.tooBack-venter-bot{
+				width: 702rpx;
+				height: 76rpx;
+				// background: #FFFFFF;
+				border-radius: 38rpx;
+				padding: 0 32rpx;
+				align-items: center;
+				.tooBack-venter-bot-text{
+					width: 638rpx;
+					height: 76rpx;
+					flex-direction: row;
+					justify-content: space-between;
+					align-items: center;
+					.fontText1{
+						font-weight: 500;
+						font-size: 32rpx;
+						color: #333333;
+						line-height: 48rpx;
+					}
+					.fontText2{
+						width: 400rpx;
+						font-weight: 400;
+						font-size: 28rpx;
+						color: #6E6E6E;
+						line-height: 42rpx;
+					}
+					.imagesBox{
+						width: 48rpx;
+						height: 48rpx;
+					}
+				}
+			}
+			.tooBack-venter-botBox-sw{
+				width: 702rpx;
+				height: 180rpx;
+				.botBox-sw{
+					width: 702rpx;
+					padding: 0 20rpx 20rpx 20rpx;
+					display: flex;
+					flex-direction: row;
+					flex-wrap: wrap;
+					justify-content: space-between;
+					.swiper-item{
+						width: 320rpx;
+						height: 78rpx;
+						flex-direction: row;
+						// justify-content: flex-start;
+						align-items:center;
+						
+						border-radius: 17rpx;
+						margin-bottom: 12rpx;
+						.swiper-item-icon{
+							width: 58rpx;
+							height: 58rpx;
+							margin-left: 12rpx;
+						}
+						.swiper-item-text{
+							margin-left: 12rpx;
+							font-weight: 400;
+							font-size: 28rpx;
+							color: #333333;
+							line-height: 42rpx;
+						}
+					}
+				}
+				
+			}
+			.tooBack-venter-botBox-lot{
+				flex-direction: row;
+				align-items:center;
+				justify-content: center;
+				.lotItem{
+					width: 12rpx;
+					height: 12rpx;
+					background: #FAFAFA;
+					border-radius: 6rpx;
+					margin-right: 20rpx;
+				}
+				.lotItemActive{
+					width: 38rpx;
+					height: 12rpx;
+					background: #EFEFEF;
+					border-radius: 6rpx;
+					margin-right: 20rpx;
+				}
+			}
+			
+			
+		}
+		
+	}
+	
+}
+.topAllView{
+	position: relative;
+	// background: red;
+	.tooBack-mokeyBox{
+		width: 320rpx;
+		height: 320rpx;
+		position: absolute;
+		top:60rpx;
+		right: 12rpx;
+	}
+	.tooBack-call{
+		width: 76rpx;
+		height: 76rpx;
+		position: absolute;
+		top:100rpx;
+		right: 24rpx;
+	}
+	.tooBack-back{
+		position: absolute;
+		top:60rpx;
+		left: 30rpx;
+	}
+}
+.absImage {
+  // flex: 1;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 0;
+}
+.topView {
+width: 750rpx;
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 999;
+  height: 300rpx;
+  flex-direction: row;
+  justify-content: flex-end;
+  .topView-title-text{
+	  font-weight: bold;
+	  font-size: 40rpx;
+	  color: #000000;
+  }
+  .topView-left {
+    padding-top: 40rpx;
+    padding-right: 40rpx;
+    width: 510rpx;
+    box-sizing: border-box;
+    .topView-title {
+      flex-direction: row;
+      line-height: 50rpx;
+      align-items: center;
+      
+	  
+      .topView-title-img {
+        width: 38rpx;
+        height: 38rpx;
+        margin: 0 5rpx;
+      }
+    }
+    .topView-text {
+	  font-weight: 700;
+	  font-size: 40rpx;
+	  color: #344573;
+	  line-height: 62rpx;
+    }
+  }
+
+  
+}
+
+.digiTalBox {
+    width: 10rpx;
+    height: 10rpx;
+    position: absolute;
+    top: -999rpx;
+    left: -999rpx;
+  }
+</style>

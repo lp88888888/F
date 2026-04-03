@@ -1,0 +1,533 @@
+<template>
+	<!-- 弹窗根节点 -->
+	<view class="modal">
+		<BdDigitalManView ref="bdDigitalMan" style="width: 10rpx;height: 10rpx;" class="topView-right" ></BdDigitalManView>
+		<view class="mask" @click="noop"></view>
+		<image class="bgImg" :src="icoUrl+'BdDigitalMan/page-bg.png'" mode=""></image>
+		<view class="content" @click="doSomething">
+			<up-navbar
+			  title=" "
+			  bgColor="transparent"
+			  @leftClick="close"
+			  placeholder
+			  fixed
+			>
+			
+			</up-navbar>
+			
+			<view class="centerBox">
+				<view class="centerBox-card" >
+					<image class="centerBox-card-img" v-if="!textShow" :src="icoUrl+'BdDigitalMan/kefu.gif'" mode="" :lazy-load="true"></image>
+				</view>
+				<view>
+					<view class="seepBox" v-if="!textShow" @click="interruptedStop">
+						<image class="seepBox-img" :src="icoUrl+'BdDigitalMan/call-ai-speek.gif'" mode=""></image>
+						<text class="seepBox-text">{{messageTetx}}</text>
+					</view>
+					<view class="centerBox-button">
+						<view class="centerBox-button-item" @click="close">
+							<image class="centerBox-button-img" :src="icoUrl+'BdDigitalMan/call-ai-close.png'" :lazy-load="true" mode=""></image>
+							<text class="centerBox-button-text">挂断</text>
+						</view>
+						<view class="centerBox-button-item" @click="textShow = !textShow">
+							<image class="centerBox-button-img"  v-if="textShow" :src="icoUrl+'BdDigitalMan/call-ai-text-true.png'" :lazy-load="true" mode=""></image>
+							<image class="centerBox-button-img" v-else :src="icoUrl+'BdDigitalMan/call-ai-text-false.png'" :lazy-load="true" mode=""></image>
+							
+							<text class="centerBox-button-text">字幕</text>
+						</view>
+					</view>
+				</view>
+				<scroll-view class="viewtetxBox" v-if="textShow" :scroll-top="scrollTop" :scroll-into-view="scrollIntoViewId" scroll-y="true" >
+					<text v-for="(item,index) in msgList" :key="index" :class="[item.type=='user'?'viewtetxBox-text':'viewtetxBox-text2']">{{item.text}}</text>
+					<view id="bottom"></view>
+				</scroll-view>
+			</view>
+		</view>
+	</view>
+</template>
+ 
+<script setup lang="ts">
+	import { ref, computed,onMounted,onUnmounted } from 'vue';
+	import { deepClone } from "@/uni_modules/uview-plus";
+	import { imgUrl,aiUrl } from "@/config";
+	import gaoChatSSEClientNvue from '@/uni_modules/gao-ChatSSEClient/components/gao-ChatSSEClient/gao-ChatSSEClientNvue.nvue';
+	import MessageButton from "./components/MessageButtonN.nvue";
+	import MessageList from "./components/MessageListN.nvue";
+	import CallAiHuman from "./components/CallAiHuman.nvue";
+	import { toBack, toNav } from "@/utils/route";
+	import { onLoad,onShow, onReady } from "@dcloudio/uni-app";
+	import {digitalHumanToken} from '@/utils/auth';
+	import { ChatStore } from "@/store/modules/chat";
+	import { toast } from "@/utils/common";
+	import { getOpenToken, openChat } from "@/api/openApi";
+	import { voiceToken, voiceTotext } from "@/api/language";
+	import { getToken } from "@/utils/token";
+	import { formatTimestamp, getUUID,systemInfo } from "@/utils/util";
+	import {$kfMessageChange} from '@/utils/chatMessage';
+	// 主题 使用 （主题颜色 var( --theme-color)）（组件 componentColor.$pageBgColor） 图标地址（icoUrl）
+	import { useTheme } from '@/composables/useTheme';
+	const { themeStore, pageTheme } = useTheme();
+	const icoUrl = ref(themeStore.imgUrl);
+	const emits = defineEmits(["close"]);
+	const textShow = ref(false);
+	const chatSSEClientRef = ref(null);
+	const msgListRef = ref(null);
+	const msgButtonRef = ref(null);
+	const callShow = ref(true);
+	const messageTetx  = ref('正在听，您请说')
+	const chatStore = ChatStore();
+	const bdDigitalMan = ref(null);
+	const telText = ref(null);
+	const queryText = ref("");
+	const uuid = getUUID();
+	const gaoSss = ref(null);
+	
+	const formData = ref(null);
+	const isTextAre = ref(false);
+	const speechShow = ref(false);
+	const scrollTop = ref(0);
+	const scrollIntoViewId = ref<string>('bottom') // 默认指向底部占位符
+	const formSubmit = (obj) =>{
+	  formData.value = obj.formData
+	  addMessage({msgText:obj.msgText,type:'text'})
+	} 
+	const messageList = computed(() =>{
+		return chatStore.list
+	})
+	const msgList = ref([])
+	// 发送消息
+	const addMessage = (objs: Objs) => {
+		let obj: Objs = { type: "text" };
+		
+		msgList.value.push({
+			type:'user',
+			text:objs.msgText
+		})
+		if (objs.msgText) {
+		  obj.msgText = objs.msgText;
+		  obj.type = "text";
+		  queryText.value = objs.msgText;
+		  chatStore.setUserMessage(deepClone(obj));
+		  msgListRef?.value?.scrollToBottom();
+		  setTimeout(() => {
+		    addKfMessage(deepClone(obj));
+		  }, 100);
+		}
+		console.log("object", objs);
+		if (objs.voice) {
+		  obj.voice = objs.voice;
+		  obj.duration = objs.duration;
+		  obj.type = "voice";
+		  obj.voiceState = objs.voiceState;
+		  // chatStore.setUserMessage(deepClone(obj))
+		  uploadPcm(objs);
+		}
+	};
+	
+	const addKfMessage = (obj: Objs) => {
+	  console.log("--------obj---------", obj);
+	  let msgText = obj.msgText || "";
+	  if (obj.voice) {
+	    let newObj: NewObj = {
+	      type: "text",
+	    };
+	
+	    let arr = chatStore.dataList.filter(
+	      (item) =>
+	        item.name.indexOf(obj.voiceState) != -1 || obj.voiceState.indexOf(item.name) != -1
+	    );
+	    if (arr.length) {
+	      if (arr[0].richText) {
+	        newObj.type = "richText";
+	        newObj.msgText = arr[0].richText;
+	      } else {
+	        newObj.msgText = "你好，该功能暂未开通";
+	      }
+	      chatStore.setServiceMessage(newObj);
+	    } else {
+	      newObj.msgText = "你好，请描述所需办理的业务";
+	      chatStore.setServiceMessage(newObj);
+	    }
+	  } else {
+	    setChat(obj);
+	  }
+	  msgListRef?.value?.scrollToBottom();
+	};
+	const uploadPcm = (data) => {
+	  plus.io.resolveLocalFileSystemURL(data.voice, (entry) => {
+	    entry.file(file => {
+	      const reader = new plus.io.FileReader()
+	      reader.onloadend = e => {
+	  		getVoictToText(e.target.result.split(',')[1], data);
+	  	}
+	      reader.readAsDataURL(file)
+	    })
+	  });
+	};
+	// 语音转文字
+	const getVoictToText = async (base64Speech, datas) => {
+	  try {
+	    const tokRes = await voiceToken();
+	    const accessToken = tokRes.access_token || null;
+	    if (accessToken) {
+			const res = await voiceTotext(accessToken, base64Speech);
+			if (res.err_no == 0) {
+				  let valueText = res.result.join()
+				  if(!valueText) return toast('未识别出文字');
+					let obj = {
+					  msgText: res.result.join(),
+					  type: "text",
+					};
+					queryText.value = valueText
+					chatStore.setUserMessage(deepClone(obj));
+					msgListRef?.value?.scrollToBottom();
+					setChat(obj)
+			} else {
+			  toast(e.err_msg);
+			}
+	    } else {
+	      toast(tokRes.error);
+	    }
+	  } catch (e) {
+	    toast(e.error);
+	  }
+	};
+	
+	
+	const setChat = async (messageObj) => {
+		console.log("---messageObj---",messageObj);
+	  
+	  const requestTime = formatTimestamp(new Date().getTime() - 1000, "YYYY-MM-DD HH:mm:ss");
+	  console.log("requestTime", requestTime);
+	  try {
+	    const tokenRes = await getOpenToken(requestTime);
+	    if (tokenRes.status === 200) {
+	     start(tokenRes.result, requestTime);
+	    } else {
+	      toast(tokenRes.message);
+	    }
+	  } catch (e) {
+	    toast(e.message);
+	  }
+	};
+	const startTalk = ()=>{
+		bdDigitalMan.value.bdDigitalManSpeechInterrupt(event=>{
+			console.log('-------打断讲话-------',event);
+		})
+	}
+	const start = (token, requestTime) => {
+		startTalk()
+		const messageId = getUUID()
+		msgListRef?.value?.lodSet(true);
+		isTextAre.value = false
+		messageTetx.value = '查询中，点击打断'
+		bdDigitalMan.value.requestBdLargeModelData({
+				// isAutoSpeech:true,
+				playType:1,
+				"url":aiUrl+'/copilot/v1/openApi/chat',
+				"copilotAk": "copilot_ak_4qZ84MGWrRoXcMwY",
+				"assistantId":'118',
+				"requestTime": requestTime,
+				"copilotToken": token,
+				"removeRegularList":chatStore.removeRegularList,
+				"ttsConfig": chatStore.ttsConfig,
+				"endWidthSymbol":chatStore.endWidthSymbol,
+				"body": JSON.stringify({
+					type: 'IM_CLICK',
+					assistantId:118,
+					query: queryText.value,
+					sessionId: uuid,
+					// skillId:190,
+					params: {
+					  userCode: getToken(), // 用户token
+					  'user_info':formData.value || undefined,
+					  userLat:uni.getStorageSync('address').lat || '',
+					  userLon:uni.getStorageSync('address').lng || '',
+					  useLon:uni.getStorageSync('address').lng || '',
+					},
+				})
+		},(res)=>{
+			let data = JSON.parse(JSON.parse(res).data)
+			// $kfMessageChange(res,messageId)
+			// chatStore.setServiceQueryMessage({
+			// 	type:'text',
+			// 	id:messageId,
+			// 	queryId:data.data.queryId,
+			// 	sessionId:data.data.sessionId || '',
+			// 	code:data.code,
+			// 	cot:data.data.cot,
+			// 	msgText:data.data.answer || '',
+			// 	answer:data.data.answer,
+			// 	aiData:data.data.data || null
+			// })
+			let msgObgs = {
+				id:messageId,
+				type:'server',
+				text:''
+			}
+			if(data.data?.answer){
+				let itemObj = {
+					type:'text',
+					id:messageId,
+					queryId:data.data.queryId,
+					sessionId:data.data.sessionId || '',
+					code:data.code,
+					cot:data.data.cot,
+					msgText:data.data.answer?data.data.answer:'',
+					answer:data.data.answer?data.data.answer:'',
+					aiData:data.data.data || null
+				}
+				chatStore.setServiceQueryMessage({
+					type:'text',
+					id:messageId,
+					queryId:data.data.queryId,
+					sessionId:data.data.sessionId || '',
+					code:data.code,
+					cot:data.data.cot,
+					msgText:data.data.answer?data.data.answer:'',
+					answer:data.data.answer?data.data.answer:'',
+					aiData:data.data.data || null
+				})
+				msgObgs = {
+					id:messageId,
+					type:'server',
+					text:data.data.answer?data.data.answer:'',
+				}
+			}
+			const index = msgList.value.findIndex(item => item.id === msgObgs.id)
+			if(index == -1){
+				msgList.value.push(msgObgs)
+			}else{
+				
+				if(data.code == 100){
+					msgList.value[index].text = msgList.value[index].text + msgObgs.text
+					// msgList.value[index] = msgObgs
+				}else{
+					msgList.value[index]= msgObgs
+				}
+			}
+			if(data.code == 100){
+				msgListRef?.value?.lodSet(true);
+				
+			}else{
+				messageTetx.value = '播报中，点击打断'
+				// $kfMessageChange(res,messageId)
+				// msgList.value.push(data.data.answer)
+				
+			}
+			scrollToBottom()
+		})
+		
+		bdDigitalMan.value.bdDigitalManSubtitlesCallback((event)=>{
+			const res = JSON.parse(event);
+			
+			console.log(res.content);
+		});
+		bdDigitalMan.value.bdDigitalManSpeechComplete((res)=>{
+			console.log('说完了=----',res);
+			speechStart()
+		})
+	};
+	
+	const interruptedStop = ()=>{
+		if(!speechShow.value){
+			startTalk();
+			setTimeout(()=>{
+				speechStart()
+			},500)
+		}
+	}
+	const stokValue = (text)=>{
+		bdDigitalMan.value.bdDigitalManSpeech({
+		  ttsConfig: chatStore.ttsConfig,
+		  "content": text,
+		  "regularList": chatStore.regularList
+	},(datas)=>{
+			console.log('----------------',datas);
+		})
+	}
+	const close = ()=>{
+		speechStop()
+		emits('close');
+	}
+	const scrollToBottom = (type) => {
+		scrollIntoViewId.value = 'bottom'
+		  scrollTop.value = 1 * 999;
+		  setTimeout(() => {
+			scrollTop.value += 1;
+		  }, 400);
+	};
+	// 说话
+	const speechStart = ()=>{
+		speechShow.value  = true
+		messageTetx.value = '正在听，您请说'
+		plus.speech.startRecognize({
+		    engine: 'baidu',
+		    lang: 'zh-cn',
+		    userInterface: false,
+		    continue: true,           // 持续识别
+		    'vadEos': 500,          // 较短的静音检测时间
+		    'nbest': 1,              // 返回最优结果
+		    'punctuation': true,    // 不返回标点符号
+		    'interimResults': true   // 返回中间结果
+		}, function(result) {
+		    console.log('实时识别：' + result);
+			queryText.value = result
+			// messageTetx.value = result
+			
+			addMessage({type: "text",msgText:result})
+			speechStop()
+		    // 处理识别结果
+		    // handleSpeechResult(result);
+		}, function(error) {
+		    console.error('识别错误：', error);
+		});
+	}
+	
+	// 停止
+	const speechStop = ()=> {
+		speechShow.value = false
+		 plus.speech.stopRecognize();
+	}
+	onMounted(()=>{
+		bdDigitalMan.value.initBdDigitalMan(JSON.stringify({
+			hairId :"coco_02_hair_out", //头发
+			badgeId : "coco_02_badge_out", //眼镜
+			bodyId : "coco_02_body_out",
+			shoesId : "coco_02_shoes_out",
+			cameraId : "h_shoulder_cam",
+			speechPersonId:'LITE_clever_boy',
+			speechSpeed:10,
+			// speechPitch:5,
+			isAutoAnimoji:true,
+		}),(res)=>{
+			console.log("4567890",res);
+			res = JSON.parse(res)
+			if(res.code == 2){
+				speechStart()
+			}
+		});
+	});
+	onUnmounted(()=>{
+		speechStop()
+	})
+	
+</script>
+
+<style lang="scss" scoped>
+	.modal {
+		position: fixed;
+		left: 0;
+		top: 0;
+		right: 0;
+		bottom: 0;
+		background-color: #FFF1DE;
+		/* z-index 写不写都行，关键靠节点顺序 */
+	}
+
+	.mask {
+		position: absolute;
+		left: 0;
+		top: 0;
+		right: 0;
+		bottom: 0;
+		background-color: transparent;
+		/* 必须透明 */
+	}
+	.bgImg{
+		position: absolute;
+		left: 0;
+		top: 0;
+		right: 0;
+		bottom: 0;
+		width: 750rpx;
+		flex: 1;
+	}
+	.viewtetxBox{
+		left: 10rpx;
+		position: absolute;
+		top: 20rpx;
+		padding: 30rpx 30rpx;
+		width: 650rpx;
+		height: 900rpx;
+		border-radius: 20rpx;
+		// background: #FFFFFF;
+		.viewtetxBox-text{
+			font-weight: 500;
+			font-size: 36rpx;
+			color: #333333;
+			line-height: 54rpx;
+			margin-bottom: 32rpx;
+		}
+		.viewtetxBox-text2{
+			font-weight: 400;
+			font-size: 28rpx;
+			color: #6E6E6E;
+			line-height: 48rpx;
+			margin-bottom: 40rpx;
+		}
+	}
+	.content {
+		position: absolute;
+		left: 0;
+		top: 0;
+		right: 0;
+		bottom: 0;
+		// background-color: #fff;
+		padding: 40rpx;
+	}
+	.centerBox{
+		padding-top: 100rpx;
+		padding-bottom: 130rpx;
+		flex: 1;
+		justify-content: space-between;
+		align-items: center;
+		.centerBox-card{
+			width: 498rpx;
+			height: 498rpx;
+			// background: #FFFFFF;
+			// border-radius: 426rpx;
+			justify-content: center;
+			align-items: center;
+			.centerBox-card-img{
+				width: 498rpx;
+				height: 498rpx;
+			}
+		}
+		.seepBox{
+			width: 600rpx;
+			padding-bottom: 30rpx;
+			align-items: center;
+			.seepBox-img{
+				width: 112rpx;
+				height: 56rpx;
+				margin-bottom: 40rpx;
+			}
+			.seepBox-text{
+				font-weight: 400;
+				font-size: 28rpx;
+				color: #333333;
+				line-height: 42rpx;
+			}
+		}
+		
+		.centerBox-button{
+			width: 600rpx;
+			flex-direction: row;
+			justify-content: space-around;
+			.centerBox-button-img{
+				width: 132rpx;
+				height: 132rpx;
+			}
+			.centerBox-button-item{}
+			.centerBox-button-text{
+				margin-top: 24rpx;
+				font-weight: 400;
+				font-size: 32rpx;
+				color: #333333;
+				line-height: 48rpx;
+				text-align: center;
+			}
+		}
+	}
+</style>

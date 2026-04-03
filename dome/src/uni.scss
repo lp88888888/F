@@ -1,0 +1,12 @@
+
+/* 颜色变量 */
+// @import 'uview-plus/theme.scss';
+@import '@/uni_modules/uview-plus/theme.scss';
+// 通专主题色
+$color:#09BABE; //主题色
+$pColor:#09BABE; // 价格颜色
+$pageBgColor:#F8F9FB; // 页面背景色
+$pageBBgColor:#D1E5F9; // 页面顶部背景色 深
+$bgLgColor:linear-gradient(to bottom,#5AD6D6,#069FA4); // 背景渐变色(按钮常用)
+$bgTopColor:linear-gradient( 180deg, #D1E5F9 0%, #F8F9FB 96%); // 顶部背景色
+$bgTemToPageColor:linear-gradient(to bottom, $color, $pageBgColor); // 主题色到页面背景色的渐变色

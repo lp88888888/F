@@ -1,0 +1,249 @@
+<template>
+	<page-meta :page-style="'overflow:' + (popshow ? 'hidden' : 'visible')"></page-meta>
+	<up-popup :show="popshow" mode="bottom" :round="16" :z-index="99999" closeable @close="handleclose">
+		<view class="popbox" :style="{ height: pageHeight + 'px' }">
+			<!-- #ifdef MP-WEIXIN || APP-HARMONY -->
+			<scroll-view class="u_list" scroll-y="true" :style="{ height: pageHeight + 'px' }">
+				<view v-for="(item, index) in 100" :key="index">
+					<text>数据{{ index + 1 }}</text>
+				</view>
+			</scroll-view>
+			<!-- #endif -->
+			<!-- #ifndef MP-WEIXIN || APP-HARMONY -->
+			<scroll-view class="u_list app" scroll-y="true" :style="{ height: pageHeight + 'px' }">
+				<view v-for="(item, index) in 100" :key="index">
+					<text>数据{{ index + 1 }}</text>
+				</view>
+			</scroll-view>
+			<!-- #endif -->
+			<AiInput class="inputbox" @inputconfirm="inputconfirm"></AiInput>
+			<AudioPlayer ref="audioRef" @onEnded="handleEnded"></AudioPlayer>
+		</view>
+	</up-popup>
+</template>
+
+<script setup lang="ts">
+import { ref, computed, onMounted } from 'vue';
+import AiInput from '@/components/OpenAiHuman/AiInput';
+import AudioPlayer from '@/components/AudioPlayer';
+import { imgUrl, aiUrl } from '@/config';
+import { toast } from '@/utils/common';
+import { openAPPLocation, CurrentPage, showAlert2, getUUID, formatTimestamp, copyText, fixQuotes,parseTokens,parseToken } from '@/utils/util';
+// import { formatTimestamp, getUUID, systemInfo, makePhoneCall, $previewItemImage,parseToken,parseTokens,fixQuotes } from "@/utils/util";
+import { getOpenToken, openChat, feedbackAi, feedbackDeleteAi } from '@/api/openApi';
+import { getToken } from '@/utils/token';
+import { voiceToken, voiceTotext, createTextToVoice, queryTextToVoice, textCensor } from '@/api/language';
+import { chatAiService } from '@/utils/chatAiService'; // 引入刚才封装的服务
+import { ChatStore } from "@/store/modules/chat";
+import { deepClone } from "@/uni_modules/uview-plus";
+const chatStore = ChatStore();
+const SystemInfo = ref(uni.getSystemInfoSync());
+const pageHeight = computed(() => {
+	const heightval = SystemInfo.value.screenHeight - SystemInfo.value.safeAreaInsets.top - SystemInfo.value.safeAreaInsets.bottom;
+	// #ifdef MP-WEIXIN
+	return heightval - 50;
+	// #endif
+	// #ifndef MP-WEIXIN
+	return heightval;
+	// #endif
+});
+interface Objs {
+		name ?: string;
+		id ?: string;
+		type : "text" | "richText" | "voice";
+		msgText ?: string;
+		isUserType ?: "user" | "service";
+		time ?: Date | number;
+		voice ?: string;
+		voiceState ?: string;
+		duration ?: number;
+	}
+const listPage = computed(() => {
+	return pageHeight.value - uni.upx2px(500);
+});
+
+const popshow = ref(false);
+
+const handleopen = () => {
+	popshow.value = true;
+};
+
+const handleclose = () => {
+	popshow.value = false;
+};
+
+const AiMsgList = ref([]);
+const skillData = ref({})
+const formData = ref({})
+
+// 搜索的文字
+const inputconfirm = (e) => {
+	addMessage({type:'text',msgText:e});
+};
+const addMessage = (objs : Objs) => {
+		let obj : Objs = { type: "text" };
+		if (objs.msgText) {
+			obj.msgText = objs.msgText;
+			obj.type = "text";
+			chatStore.setUserMessage(deepClone(obj));
+			setTimeout(() => {
+				setChat(deepClone(obj));
+			}, 100);
+		}
+		console.log("object", objs);
+		if (objs.voice) {
+			// skillData.value = {}
+			obj.voice = objs.voice;
+			obj.duration = objs.duration;
+			obj.type = "voice";
+			obj.voiceState = objs.voiceState;
+			// chatStore.setUserMessage(deepClone(obj))
+			// uploadPcm(objs);
+		}
+	};
+const setChat = async (obj) => {
+	    // 1. 组装业务参数
+	    const customParams = {
+	        userCode: getToken(),
+	        'user_info': formData.value || undefined,
+	        userLat: uni.getStorageSync('address').lat || '',
+	        userLon: uni.getStorageSync('address').lng || '',
+	        useLon: uni.getStorageSync('address').lng || '', 
+	        'member_id': uni.getStorageSync('userInfo').id || '',
+	        'memberType': uni.getStorageSync('userInfo').memberType || '1',
+	        mobile: parseToken(uni.getStorageSync('Token'))?.member_phone,
+	        // etcCarId: etcData.value.cardId || undefined,
+	        // plateNum: plateNum.value || undefined
+	    };
+	
+	    // 2. 调用封装好的多端 LLM 服务
+	    chatAiService.sendChat({
+	        query: obj.msgText,
+	        sessionId: getUUID(),
+	        skillId: skillData.value?.skill_id,
+	        params: customParams,
+	        appClientRef: null, // 用于安卓端的 SSE 插件
+	        // 当收到服务端消息时 (已解决多端数据格式统一问题)
+	        onMessage: (parsed, messageId) => {
+	            console.log('收到流式消息:', parsed);
+	            const { code, data } = parsed;
+	            
+	            // 提取文本内容 (兼容 llm_result 流式片段和 answer 最终答案)
+	            let textFragment = data.llm_result || (code == 200 ? data.answer : '');
+	
+	            if (textFragment || data.answer || data.queryId) {
+	                chatStore.setServiceQueryMessage({
+	                    type: 'text',
+	                    id: messageId,
+	                    queryId: data.queryId,
+	                    sessionId: data.sessionId || '',
+	                    code: code,
+	                    cot: data.cot,
+	                    msgText: data.answer || '',       // 完整答案
+	                    answer: data.answer || '',
+	                    aiData: data.data || null,
+	                    isLoading: code !== 200,          // 200 表示完成
+	                    streamText: textFragment          // 用于流式打字机效果
+	                });
+	                
+	                // msgListRef.value?.scrollToBottom();
+	            }
+	
+	            // 对话结束的独立操作
+	            if (code == 200) {
+	                console.log('对话完全结束，code 200');
+	                // etcData.value = {};
+	                // plateNum.value = '';
+	                if (data.answer) {
+	                    getVoice(data.answer, true);
+	                }
+	            }
+	        },
+	        
+	        // 请求报错时
+	        onError: (err) => {
+	            console.error("流式请求报错:", err);
+	            // msgListRef.value.isLoading = false;
+	            toast(err.message || "服务请求异常");
+	        },
+	        
+	        // 数据流完全关闭时
+	        onFinish: () => {
+	            console.log("流式连接关闭");
+	            // msgListRef.value.isLoading = false;
+	            // formData.value = null; 
+	        }
+	    });
+	};
+
+// 合成语音
+const stopItemBoIndex = ref(null);
+const audioVoice = uni.createInnerAudioContext();
+const getVoice = async (text, type = false) => {
+	uni.showLoading({ title: '合成中' });
+	if (type) {
+		stopItemBoIndex.value = AiMsgList.length - 1;
+	}
+	try {
+		let res = await textCensor({
+			lan: 'zh',
+			ctp: 1,
+			tex: fixQuotes(text),
+			cuid: getUUID(),
+			per: 6561,
+		});
+		if (res.code == 200) {
+			voicePlay(res.data.url);
+			// AiMsgList[stopItemBoIndex.value].voiceUrl = res.data.url;
+		}
+	} catch (e) {
+		console.log('语音合成失败', e);
+		uni.showToast({ title: e.message || '合成失败', icon: 'none' });
+	}
+	uni.hideLoading();
+};
+const audioRef = ref(null);
+const handleEnded = () => {
+	// bobaoShow.value = false;
+  // uni.showToast({ title: '播报完毕', icon: 'none' });
+};
+// 开始播放
+const voicePlay = async (audioSrc) => {
+	audioRef.value.play(audioSrc)
+};
+// 停止播放
+const voiceStop = (type = false) => {
+	audioRef.value.stop()
+};
+
+onMounted(() => {});
+
+defineExpose({
+	handleopen,
+});
+</script>
+
+<style scoped lang="scss">
+.popbox {
+	width: 750rpx;
+	border-top-right-radius: 32rpx;
+	border-top-left-radius: 32rpx;
+	position: relative;
+	.u_list {
+		width: 750rpx;
+		background-color: aqua;
+		border-top-right-radius: 32rpx;
+		border-top-left-radius: 32rpx;
+	}
+	.app {
+		background-color: #ff0000;
+	}
+	.inputbox {
+		width: 750rpx;
+		position: absolute;
+		bottom: 0;
+		left: 0;
+		z-index: 1;
+	}
+}
+</style>

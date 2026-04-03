@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title>选择位置 - 腾讯地图</title>
+		<style>
+			*{
+				margin: 0;
+				padding: 0;
+			}
+			#map-container {
+				position: relative;
+				width: 375px;
+				height: 300px;
+			}
+			#map {
+				width: 100%;
+				height: 300px;
+				/* border: 1px solid #ccc; */
+			}
+ 
+			/* 固定在地图中心的标记（视觉提示） */
+			.center-marker {
+				position: absolute;
+				top: 50%;
+				left: 50%;
+				transform: translate(-50%, -50%);
+				width: 25px;
+				height: 25px;
+				background-image: url('https://tranalioss.shanyitong.com/tongyipingtai/images/app-static/static/address-select-icon.png');
+				background-size: cover;
+				z-index: 100;
+				pointer-events: none;
+				/* 防止遮挡地图交互 */
+			}
+
+		</style>
+		<!-- 腾讯地图 GL JS API -->
+		<script charset="utf-8" src="https://map.qq.com/api/gljs?v=1.exp&key=PLTBZ-QWLKZ-D3QX5-ZQGDB-3UBWK-4ZBYB"></script>
+		<!-- 引入uni.webview.js SDK -->
+		<script type="text/javascript" src="https://mp-a22da7c0-fb36-4d2e-9a92-f439f0713a37.cdn.bspapp.com/uni.webview.1.5.6.js"></script>
+	</head>
+	<body>
+		<div id="map-container">
+			<div id="map"></div>
+			<!-- 固定在视口中心的标记 -->
+			<div class="center-marker"></div>
+		</div>
+		<script>
+			let map;
+			let isPost = 'yes';
+
+			// 初始化地图
+			function initMap(center = {
+				lat: 39.916527,
+				lng: 116.397128
+			}, zoom = 15) {
+				if (!map) {
+					map = new TMap.Map("map", {
+						center: new TMap.LatLng(center.lat, center.lng),
+						zoom: zoom,
+						pitch: 0,
+						rotation: 0,
+						showControl: false,
+						doubleClickZoom: true,
+						dragEnable: true
+					});
+				} else {
+					map.setCenter(new TMap.LatLng(center.lat, center.lng));
+					map.setZoom(zoom);
+				}
+				// 地图停止移动后，获取中心点信息
+				map.on('moveend', () => {
+					const center = map.getCenter(); // { lat, lng }
+					const latLng = {
+						lat: center.lat,
+						lng: center.lng,
+						type: 'moveend' // 添加类型标识
+					};
+					if(isPost == 'yes'){
+						uni.postMessage({
+							data: JSON.stringify(latLng) // 推荐使用字符串，避免兼容问题
+						});
+					}
+					setTimeout(()=>{
+						isPost = 'yes'; // 重置为默认值
+					},100)
+					
+				});
+			}
+
+			window.onload = () => {
+				const url = new URL(window.location.href);
+				const params = new URLSearchParams(url.search);
+				// 获取元素
+				const mapContainer = document.getElementById('map-container');
+				
+				// 设置固定宽度（例如 800px）
+				mapContainer.style.width = params.get('width')?params.get('width')+'px':'375px';
+				initMap({
+					lat: params.get('lat'),
+					lng: params.get('lng')
+				}); // 默认初始化
+			};
+			// 定义接收nvue消息的函数
+			window.receiveFromNvue = function(data) {
+				try {
+					const params = JSON.parse(data);
+					console.log('收到nvue传递的参数:', params);
+					if(params.type == 'no'){
+						isPost = 'no'
+					}else{
+						isPost = 'yes'
+					}
+					
+					initMap(params.value)
+				} catch (e) {
+					console.error('解析参数失败:', e);
+				}
+			};
+		</script>
+	</body>
+</html>

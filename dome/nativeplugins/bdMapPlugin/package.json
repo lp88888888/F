@@ -1,0 +1,84 @@
+{
+	"name": "bdMapPlugin",
+	"id": "bdMapPlugin",
+	"version": "1.0",
+	"description": "百度地图插件",
+	"_dp_type": "nativeplugin",
+	"_dp_nativeplugin": {
+		"android": {
+			"plugins": [{
+					"type": "module",
+					"name": "bdMapPlugin",
+					"class": "com.bd.mp.BdMapPlugin"
+				},
+				{
+				  "type": "component",
+				  "name": "clusterBdMapView",
+				  "class": "com.bd.mp.ClusterBaiduMapView"
+				},
+				{
+					"type": "component",
+					"name": "bdMapView",
+					"class": "com.bd.mp.BaiduMapView"
+				}
+			],
+			"integrateType": "aar",
+			"dependencies": [
+				"com.google.code.gson:gson:2.11.0",
+				"androidx.cardview:cardview:1.0.0",
+				"androidx.constraintlayout:constraintlayout:2.1.4",
+				"androidx.lifecycle:lifecycle-extensions:2.2.0",
+				"androidx.legacy:legacy-support-v4:1.0.0",
+				"androidx.core:core-ktx:1.2.0",
+				"com.airbnb.android:lottie:3.6.0",
+				"org.jetbrains.kotlin:kotlin-stdlib:1.4.30",
+				"com.github.bumptech.glide:glide:4.12.0",
+				"com.google.android.material:material:1.6.1",
+				"com.baidu.lbsyun:BaiduMapSDK_Location:9.6.4",
+				"com.baidu.lbsyun:BaiduMapSDK_Map-Navi:7.6.4",
+				"com.baidu.lbsyun:BaiduMapSDK_Search:7.6.4",
+				"com.baidu.lbsyun:NaviTts:3.2.13",
+				"com.makeramen:roundedimageview:2.3.0"
+			],
+			"compileOptions": {
+				"sourceCompatibility": "1.8",
+				"targetCompatibility": "1.8"
+			},
+			"abis": [
+				"arm64-v8a"
+			],
+			"soLibs": [
+				"xxx"
+			],
+			"minSdkVersion": "22",
+			"permissions": [
+				"android.permission.INTERNET",
+				"android.permission.ACCESS_COARSE_LOCATION",
+				"android.permission.ACCESS_FINE_LOCATION",
+				"android.permission.ACCESS_LOCATION_EXTRA_COMMANDS",
+				"android.permission.ACCESS_NETWORK_STATE",
+				"android.permission.ACCESS_WIFI_STATE",
+				"android.permission.FOREGROUND_SERVICE",
+				"android.permission.SYSTEM_ALERT_WINDOW",
+				"android.permission.MANAGE_OVERLAY_PERMISSION"
+			]
+		},
+		"ios":{
+			"plugins": [
+				{
+					"type": "module",
+					"name": "bdMapPlugin-BdMapPlugin",
+					"class": "BdMapPlugin"
+				},
+				{
+					"type": "component",
+					"name": "bd-mapview",
+					"class": "BdMapComponent"
+				}
+			],
+			"frameworks": ["MapKit.framework", "BMKLocationKit.framework", "BaiduMapAPI_Map.framework", "BaiduMapAPI_Base.framework","BaiduMapAPI_Search.framework", "BaiduMapAPI_Utils.framework"],
+			"integrateType": "framework",
+			"deploymentTarget": "11.0"
+		}
+	}
+}

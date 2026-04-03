@@ -1,0 +1,163 @@
+<template>
+  <up-popup
+    v-model:show="innerShow"
+    mode="center"
+    bgColor="transparent"
+    :round="0"
+    :safeAreaInsetBottom="false"
+    :closeOnClickOverlay="true"
+    :overlayStyle="{ backgroundColor: 'rgba(0,0,0,0.55)' }"
+    @close="handleClose"
+  >
+    <view class="wrap" @click.stop>
+      <view class="card" :style="cardStyle">
+		  <!-- <image src="" mode=""></image> -->
+		  <image
+		    class="card-bg"
+		    :style="cardStyle"
+		    :src="bg"
+			lazy-load
+		    mode="aspectFit"
+		  />
+        <view class="slot-area" :style="{width:width,height:height}">
+		  <slot />
+		</view>
+
+        <image
+          class="btn"
+          :style="btnSizeStyle"
+          :src="btnBg"
+          mode="aspectFit"
+		  lazy-load
+          @click.stop="emitConfirm"
+        />
+		<view class="close-btn-box">
+			<image
+			  class="close-btn"
+			  :src="imgUrl + 'static/home_close_btn.png'"
+			  mode="aspectFit"
+			  lazy-load
+			  @click.stop="handleClose"
+			/>
+		</view>
+        
+      </view>
+    </view>
+  </up-popup>
+</template>
+
+<script setup lang="ts">
+import { ref, watch, computed } from 'vue';
+import { imgUrl } from '@/config';
+
+const props = withDefaults(defineProps<{
+  show: boolean;
+  bg: string;
+  btnBg: string;
+
+  // 弹窗背景图容器尺寸
+  width?: string;
+  height?: string;
+
+  // 按钮尺寸
+  btnWidth?: string;
+  btnHeight?: string;
+  btnLeft?:string;
+}>(), {
+  width: '540rpx',
+  height: '858rpx',
+  btnWidth: '296rpx',
+  btnHeight: '88rpx',
+});
+
+const emit = defineEmits<{
+  (e: 'confirm'): void;
+  (e: 'close'): void;
+  (e: 'update:show', v: boolean): void;
+}>();
+
+const innerShow = ref(false);
+watch(
+  () => props.show,
+  (v) => (innerShow.value = !!v),
+  { immediate: true }
+);
+
+const cardStyle = computed(() => ({
+  width: props.width,
+  height: props.height,
+  backgroundImage: `url(${props.bg})`,
+  backgroundSize: '100% auto',
+  backgroundRepeat: 'no-repeat',
+  backgroundPosition: 'center',
+}));
+
+const btnSizeStyle = computed(() => ({
+  width: props.btnWidth,
+  height: props.btnHeight,
+  left:props.btnLeft
+}));
+
+const emitConfirm = () => {
+  emit('confirm');
+  handleClose();
+};
+
+const handleClose = () => {
+  emit('update:show', false); // 同步父组件
+  innerShow.value = false;
+  emit('close');
+};
+</script>
+
+<style scoped lang="scss">
+.wrap {
+  width: 750rpx;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.card {
+  position: relative;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+.btn {
+	width: 296rpx;
+	height:88rpx;
+	position: absolute;
+	bottom: 86rpx;
+	left: 122rpx;
+  // transform: translateX(-50%); 
+}
+.close-btn-box{
+	height: 60rpx;
+	flex:1;
+	position: absolute;
+	bottom: 0;
+	left: 0;
+	right: 0;
+	align-items:center;
+}
+.close-btn {
+  width: 60rpx;
+  height: 60rpx;
+  // position: absolute;
+  // bottom: 0;
+  // left: 240rpx;
+  // transform: translateX(-50%);
+}
+
+.slot-area {
+  position: absolute;
+  top: 0;
+  left:0;
+  right: 0;
+  bottom: 0;
+  flex:1;
+  z-index: 1; // slot 内容在下层
+  // background:red;
+}
+</style>

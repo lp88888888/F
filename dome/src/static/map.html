@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<title>腾讯地图</title>
+		<style>
+			* {
+				margin: 0;
+				padding: 0;
+				box-sizing: border-box;
+			}
+			html,
+			body{
+				width: 100%;
+				height: 100vh;
+				overflow: hidden;
+			}
+			#map {
+				width: 100%;
+				overflow: hidden;
+				height: 90vh;
+			}
+		</style>
+		<!-- 引入腾讯地图 GL JS API -->
+		<script charset="utf-8" src="https://map.qq.com/api/gljs?v=1.exp&key=PLTBZ-QWLKZ-D3QX5-ZQGDB-3UBWK-4ZBYB">
+		</script>
+		<!-- 可选：引入 WebService API（用于路线规划） -->
+		<script src="https://3gimg.qq.com/lightmap/components/geolocation/min.js"></script>
+		<!-- 引入uni.webview.js SDK -->
+		<script type="text/javascript"
+			src="https://mp-a22da7c0-fb36-4d2e-9a92-f439f0713a37.cdn.bspapp.com/uni.webview.1.5.6.js"></script>
+	</head>
+	<body>
+		<div id="map"></div>
+		<script>
+			/* 
+				使用uni.postMessage 向外传递参数
+				uni.postMessage({
+					data: JSON.stringify(data) // 推荐使用字符串，避免兼容问题
+				});
+			 */
+			let map = null;
+			let currentMarkers = [];
+			let currentPolyline = null;
+			let lineIndex = 0;
+			let lineOldInedx = 0;
+			let currentPolylineLayer = null; // 保存 MultiPolyline 实例
+			let currentPolylineStyles = {}; // 缓存当前所有样式的引用
+			let currentPolylineGeometries = []; // 缓存路径数据
+			let isMarkers = true; //控制自己当前标记点显示，路线规划影藏
+			let etcAllMarkers = [];
+			let sfzAllMarkers = [];
+			let fwqAllMarkers = [];
+			// 更换
+			function replacementLine() {
+				
+			}
+			// 初始化地图
+			function initMap(center = {
+				lat: 34.22259,
+				lng: 108.94878
+			}, zoom = 15) {
+				if (!map) {
+					map = new TMap.Map("map", {
+						center: new TMap.LatLng(center.lat, center.lng),
+						zoom: zoom,
+						pitch: 0,
+						rotation: 0,
+						showControl: false,     // 彻底隐藏所有默认控件
+						    doubleClickZoom: true,  // 仍可通过双击放大
+						    dragEnable: true
+						// showControl: true,
+						// showScale: true,
+						// // 禁用双击缩放等（可选）
+						// doubleClickZoom: true,
+						// dragEnable: true,
+						// zoomControl: true
+					});
+				} else {
+					map.setCenter(new TMap.LatLng(center.lat, center.lng));
+					map.setZoom(zoom);
+				}
+				if(isMarkers){
+					addItemMarkers(center)
+				}
+			}
+
+			// 清除现有覆盖物
+			function clearOverlays() {
+				currentMarkers.forEach(marker => marker.setMap(null));
+				currentMarkers = [];
+				if (currentPolyline) {
+					currentPolyline.setMap(null);
+					currentPolyline = null;
+				}
+				// etcAllMarkers = [];
+				// sfzAllMarkers = [];
+				// fwqAllMarkers = [];
+			}
+			// 清除指定类型的标记点（etc / sfz / fwq）
+			function clearMarkersByType(type) {
+			    let targetMarkers = [];
+			    if (type === 'etc') {
+			        targetMarkers = etcAllMarkers;
+			    } else if (type === 'sfz') {
+			        targetMarkers = sfzAllMarkers;
+			    } else if (type === 'fwq') {
+			        targetMarkers = fwqAllMarkers;
+			    } else {
+			        console.warn('未知的标记类型:', type);
+			        return;
+			    }
+			
+			    // 遍历 currentMarkers，找到并移除对应图层
+			    currentMarkers = currentMarkers.filter(markerLayer => {
+			        // 如果这个 MultiMarker 图层中的 geometries 包含目标类型的数据，则移除它
+			        const hasTarget = markerLayer.geometries.some(geo => {
+			            return geo.properties && geo.properties.type === type; // 假设添加时设置了 type 属性
+			        });
+			
+			        if (hasTarget) {
+			            markerLayer.setMap(null); // 从地图上移除
+			            return false; // 过滤掉，不再保留在 currentMarkers
+			        }
+			        return true; // 保留其他类型
+			    });
+			
+			    // 清空对应的数据缓存
+			    if (type === 'etc') {
+			        etcAllMarkers = [];
+			    } else if (type === 'sfz') {
+			        sfzAllMarkers = [];
+			    } else if (type === 'fwq') {
+			        fwqAllMarkers = [];
+			    }
+			
+			    console.log(`已清除 ${type} 类型的标记点`);
+			}
+			// 添加自己位置标记点
+			function addItemMarkers(center){
+				// 在 getCurrentPosition 的 success 回调内
+				const userMarker = new TMap.MultiMarker({
+					map: map,
+					styles: {
+						'user-location': new TMap.MarkerStyle({
+							width: 30,
+							height: 40,
+							anchor:{ x: 17, y: 35 },
+							src: 'https://mapapi.qq.com/web/lbs/javascriptGL/demo/img/user-location.png' // 腾讯官方定位图标
+						})
+					},
+					geometries: [{
+						id: 'user-pos',
+						styleId: 'user-location',
+						position: new TMap.LatLng(center.lat, center.lng)
+					}]
+				});
+				currentMarkers.push(userMarker);
+			}
+			// 添加一批标记点（增量添加）
+			function addMarkersBatch(points,type="") {
+			  if (!points || !points.length) return;
+			
+			  const styles = {}; // 存储不同样式的对象
+				const geometries = points.map((p, index) => {
+					const styleId = p.styleId || `style_${index}`; // 可以从数据中指定 styleId
+					// 动态设置每个标记的图标（支持不同图片）
+					if (!styles[styleId]) {
+						styles[styleId] = new TMap.MarkerStyle({
+							width: p.width || 35,        // 可自定义宽度
+							height: p.height || 35,      // 可自定义高度
+							anchor: p.anchor || { x: 17, y: 35 }, // 图标锚点
+							src: p.icon || "", // 使用传入的 icon 路径，或默认
+							rotation: p.rotation || 0,   // 可选：旋转角度
+							zIndex: 10                   // 可选：层级
+						});
+					}
+					return {
+						id: p.id || `marker_${index}`,
+						styleId: styleId,
+						position: new TMap.LatLng(p.lat, p.lng),
+						properties: {...p,type:type},
+					};
+				});
+			  const markerLayer = new TMap.MultiMarker({
+			    map: map,
+			    styles: styles,
+			    geometries: geometries
+			  });
+			
+			  currentMarkers.push(markerLayer);
+			  
+			  
+			  // 本地保存数据
+			  if(type == 'etc'){
+				  etcAllMarkers.push(...points); 
+			  }
+			  if(type == 'sfz'){
+			  	sfzAllMarkers.push(...points); 
+			  }
+			  if(type == 'fwq'){
+			  	fwqAllMarkers.push(...points); 
+			  }
+			  // 自定缩放地图
+			  if(type == 'etc' || type == 'sfz' || type == 'fwq'){
+				  let bounds = new TMap.LatLngBounds(); // 创建空的边界
+				   let hasBounds = false;
+				  points.forEach(m => {
+				       const latLng = new TMap.LatLng(m.lat, m.lng);
+				       bounds = bounds.extend(latLng);
+				       hasBounds = true;
+				   });
+				   if (hasBounds) {
+				       map.fitBounds(bounds, {
+				           padding: 60, // 四周边距，避免贴边
+				           animate: true
+				       });
+				   }
+			  }
+			  return markerLayer;
+			}
+			// 添加标记点
+			// function addMarkers(points) {
+			//     if (!points || !points.length) return;
+			
+			//     const styles = {}; // 存储不同样式的对象
+			//     const geometries = points.map((p, index) => {
+			//         const styleId = p.styleId || `style_${index}`; // 可以从数据中指定 styleId
+			
+			//         // 动态设置每个标记的图标（支持不同图片）
+			//         if (!styles[styleId]) {
+			//             styles[styleId] = new TMap.MarkerStyle({
+			//                 width: p.width || 35,        // 可自定义宽度
+			//                 height: p.height || 35,      // 可自定义高度
+			//                 anchor: p.anchor || { x: 17, y: 35 }, // 图标锚点
+			//                 src: p.icon || "", // 使用传入的 icon 路径，或默认
+			//                 rotation: p.rotation || 0,   // 可选：旋转角度
+			//                 zIndex: 10                   // 可选：层级
+			//             });
+			//         }
+			
+			//         return {
+			//             id: p.id || `marker_${index}`,
+			//             styleId: styleId,
+			//             position: new TMap.LatLng(p.lat, p.lng),
+			//             properties: p
+			//         };
+			//     });
+			
+			//     const markerLayer = new TMap.MultiMarker({
+			//         id: 'custom_markers',
+			//         map: map,
+			//         styles: styles,
+			//         geometries: geometries
+			//     });
+			
+			//     currentMarkers.push(markerLayer);
+			// }
+			
+
+			// 绘制多条折线（每条是一个点数组）
+			function drawPolylines(pathsArray) {
+			    if (!Array.isArray(pathsArray) || pathsArray.length === 0) return null;
+			
+			    if (currentPolyline) {
+			        currentPolyline.setMap(null);
+			        currentPolyline = null;
+			    }
+			
+			    const geometries = pathsArray.map((item, index) => {
+			        if (!Array.isArray(item.path) || item.path.length < 2) return null;
+			        return {
+			            id: `polyline_${index}`,
+			            styleId: `style_${index}`,
+			            paths: item.path.map(p => new TMap.LatLng(p.latitude, p.longitude))
+			        };
+			    }).filter(Boolean);
+			
+			    if (geometries.length === 0) return null;
+			
+			    // 缓存原始数据
+			    currentPolylineGeometries = geometries;
+			
+			    const colors = ["#FF9600", "#4CAF50", "#4CAF50"];
+			    const styles = {};
+			    geometries.forEach((geo, i) => {
+			        const color = lineIndex === i ? '#FF9600' : '#4CAF50';
+			        styles[geo.styleId] = new TMap.PolylineStyle({
+			            color: color,
+			            width: 9,
+						// zIndex:i === index ? 3 : 1,
+			            lineCap: "round",
+			            lineJoin: "round"
+			        });
+			    });
+			
+			    currentPolylineStyles = styles; // 缓存样式
+			
+			    const polylineLayer = new TMap.MultiPolyline({
+			        id: "multi_routes",
+			        map: map,
+			        styles: styles,
+			        geometries: geometries
+			    });
+			
+			    currentPolylineLayer = polylineLayer;
+			    currentPolyline = polylineLayer;
+			    return polylineLayer;
+			}
+			// 单独的函数：只更新颜色（通过重新绘制）
+			function changeLineColor(index) {
+			    if (!currentPolylineGeometries.length || !map) return;
+			
+			    // 1. 移除旧的 polyline 图层
+			    if (currentPolylineLayer) {
+			        currentPolylineLayer.setMap(null);
+			        currentPolylineLayer = null;
+			    }
+			
+			    // 2. 创建新样式 
+			    const styles = {};
+			    const colors = ["#FF9600", "#4CAF50", "#4CAF50"];
+			    currentPolylineGeometries.forEach((geo, i) => {
+			        const color = i === index ? '#FF9600' : '#4CAF50';
+			        styles[geo.styleId] = new TMap.PolylineStyle({
+			            color: color,
+						// zIndex:i === index ? 3 : 1,
+			            width: 9,
+			            lineCap: "round",
+			            lineJoin: "round"
+			        });
+			    });
+			
+			    // 3. 重新创建 MultiPolyline
+			    const newPolylineLayer = new TMap.MultiPolyline({
+			        id: "multi_routes",
+			        map: map,
+			        styles: styles,
+			        geometries: currentPolylineGeometries
+			    });
+			
+			    // 4. 缓存新图层
+			    currentPolylineLayer = newPolylineLayer;
+			    currentPolyline = newPolylineLayer;
+			    lineIndex = index; // 更新当前选中索引
+			}
+			// 主更新函数（接收外部数据）
+			async function updateMap(data) {
+			    const {
+			        center,
+			        markers = [],
+			        polyline = null,
+			        from = null,
+			        to = null,
+			        key = "PLTBZ-QWLKZ-D3QX5-ZQGDB-3UBWK-4ZBYB"
+			    } = data;
+			
+			    clearOverlays();
+			    // 先初始化地图（但不设置 zoom，后面用 fitBounds 控制）
+			    initMap(center || (markers[0] || { lat: 39.984104, lng: 116.307503 })); // 初始 zoom 设小一点
+			
+			    let bounds = new TMap.LatLngBounds(); // 创建空的边界
+			    let hasBounds = false;
+			
+			    // 优先使用 polyline；若无，则尝试用 from/to 规划路线
+			    let routePoints = polyline;
+			    if (routePoints && routePoints.length) {
+			        drawPolylines(routePoints);
+			
+			        // 遍历所有路径，扩展边界
+			        routePoints.forEach(route => {
+			            if (Array.isArray(route.path)) {
+			                route.path.forEach(p => {
+			                    const latLng = new TMap.LatLng(p.latitude, p.longitude);
+			                    bounds = bounds.extend(latLng);
+			                    hasBounds = true;
+			                });
+			            }
+			        });
+			    }
+			
+			    if (markers.length) {
+			        addMarkersBatch(markers);
+			        markers.forEach(m => {
+			            const latLng = new TMap.LatLng(m.lat, m.lng);
+			            bounds = bounds.extend(latLng);
+			            hasBounds = true;
+			        });
+			    }
+			
+			    // 如果有标记或路线，自动适配视野
+			    if (hasBounds) {
+			        map.fitBounds(bounds, {
+			            padding: 60, // 四周边距，避免贴边
+			            animate: true
+			        });
+			    }
+			}
+			
+			function handleMessage(event) {
+				// UniApp 在 App 中注入的是 __uni_webview_postMessage
+				// 但为了兼容，我们监听标准 message（H5）和 UniApp 特有方式
+				let data;
+				if (event.data && typeof event.data === 'string') {
+					try {
+						data = JSON.parse(event.data);
+					} catch (e) {
+						return;
+					}
+				} else if (event.data && typeof event.data === 'object') {
+					data = event.data;
+				} else {
+					return;
+				}
+
+				if (data.type === 'updateMap') {
+					// document.getElementById('app').innerText = `kaishi ）${JSON.stringify(data.payload)}`;
+					updateMap(data.payload || {});
+				}
+			}
+
+			// 监听标准 postMessage（用于 H5 测试）
+			// window.addEventListener('message', handleMessage);
+
+			// UniApp App 环境下，通过 __uni_webview_postMessage 接收
+			// window.__uni_webview_postMessage = function(data) {
+			// 	handleMessage({
+			// 		data: data
+			// 	});
+			// };
+			// 页面加载完成
+			window.onload = (opticon) => {
+				const url = new URL(window.location.href);
+				const params = new URLSearchParams(url.search);
+				initMap({
+					lat: params.get('lat'),
+					lng: params.get('lng')
+				}); // 默认初始化
+			};
+
+			// 定义接收nvue消息的函数
+			window.receiveFromNvue = function(data) {
+				try {
+					const params = JSON.parse(data);
+					console.log('收到nvue传递的参数:', params);
+
+					
+					isMarkers=false
+					if(params.type == 'refresh'){
+						initMap(params.payload.center)
+					}
+					if(params.type == 'updateMap'){
+						updateMap(params.payload)
+					}
+					if(params.type == 'changeLineColor'){
+						lineIndex = params.value
+						changeLineColor(params.value)
+					}
+					// 批量删除标记点
+					if (params.type === 'clearMarkers') {
+					    clearMarkersByType(params.valueType);
+					}
+					// 批量新增标记点
+					if(params.type == 'addMarkers'){
+						addMarkersBatch(params.payload.markers,params.valueType)
+					}
+					
+					
+				} catch (e) {
+					console.error('解析参数失败:', e);
+				}
+			};
+
+		</script>
+	</body>
+</html>

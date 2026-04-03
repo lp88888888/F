@@ -1,0 +1,348 @@
+.individual-box {
+		padding: 0 30rpx;
+		box-sizing: border-box;
+		overflow: hidden;
+	}
+
+	.individual-head {
+		margin-top: 140rpx;
+		position: relative;
+		margin-bottom: 40rpx;
+	}
+
+	.user-info {
+		display: flex;
+		align-items: center;
+
+		.img {
+			width: 118rpx;
+			height: 118rpx;
+			border-radius: 50%;
+		}
+	}
+
+	.avatar {
+		width: 50px;
+		height: 50px;
+		border-radius: 50%;
+		/* 让头像变成圆形，根据实际需求调整 */
+		margin-right: 10px;
+	}
+
+	.info-wrap {
+		display: flex;
+		flex-direction: column;
+		margin-left: 20rpx;
+	}
+
+	.username {
+		font-size: 35rpx;
+		font-weight: bold;
+		padding-bottom: 10rpx;
+	}
+
+	.phone {
+		font-size: 28rpx;
+		color: #000000;
+	}
+
+	.setup {
+		display: flex;
+		position: absolute;
+		right: 10rpx;
+		bottom: 30rpx;
+
+		.img {
+			width: 40rpx;
+			height: 40rpx;
+		}
+	}
+
+
+	.member-container {
+		padding: 15px;
+	}
+
+	.level-tag {
+		display: flex;
+		align-items: center;
+		margin-bottom: 10px;
+	}
+
+	.level-text {
+		background-color: #b38b68;
+		color: #fff;
+		padding: 5px 8px;
+		border-radius: 4px;
+		font-size: 14px;
+		margin-right: 8px;
+	}
+
+	.member-type {
+		font-size: 16px;
+		font-weight: bold;
+		color: #333;
+		position: relative;
+		margin: 0 30rpx 0 0;
+	}
+
+	.member-type::after {
+		content: '';
+		position: absolute;
+		right: -30rpx;
+		top: 12rpx;
+		height: 50%;
+		/* 与父元素高度相同 */
+		width: 1px;
+		/* 分割线宽度 */
+		background-color: #000;
+		/* 分割线颜色 */
+
+	}
+
+	.go-center {
+		color: #63300E;
+		font-size: 14px;
+	}
+
+	.progress-info {
+		margin-bottom: 40rpx;
+	}
+
+	.progress-bar {
+		width: 70%;
+		height: 6px;
+		margin: 20rpx 0 6rpx 0;
+		overflow: hidden;
+	}
+
+	.progress {
+		height: 100%;
+		background-color: #b38b68;
+	}
+
+	.progress-text {
+		font-size: 24rpx;
+		color: #63300E;
+	}
+	.container {
+	  /* 父容器可设置 padding 等样式，这里让子元素垂直居中 */
+	  display: flex;
+	  justify-content: center;
+	}
+	.scroll-view {
+	  width: 100%;
+	}
+	.flex-wrap {
+	  /* flex 布局，水平排列 */
+	  display: flex;
+	  flex-direction: row; 
+	  align-items: center;
+	}
+	.flex-item {
+	  /* 每个项目的样式，设置 flex-shrink: 0 避免挤压，让每个 item 保持自身宽度 */
+	  display: flex;
+	  flex-direction: column;
+	  align-items: center;
+	  margin-right: 40rpx;
+	  flex-shrink: 0; 
+	  .img{
+		  width: 60rpx;
+		  height: 60rpx;
+	  }
+	}
+	.item-icon {
+	  width: 40px;
+	  height: 40px;
+	}
+	.item-text {
+	  margin-top: 5px;
+	  font-size: 12px;
+	  font-size: 24rpx;
+	}
+	.info-bar {
+	  display: flex;
+	  flex-direction: row;
+	  justify-content: space-between;
+	  align-items: center;
+	  background-color: #fff; 
+	  padding: 30rpx 30rpx;
+	  border-radius: 26rpx;
+	  margin-top: 30rpx;
+	}
+	.info-item {
+	  display: flex;
+	  flex-direction: row;
+	  align-items: center;
+	  .img{
+		 width: 66rpx;
+		 height: 66rpx; 
+		 margin-right: 20rpx;
+	  }
+	}
+	.icon {
+	  width: 24px;
+	  height: 24px;
+	  margin-right: 6px;
+	}
+	.label {
+	  font-size: 14px;
+	  color: #333;
+	  margin-right: 4px;
+	}
+	.value {
+	  font-size: 36rpx;
+	  color: #000;
+	  font-weight: bold;
+	  margin-right: 20rpx;
+	}
+	.divider {
+	  width: 1px;
+	  height: 20px;
+	  background-color: #ccc;
+	  margin: 0 12px;
+	}
+	.order-container {
+	 margin: 30rpx 0 0 0;
+ 	}
+	
+	/* 我的订单头部 */
+	.order-header {
+	 background: linear-gradient(270deg, #F4F4F4 0%, #FFFFFF 39%);
+	  border-radius: 26rpx;
+	  padding: 10px 15px 20px;
+	  margin-bottom: 15px;
+	  position: relative;
+	}
+	.order-title {
+	  font-size: 30rpx;
+	  font-weight: bold;
+	  color: #333;
+	  padding-bottom:20px;
+	  display: block;
+	}
+	.order-nav {
+	  display: flex;
+	  flex-direction: row;
+	  justify-content: space-around;
+	}
+	.nav-item {
+	  display: flex;
+	  flex-direction: column;
+	  align-items: center;
+	  position: relative;
+	  .img{
+		 width: 60rpx;
+		 height:60rpx; 
+		 
+	  }
+	}
+	.nav-icon {
+	  width: 32px;
+	  height: 32px;
+	  margin-bottom: 5px;
+	}
+	.nav-text {
+	  font-size: 12px;
+	  color: #666;
+	}
+	/* 小红点样式 */
+	.dot {
+	  width: 18px;
+	  height: 18px;
+	  line-height: 18px;
+	  text-align: center;
+	  background-color: #ff4d4f;
+	  color: #fff;
+	  border-radius: 50%;
+	  font-size: 12px;
+	  position: absolute;
+	  top: -10rpx;
+	  right: -10rpx;
+	}
+	
+	/* 加入合伙人 & 我的邀请 模块 */
+	.partner-invite {
+	  display: flex;
+	  flex-direction: row;
+	  justify-content: space-between;
+	}
+	.partner-box, .invite-box {
+	  width: 48%;
+	 height: 160rpx;
+	  padding:0 15px;
+	  box-sizing: border-box;
+	  color: #fff;
+	  border-radius: 26rpx;
+	  position: relative;
+	}
+	.partner-box {
+	 background: linear-gradient(-40deg, #FFBE42, #FFB026);
+	 box-shadow: 0rpx 10rpx 20rpx 0rpx rgba(255,178,42,0.2);
+	}
+	.invite-box {
+	background: linear-gradient(-40deg, #FF8D55, #FF754E);
+	box-shadow: 0rpx 10rpx 20rpx 0rpx rgba(255,117,78,0.2);
+	}
+	.partner-img1{
+		 width: 70rpx;
+		 height: 60rpx;
+		 position: absolute;
+		 top: 15rpx;
+		 right: 15rpx;
+	 }
+	.partner-img2{
+		 width: 73rpx;
+		 height: 20rpx;
+		 position: absolute;
+		 top:70rpx;
+		 left: 30rpx;
+	 }
+	.partner-title, .invite-title {
+	  font-size: 30rpx;
+	  font-weight: bold;
+	  padding: 28rpx 0 18rpx;
+	  display: block;
+	}
+	.partner-desc, .invite-desc {
+	  font-size: 24rpx;
+
+	}
+	.partner-icon, .invite-icon {
+	  width: 40px;
+	  height: 40px;
+	  margin-top: 10px;
+	  align-self: flex-end;
+	}
+	.more-box{
+		width: 100%;
+		background: #fff;
+		border-radius: 26rpx;
+		margin: 40rpx 0;
+	}
+	.more-img{
+		width: 36rpx;
+		height: 36rpx;
+	}
+	.triangle{
+		width: 0;
+		height: 0;
+		 border-top: 16rpx solid transparent;
+		 border-bottom: 16rpx solid transparent;
+		 border-left: 16rpx solid #f4f4ff;
+		 position: absolute;
+		 top: 110rpx;
+		 right: 120rpx;
+		z-index: 99;					
+	}
+	.pl-right{
+		width: 130rpx;
+		height: 230rpx;
+		background: #fff;
+		position: absolute;
+		top: 0;
+		right: 0;
+		z-index: 9;
+		border-top-right-radius:26rpx ;
+		border-bottom-right-radius:26rpx ;
+	}

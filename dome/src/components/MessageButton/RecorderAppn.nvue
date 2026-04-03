@@ -1,0 +1,131 @@
+<template>
+	<view class="record-button-container" @touchstart="onTouchStart" @touchmove="onTouchMove" @touchend="onTouchEnd"
+		@touchcancel="onTouchEnd">
+		<!-- @touchstart="startRecord"
+					@touchmove="handleTouchMove" @touchend="handleTouchEnd" @touchcancel="handleTouchCancel" -->
+		<!-- 录音按钮 -->
+		<text class="reText">{{buttonText}}</text>
+		<!-- 弹窗提示 -->
+		<view  v-if="showPopup" class="recording-popup" :style="{height:popHeight}">
+			<view class="popup-content">
+				<image class="popup-content-backg" :src="`${imgUrl}static/dh_sp_back.png`" mode=""></image>
+				<image class="popup-content-line" :src="imgUrl+'static/dh_sp_line.png'" mode=""></image>
+				<text class="popup-content-text">{{popupText}}</text>
+				<image class="popup-content-icon" :src="imgUrl+'static/dh_sp_see.png'" mode=""></image>
+			</view>
+		</view>
+	</view>
+</template>
+
+<script setup lang="ts">
+	import { ref, computed } from 'vue';
+	import { imgUrl } from '@/config';
+	import {systemInfo } from '@/utils/util';
+	import { useVoiceRecorder } from './useVoiceRecorder'
+	const emits = defineEmits(["change",'start']);
+	const { 
+	  isRecording, 
+	  isSlideOut, 
+	  showPopup, 
+	  popupText, 
+	  buttonText,
+	  onTouchStart,
+	  onTouchMove,
+	  onTouchEnd 
+	} = useVoiceRecorder({
+	  maxDuration: 60000,
+	  lang: 'zh_CN',
+	  // #ifdef APP
+		  encodeBitRate: 128000,
+	  // #endif
+	  format:'pcm',
+	  sampleRate: 16000,
+	  onResult: (res) => {
+		  console.log(res);
+	    if (res.success && res.filePath) {
+	      console.log('✅ 录音完成，发送:', res.filePath, `时长:${res.duration}ms`)
+		  emits('change',{
+		    success: true,
+		    filePath: res.filePath,
+		    voiceState:'积分',
+		  	duration:res.duration,
+		     size: res.size
+		  });
+	    } else {
+	    }
+	  },
+	  onError: (err) => {
+		console.log('-----录音失败',err);
+	    uni.showToast({ title: '录音失败', icon: 'error' })
+	  },
+	  emitStart:()=>{
+		  console.log('-----ljiijiijddidb');
+			emits('start');
+	  }
+	});
+	
+	const popHeight = computed(()=>{
+		return systemInfo().windowHeight + 'px' || '450rpx';
+	})
+</script>
+
+<style scoped lang="scss">
+	.record-button-container {
+		width: 580rpx;
+		position: relative;
+		display: inline-block;
+		
+	}
+	.reText{
+		width: 530rpx;
+		text-align: center;
+		font-weight: bold;
+		font-size: 32rpx;
+		color: #FFFFFF;
+	}
+	
+	.recording-popup {
+		width: 750rpx;
+		position: fixed;
+		left: 0;
+		bottom: 0;
+		background-color: rgba(0, 0, 0, 0.1);
+		justify-content: flex-end;
+		z-index: 100;
+	}
+	
+	.popup-content {
+		width: 750rpx;
+		height: 450rpx;
+		align-items: center;
+		justify-content: center;
+		position: relative;
+		left: 0;
+		bottom: 0;
+		.popup-content-backg{
+			width: 750rpx;
+			height: 450rpx;
+			position: absolute;
+			top: 0;
+			left: 0;
+			// z-index: -1; 
+		}
+		.popup-content-line {
+			width: 194rpx;
+			height: 30rpx;
+		}
+	
+		.popup-content-text {
+			font-weight: 500;
+			font-size: 26rpx;
+			color: #666666;
+			padding: 32rpx 0;
+		}
+	
+		.popup-content-icon {
+			width: 216rpx;
+			height: 216rpx;
+	
+		}
+	}
+</style>

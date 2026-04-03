@@ -1,0 +1,170 @@
+/* 页面整体容器 */
+	.login-container {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		height: 100vh;
+		background-color: #F1EFEC;
+		/* 可根据实际需求调整背景色 */
+		padding: 0 20rpx;
+	}
+
+	/* 应用展示区域布局 */
+	.img {
+		width: 200rpx;
+		height: 200rpx;
+		margin: -280rpx 0 80rpx;
+	}
+
+	/* 手机图片样式，作为背景承载应用图标等 */
+	.phone-img {
+		width: 100%;
+		height: 100%;
+	}
+
+	/* 应用图标，可调整位置等 */
+	.app-icon {
+		position: absolute;
+		top: 80rpx;
+		left: 50%;
+		transform: translateX(-50%);
+		width: 120rpx;
+		height: 120rpx;
+	}
+
+	/* 城市建筑等背景图，可调整位置、大小等 */
+	.city-img {
+		position: absolute;
+		bottom: 0;
+		right: 0;
+		width: 300rpx;
+		height: 200rpx;
+	}
+
+	/* 按钮组样式 */
+	.btn-group {
+		display: flex;
+		flex-direction: column;
+		width: 100%;
+		margin-bottom: 20rpx;
+		z-index: 99;
+	}
+
+	/* 通用按钮 hover 效果 */
+	.btn-hover {
+		opacity: 0.8;
+	}
+
+	/* 手机号一键登录按钮 */
+	.login-btn,
+	.other-login-btn {
+		width: 620rpx;
+		height: 88rpx;
+		font-size: 30rpx;
+		border-radius: 40rpx;
+		height: 80rpx;
+		line-height: 88rpx;
+		margin: 0 auto 40rpx;
+		text-align: center;
+	}
+
+	.login-btn {
+		background: var(--but-color-line);
+		color: #fff;
+	}
+
+	/* 其他手机号登录按钮 */
+	.other-login-btn {
+		background: #FFFFFF;
+		color: var(--primary-color);
+	}
+
+	/* 密码登录按钮 */
+	.pwd-login-btn {
+		color: #333333;
+		font-size: 26rpx;
+		height: 80rpx;
+		line-height: 80rpx;
+		margin-bottom: 40rpx;
+		text-align: center;
+	}
+
+	/* 协议区域样式 */
+	.agreement {
+		display: flex;
+		align-items: center;
+		font-size: 24rpx;
+		color: #999;
+		margin-bottom: 30rpx;
+	}
+
+	/* 协议复选框样式，可根据需求自定义或使用 uni-app 内置 checkbox 样式调整 */
+	.agreement-checkbox {
+		transform: scale(0.8);
+		margin-right: 10rpx;
+	}
+
+	/* 协议文字样式 */
+	.agreement-text {
+		margin-right: 10rpx;
+	}
+
+	/* 协议链接文字样式 */
+	.protocol-text {
+		color: var(--primary-color);
+		margin: 0 5rpx;
+	}
+
+	/* 暂不登录按钮样式 */
+	.cancel-login-btn {
+		color: #999;
+		font-size: 26rpx;
+		text-align: center;
+	}
+
+	.from {
+		width: 100%;
+		padding: 0 40rpx;
+		box-sizing: border-box;
+	}
+
+	::v-deep .u-input {
+		background: #FFFFFF;
+		border: none;
+		height: 60rpx;
+
+	}
+
+	.phone {
+		margin-bottom: 30rpx;
+	}
+
+	.password {
+		margin-bottom: 80rpx;
+	}
+
+	.rules-text {
+		font-size: 22rpx;
+		margin-left: 30rpx;
+		color: var(--primary-color);
+		display: none;
+	}
+	.yzm{
+		color: var(--primary-color);
+		font-size: 26rpx;
+	}
+	.phone_bh{
+		color: #333333;
+		font-size: 28rpx;
+	}
+	.phone_hg{
+		color: #E7E7E7;
+		margin:0 10rpx;
+	}
+	.bottom-img{
+		width: 100%;
+		position: fixed;
+		bottom: 0;
+		height: 300rpx;
+	}

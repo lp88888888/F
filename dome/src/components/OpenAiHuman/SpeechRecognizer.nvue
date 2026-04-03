@@ -1,0 +1,189 @@
+<template>
+	<view class="page-view" :data-theme="pageTheme" :style="{borderRadius:borderRadius+'rpx'}">
+		<view class="fixedView-card">
+			<view class="fixedView-inputs">
+				<view class="fixedView-inputs-item" :style="{borderRadius:borderRadius+'rpx'}">
+					<up-input :placeholder="tempResult?tempResult:'小猴在听，您请说…'" border="none" :readonly="true" v-model="stopkMessage">
+						<template #prefix>
+							<view style="padding: 0 10rpx;" >
+								<up-icon :name="icoUrl+'BdDigitalMan/kefu.gif'" size="44"></up-icon>
+							</view>
+						</template>
+						<template #suffix>
+							<up-icon :name="icoUrl+'BdDigitalMan/man-icon-close.png'" size="24" @click="closeStopk"></up-icon>
+						</template>
+					</up-input>
+				</view>
+			</view>
+		</view>
+	</view>
+</template>
+
+<script setup lang="ts">
+	import { ref, onMounted ,nextTick,onUnmounted} from 'vue';
+	import { onLoad, onShow } from '@dcloudio/uni-app';
+	import { imgUrl } from '@/config';
+	import { toNav,toBack } from '@/utils/route';
+	// 主题 使用 （主题颜色 var( --theme-color)）（组件 componentColor.$pageBgColor） 图标地址（icoUrl）
+	import { useTheme } from '@/composables/useTheme';
+	const { themeStore, pageTheme } = useTheme();
+	const icoUrl = ref(themeStore.imgUrl);
+	// 导入自定义的语音识别工具类
+	import { SpeechRecognizer } from '@/utils/SpeechRecognizer';
+	const emit = defineEmits(['change','close']);
+	
+	const props = defineProps({
+		borderRadius:{
+			type: Number,
+			default: 44
+		}
+	})
+	
+	// --- 响应式状态变量 ---
+	const isRecording = ref(false);     // 是否正处于录音/识别状态
+	const hasSpoken = ref(false);       // 本次录音是否已经检测到有效语音
+	const finalResults = ref<string[]>([]); // 存储已确定的识别文本列表
+	const tempResult = ref('');         // 存储当前未完成句子的临时文本
+	const scrollTopId = ref('');        // 控制 scroll-view 滚动的位置 ID
+	
+	
+	
+	const stopkMessage = ref('');
+	const isStopkShow = ref(false);
+	
+	const closeStopk = ()=>{
+		recognizer.stop();
+		stopkMessage.value = '';
+		tempResult.value = '';
+		emit('close');
+	}
+	/**
+	 * 实例化语音识别器
+	 * 配置回调函数，将识别器的内部状态同步到 Vue 响应式变量中
+	 */
+	const recognizer = new SpeechRecognizer({
+	  // 当识别到中间结果时触发（如：我... 我想...）
+	  onPartialResult: (text) => {
+	    tempResult.value = text;
+	  },
+	  // 当识别到一段完整的句子时触发
+	  onFinalResult: (text) => {
+	    finalResults.value.push(text); // 加入正式列表
+		console.log('-0识别到了-00-0',text);
+		stopkMessage.value = text
+	    tempResult.value = '';         // 清空临时文本
+		if(text){
+			emit('change', text);
+		}
+	    // 等 DOM 更新后，将滚动条拉到底部
+	    nextTick(() => { 
+	      // scrollTopId.value = 'bottom-gap'; 
+	    });
+	  },
+	  // 识别器状态（录音中、说话中）变化时的回调
+	  onStatusChange: (rec, spoken) => {
+	    isRecording.value = rec;
+	    hasSpoken.value = spoken;
+	  },
+	  // 发生错误（如网络断开、权限拒绝）时的回调
+	  onError: () => {
+	    uni.showToast({ title: '识别异常', icon: 'none' });
+	  }
+	});
+	
+	/**
+	 * 按钮点击事件：切换开始和停止
+	 */
+	const toggleSpeech = () => {
+	  if (isRecording.value) {
+	    recognizer.stop();
+	  } else {
+	    recognizer.start();
+		stopkMessage.value = ''
+		tempResult.value = '';
+	  }
+	};
+	
+	onUnmounted(() => {
+	  recognizer.start();
+	});
+	onUnmounted(() => {
+	  recognizer.stop();
+	});
+</script>
+
+<style lang="scss" scoped>
+	.page-view{
+		background: #F6F6F6;
+	}
+	.fixedView-card {
+		width: 686rpx;
+		box-sizing: border-box;
+		flex-direction: row;
+		justify-content: space-between;
+		.fixedView-inputs {
+			width: 686rpx;
+			min-height: 112rpx;
+			flex-direction: row;
+			align-items: center;
+			justify-content: space-between;
+			
+	
+			.fixedView-inputs-item {
+				width: 686rpx;
+				min-height: 112rpx;
+				background: #FFFFFF;
+				display: flex;
+				flex-direction: row;
+				align-items: center;
+				padding: 0 20rpx;
+				box-sizing: border-box;
+				position: relative;
+	
+				.fixedView-inputs-item-but {
+					font-size: 24rpx;
+					color: #FFFFFF;
+					background: #2979ff;
+					padding: 5rpx 20rpx;
+					border-radius: 20rpx;
+				}
+				.fixedView-inputs-item-img{
+					width: 88rpx;
+					height: 88rpx;
+				}
+				.fixedView-inputs-item-img2{
+					width: 50rpx;
+					height: 50rpx;
+				}
+				.fixedView-inputs-item-icon {
+					// position: absolute;
+					left: 30rpx;
+					top: 23rpx;
+				}
+	
+				.fixedView-inputs-item-text {
+					width: 100%;
+					display: block;
+					text-align: center;
+					font-weight: bold;
+					font-size: 32rpx;
+					color: #FFFFFF;
+				}
+			}
+	
+			.fixedView-inputs-icon {
+				width: 88rpx;
+				height: 88rpx;
+				background: linear-gradient(-40deg, #FF9600, #F4AA31);
+				border-radius: 44rpx;
+				flex-direction: row;
+				align-items: center;
+				justify-content: center;
+			}
+		}
+		.callButton{
+			width: 88rpx;
+			height: 88rpx;
+		}
+	}
+</style>

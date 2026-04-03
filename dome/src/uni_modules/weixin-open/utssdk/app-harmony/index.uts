@@ -1,0 +1,56 @@
+import * as wxopensdk from '@tencent/wechat_open_sdk';
+import { common } from '@kit.AbilityKit';
+
+/**
+ * 手动定义一个接口，用来映射微信 SDK 返回的对象结构
+ * 这样既能通过 ArkTS 的类型检查，又避免了使用 any
+ */
+interface IWechatResult {
+  errCode : number;
+  errStr : string;
+}
+
+/**
+ * 初始化微信 SDK
+ */
+export function registerApp(appId : string) : boolean {
+  try {
+    const api = wxopensdk.WXAPIFactory.createWXAPI(appId);
+	console.log('-0-0-0-',api);
+    return api != null;
+  } catch (e) {
+    console.error('WX-SDK-Init-Error', e);
+    return false;
+  }
+}
+
+/**
+ * 启动微信小程序
+ */
+export async function launchMiniProgram(appId : string, userName : string, path : string, type : number = 0) {
+  try {
+    const context = UTSHarmony.getUIAbilityContext() as common.UIAbilityContext;
+    const api = wxopensdk.WXAPIFactory.createWXAPI(appId);
+
+    const req = new wxopensdk.LaunchMiniProgramReq();
+    req.userName = userName;
+    req.path = path;
+    req.miniprogramType = type;
+
+    // 1. sendReq 在鸿蒙 SDK 中通常返回 Promise<boolean>
+    const success = await api.sendReq(context, req);
+    
+	console.log('跳转参数：',{
+		userName,
+		path
+	});
+    // 2. 判断发送指令是否成功
+    if (success) {
+      console.log('WX-SDK: 成功发送拉起请求');
+    } else {
+      console.error('WX-SDK: 发送请求失败（微信未安装或参数错误）');
+    }
+  } catch (err) {
+    console.error('WX-SDK: 调用异常', err);
+  }
+}

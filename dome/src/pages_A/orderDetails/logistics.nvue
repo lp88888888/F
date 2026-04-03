@@ -1,0 +1,431 @@
+<template>
+	<view class="control" :data-theme="pageTheme">
+		<up-sticky>
+			<view class="topNavBack" :style="{background:themeStore.themeColors.$bgTemToPageColor}">
+				<up-navbar title="查看物流" bgColor="transparent" @leftClick="toBack" placeholder :fixed="true"></up-navbar>
+			</view>
+		</up-sticky>
+
+		<view class="pageView" style="padding: 32rpx;">
+			<view class="carPad cards">
+				<view class="kdView">
+					<view class="kdView-text">
+						<view class="kdView-text-left">
+							<up-icon :name="imgUrl+'static/B-direct-log-icon.png'" size="19"></up-icon>
+							<!-- 	<text
+								style="margin-right: 10rpx;">{{derinfo?.baseOrderInfoResponse?.logisticsTracking?.carrier}}</text>
+							<text>{{derinfo?.baseOrderInfoResponse?.logisticsTracking?.trackingNumber}}</text> -->
+							<text style="margin-right: 10rpx;margin-left: 20rpx;">{{detail.logisticsName}}</text>
+							<text>{{detail.logisticsNo}}</text>
+						</view>
+						<view class="kdView-text-cop" @click="copyText(detail.logisticsNo)">复制</view>
+					</view>
+				</view>
+				<up-gap height="18"></up-gap>
+
+				<view class="kdView-text-address">
+					<up-icon name="map" size="20"></up-icon>
+					<text class="kdView-text-address-t" >送至:{{detail.receiverAreaName}}{{detail.receiverDetailAddress}}</text>
+				</view>
+				<view class="kdView-text-name">
+					<text>{{detail.receiverName}}:</text><text>{{detail.receiverMobile}}</text>
+				</view>
+			</view>
+
+			<up-gap height="10"></up-gap>
+			<!-- <bdMapView ref="bdMapViewRef" class="map-container"></bdMapView> -->
+			<web-view src="https://api.kuaidi100.com/tools/map/776af12d81f596dc1654205d82101176_116.708603,38.038761_5"
+				style="height: 400rpx;width: 690rpx;"></web-view>
+			<view class="cards" style="padding:40rpx 32rpx;">
+
+				<view v-if="formattedList.length > 0" class="steps-container">
+					<up-steps :current="0" :dot="true" direction="column" activeColor="#FF9600" inactiveColor="#CCCCCC">
+						<up-steps-item v-for="(item, index) in formattedList" :key="index">
+							<template #icon>
+								<up-icon :name="imgUrl+getIconPath(item)" size="16" />
+							</template>
+							<template #desc>
+								<view class="desc-view" :style="{ opacity: index === 0 ? 1 : 0.6 }">
+									<view class="desc-title">{{ item.statusText }}</view>
+									<view class="desc-text">{{ item.context }}</view>
+									<view class="desc-time">{{ formatDate(item.time) }}</view>
+								</view>
+							</template>
+						</up-steps-item>
+					</up-steps>
+				</view>
+
+				<!-- 空状态 -->
+				<view v-else class="empty">
+					<text>暂无物流信息</text>
+				</view>
+			</view>
+			<up-gap height="20"></up-gap>
+		</view>
+	</view>
+</template>
+
+<script setup lang="ts">
+	import { ref, computed } from 'vue';
+	import { toNav, toBack } from '@/utils/route';
+	import { imgUrl } from '@/config';
+	import { decimalPointDivision, copyText } from "@/utils/util";
+	import { onLoad } from '@dcloudio/uni-app';
+	import { getpayOrderInfo, getmapTrack, getOrderInfo } from '@/api/points';
+	const bdMapViewRef = ref(null);
+	const bdMapPlugin = uni.requireNativePlugin('bdMapPlugin');
+	import {
+		useTheme
+	} from '@/composables/useTheme';
+	const {
+		themeStore,
+		pageTheme
+	} = useTheme();
+	const statusTetx = ref({
+		0: '等待揽收', 1: '已揽收', 2: '已发货', 3: '运输中', 4: '派送中', 5: '已签收'
+	})
+	const locList = ref<any>([]);
+	const detail = ref({})
+	// const getdel = async () => {
+	// 	const res = await getpayOrderInfo(oderid.value);
+	// 	derinfo.value = res.data
+	// 	if (res.data.baseOrderInfoResponse.logisticsTracking) {
+	// 		let arr = JSON.parse(res.data.baseOrderInfoResponse.logisticsTracking.status).reverse()
+	// 		for (let i in arr) {
+	// 			locList.value.push({ ...res.data.baseOrderInfoResponse.logisticsTracking, statusCeshi: arr[i] })
+	// 		}
+	// 		console.log('------', locList.value);
+	// 		// locList.value
+	// 	}
+	// }
+	const oderid = ref('')
+	const logisticsData = ref([])
+	const formattedList = computed(() => {
+		if (!logisticsData.value || logisticsData.value.length === 0) return []
+		console.log('logisticsData.value', logisticsData.value);
+		// 格式化物流信息
+		return logisticsData.value.map((item, index) => {
+			const statusText = getStatusText(item.context)
+			return {
+				...item,
+				statusText,
+				isLatest: index === 0 // 最新一条
+			}
+		})
+	})
+	// 获取图标路径
+	const getIconPath = (item) => {
+		if (item.isLatest && item.statusText === '已签收') {
+			return 'static/B-direct-log-icon1-true.png' // 签收成功图标
+		}
+
+		const iconMap = {
+			'已签收': 'static/B-direct-log-icon1-true.png',
+			'派送中': 'static/B-direct-log-icon1-false.png',
+			'运输中': 'static/B-direct-log-icon2-false.png',
+			'已发货': 'static/B-direct-log-icon3-false.png',
+			'已下单': 'static/B-direct-log-icon4-false.png'
+		}
+
+		return iconMap[item.statusText] || 'static/B-direct-log-icon4-false.png'
+	}
+	const getStatusText = (context) => {
+		if (!context) return '已下单'
+		if (context.includes('签收') || context.includes('领取')) return '已签收'
+		if (context.includes('派件')) return '派送中'
+		if (context.includes('发往') || context.includes('到达') || context.includes('离开')) return '运输中'
+		if (context.includes('揽收')) return '已发货'
+		return '已下单'
+	}
+	// 时间格式化（uni-app 兼容）
+	const formatDate = (timeStr) => {
+		// 快递100 返回格式如 "2025-03-26 10:30:00"
+		return timeStr.replace('T', ' ').substring(0, 19)
+	}
+	const getRoute = async () => {
+		if (logisticsData.value.length < 2) return // 起点
+		const startLocation = logisticsData.value[logisticsData.value.length - 1] // 最早点
+		const [startLng, startLat] = startLocation.areaCenter.split(',').map(Number)
+		const staname = startLocation.areaName
+		// 终点
+		const endLocation = logisticsData.value[0] // 最新点
+		const [endLng, endLat] = endLocation.areaCenter.split(',').map(Number)
+		const endname = endLocation.areaName
+		const markers = [
+			{
+				id: 1,
+				latitude: startLat,
+				longitude: startLng,
+				iconPath: imgUrl + ' wl-q-icon.png',
+				width: 36,
+				height: 36,
+				callout: {
+					content: staname,
+					display: 'ALWAYS',
+					padding: 8,
+					borderRadius: 4,
+					bgColor: '#fff',
+					color: '#333'
+				}
+			},
+			{
+				id: 2,
+				latitude: endLat,
+				longitude: endLng,
+				iconPath: imgUrl + ' wl-s-icon.png',
+				width: 36,
+				height: 36,
+				callout: {
+					content: endname,
+					display: 'ALWAYS',
+					padding: 8,
+					borderRadius: 4,
+					bgColor: '#fff',
+					color: '#333'
+				}
+			}
+		]
+		bdMapViewRef.value.showMapPoint(JSON.stringify(markers), (event) => {
+
+		});
+		bdMapViewRef.value.calculateNaviRoutePlan(
+
+			{
+				startLocation: {
+					longitude: startLng,
+					latitude: startLat,
+					address: staname,
+				},
+				endLocation: {
+					longitude: endLng,
+					latitude: endLat,
+					address: endname,
+				},
+			},
+			(event) => {
+
+			}
+		);
+	};
+	// // 地图中心点（最新节点）
+	// const center = computed(() => {
+	// 	if (logisticsData.value.length === 0) return { latitude: 39.9042, longitude: 116.4074 }
+
+	// 	const latest = logisticsData.value[0] // 最新在前
+	// 	console.log(latest, 'latestlatestlatest')
+	// 	const [lng, lat] = latest.areaCenter.split(',').map(Number)
+	// 	return { latitude: lat, longitude: lng }
+	// })
+
+	// // 轨迹线（连接所有点）
+	// const polylines = computed(() => {
+	// 	if (logisticsData.value.length < 2) return []
+	// 	console.log(logisticsData.value, '22')
+	// 	const points = logisticsData.value.map(item => {
+	// 		const [lng, lat] = item.areaCenter.split(',').map(Number)
+	// 		return { latitude: lat, longitude: lng }
+	// 	})
+
+	// 	return [{
+	// 		points,
+	// 		color: '#FF9600',
+	// 		width: 6,
+	// 		dottedLine: false
+	// 	}]
+	// })
+
+	// // 标记点
+	// const markers = computed(() => {
+	// 	return logisticsData.value.map((item, index) => {
+	// 		console.log(item, '3333')
+	// 		const [lng, lat] = item.areaCenter.split(',').map(Number)
+
+	// 		let iconPath = ''
+	// 		if (index === 0) iconPath = '/static/map-end.png' // 最新点
+	// 		if (index === logisticsData.value.length - 1) iconPath = '/static/map-start.png' // 最早点
+
+	// 		return {
+	// 			id: index,
+	// 			latitude: lat,
+	// 			longitude: lng,
+	// 			iconPath,
+	// 			width: 36,
+	// 			height: 36,
+	// 			callout: {
+	// 				content: getStatusText(item.context),
+	// 				display: 'ALWAYS',
+	// 				padding: 8,
+	// 				borderRadius: 4,
+	// 				bgColor: '#fff',
+	// 				color: '#333'
+	// 			}
+	// 		}
+	// 	})
+	// })
+	const getData = async (orderId) => {
+		let params = {
+			id: orderId
+		}
+		try {
+			const res = await getOrderInfo(params);
+			if (res.code == 200) {
+				detail.value = res.data;
+				gettrack()
+				if (res.data.logisticsTracking) {
+					let arr = JSON.parse(res.data.logisticsTracking.status).reverse()
+					for (let i in arr) {
+						locList.value.push({ ...res.data.logisticsTracking, statusCeshi: arr[i] })
+					}
+					console.log('------', locList.value.logisticsNo);
+					// locList.value
+				}
+			}
+		} catch (err) {
+			console.log('987999999999', err);
+		}
+
+	}
+	const gettrack = async () => {
+		const res = await getmapTrack(detail.value.logisticsNo);
+
+		logisticsData.value = res.data.data
+		getRoute()
+	}
+	onLoad((opticon) => {
+		getData(opticon.orderId)
+		// if(opticon.orderStatus == 5){
+		// 	orderType.value = 1
+		// }else{
+		// 	orderStatus.value = opticon.orderStatus
+		// }
+	})
+</script>
+
+<style lang="scss" scoped>
+	.map-container {
+		width: 690rpx;
+		margin: 32rpx 0;
+		height: 400rpx;
+	}
+
+
+
+	.carPad {
+		padding: 38rpx 30rpx;
+		box-sizing: border-box;
+	}
+
+	.kdView-text-address {
+		display: flex;
+		align-items: center;
+		flex-direction: row;
+		flex-wrap: wrap;
+		font-size: 28rpx;
+		color: #666666;
+		line-height: 40rpx;
+		margin-bottom: 32rpx;
+		width: 640rpx;
+
+		text {
+			flex: 1;
+			word-wrap: break-word;
+			/* 允许长单词/连续字符换行 */
+			word-break: break-all;
+			/* 强制在任意字符间换行（可选） */
+			white-space: normal;
+			/* 关键！允许换行 */
+			color: #000000;
+			font-weight: bold;
+			margin-right: 20rpx;
+		}
+	}
+
+	.kdView-text-name {
+		width: 690rpx;
+		display: flex;
+		align-items: center;
+		flex-direction: row;
+		font-weight: 500;
+		font-size: 24rpx;
+		color: #999999;
+		margin-left: 56rpx;
+
+		text {
+			margin-right: 10rpx;
+		}
+	}
+
+	.kdView {
+		display: flex;
+		align-items: center;
+		flex-direction: row;
+
+		.kdView-text {
+			width: 695rpx;
+			display: flex;
+			align-items: center;
+			flex-direction: row;
+			// justify-content: center;
+
+			.kdView-text-left {
+				display: flex;
+				align-items: center;
+				flex-direction: row;
+				justify-content: center;
+				font-weight: bold;
+				font-size: 28rpx;
+				color: #000000;
+			}
+
+			.kdView-text-cop {
+				display: flex;
+				align-items: center;
+				flex-direction: row;
+				justify-content: center;
+				width: 60rpx;
+				height: 30rpx;
+				line-height: 30rpx;
+				text-align: center;
+				background: #FFFFFF;
+				border-radius: 6rpx;
+				border: 1px solid #CCCCCC;
+				font-weight: 500;
+				font-size: 20rpx;
+				color: #333333;
+				margin-left: 32rpx;
+			}
+
+
+
+		}
+	}
+
+
+	.descView {
+		padding: 0 10rpx 30rpx 10rpx;
+		box-sizing: border-box;
+
+		.descView-title {
+			font-weight: bold;
+			font-size: 28rpx;
+			color: #000000;
+		}
+
+		.descView-tetx {
+			font-weight: 500;
+			font-size: 26rpx;
+			color: #333333;
+			padding: 24rpx 0;
+
+			text {
+				color: #5683F7;
+			}
+		}
+
+		.descView-time {
+			font-weight: 500;
+			font-size: 24rpx;
+			color: #999999;
+		}
+	}
+</style>

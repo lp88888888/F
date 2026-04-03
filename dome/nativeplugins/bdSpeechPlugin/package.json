@@ -1,0 +1,35 @@
+{
+	"name": "bdSpeechPlugin",
+	"id": "bdSpeechPlugin",
+	"version": "1.0",
+	"description": "百度语音插件",
+	"_dp_type": "nativeplugin",
+	"_dp_nativeplugin": {
+		"android": {
+			"plugins": [{
+				"type": "module",
+				"name": "bdSpeechPlugin",
+				"class": "com.bd.speech.BdSpeechPlugin"
+			}],
+			"integrateType": "aar",
+			"dependencies": [
+
+			],
+			"compileOptions": {
+				"sourceCompatibility": "1.8",
+				"targetCompatibility": "1.8"
+			},
+			"minSdkVersion": "22",
+			"abis": [
+				"armeabi-v7a",
+				"arm64-v8a"
+			],
+			"permissions": [
+				"android.permission.RECORD_AUDIO",
+				"android.permission.ACCESS_NETWORK_STATE",
+				"android.permission.INTERNET",
+				"android.permission.WRITE_EXTERNAL_STORAGE"
+			]
+		}
+	}
+}

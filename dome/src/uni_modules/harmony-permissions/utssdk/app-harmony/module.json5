@@ -1,0 +1,29 @@
+{
+  "module": {
+    "name": "uni_modules__harmony_permissions",
+    "type": "har",
+    "deviceTypes": [
+      "default",
+      "tablet",
+      "2in1"
+    ],
+    "requestPermissions": [
+      {
+        "name": "ohos.permission.INTERNET"
+      },{
+        "name": "ohos.permission.APPROXIMATELY_LOCATION",
+        "reason": "$string:location_desc",
+        "usedScene": {"when": "inuse"}
+      },{
+        "name": "ohos.permission.LOCATION",
+        "reason": "$string:location_desc",
+        "usedScene": {"when": "inuse"}
+      },
+	  {
+	    "name": "ohos.permission.MICROPHONE",
+	    "reason": "$string:microphone",
+	    "usedScene": {"when": "inuse","abilities": ["MainAbility"],}
+	  }
+    ]
+  }
+}

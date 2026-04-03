@@ -1,0 +1,1316 @@
+<template>
+	<view class="page-container" :data-theme="pageTheme">
+		<template v-if="!oldpersondata">
+			<IndexPage v-if="tabbarType == 'index' && redpagestatus == '0'" :scroll-top="scrollTop" @openAiHuman="openAiHuman" ref="indexRef"></IndexPage>
+			<redIndex v-if="tabbarType == 'index' && redpagestatus == '1'" :scroll-top="scrollTop" @openAiHuman="openAiHuman" ref="indexRef"></redIndex>
+			<ServicePage v-if="tabbarType == 'service'" ref="mineRef"></ServicePage>
+			<PointsPage v-if="tabbarType == 'points'" ref="mineRef"></PointsPage>
+			<MinePage v-if="tabbarType == 'mine'" ref="mineRef"></MinePage>
+			
+			<view class="tabbars" :style="{ '--safebottom': safeAreaInsetsBottom }" v-if="redpagestatus == '0'">
+				<view class="tabbars_4" :style="{background: themeStore.themeColors.$tabbarBg}">
+					<view class="tabbar-item" @click="changeTab('index')">
+						<image v-if="tabbarType == 'index'" class="tabbar_icon_image"
+							:src="icoUrl+'tabbar/tabbar-home-active.png'" :lazy-load="true"></image>
+						<image v-else class="tabbar_icon_image" src="@/static/tabbar/tabbar-home.png"></image>
+						<text class="tabbar-item-text"
+							:style="{ color: tabbarType == 'index' ? themeStore.themeColors.$primaryColor : '#909599' }">首页</text>
+					</view>
+					<view class="tabbar-item" @click="changeTab('service')">
+						<image v-if="tabbarType == 'service'" class="tabbar_icon_image"
+							:src="icoUrl+'tabbar/tabbar-service-active.png'" :lazy-load="true"></image>
+						<image v-else class="tabbar_icon_image" src="@/static/tabbar/tabbar-service.png"></image>
+						<text class="tabbar-item-text"
+							:style="{ color: tabbarType == 'service' ? themeStore.themeColors.$primaryColor : '#909599' }">服务</text>
+					</view>
+					<view class="tabbar-item"></view>
+					<view class="tabbar-item" @click="changeTab('points')">
+						<image v-if="tabbarType == 'points'" class="tabbar_icon_image"
+							:src="icoUrl+'tabbar/tabbar-points-active.png'" :lazy-load="true"></image>
+						<image v-else class="tabbar_icon_image" src="@/static/tabbar/tabbar-points.png"></image>
+						<text class="tabbar-item-text"
+							:style="{ color: tabbarType == 'points' ? themeStore.themeColors.$primaryColor : '#909599' }">积分商城</text>
+					</view>
+					<view class="tabbar-item" @click="changeTab('mine')">
+						<image v-if="tabbarType == 'mine'" class="tabbar_icon_image"
+							:src="icoUrl+'tabbar/tabbar-mine-active.png'" :lazy-load="true"></image>
+						<image v-else class="tabbar_icon_image" src="@/static/tabbar/tabbar-mine.png"></image>
+						<text class="tabbar-item-text"
+							:style="{ color: tabbarType == 'mine' ? themeStore.themeColors.$primaryColor : '#909599' }">我的</text>
+					</view>
+				</view>
+				<view class="tabbar_cen">
+					<view class="tabbar_item_center" @click="changeTab('allAdd')">
+						<image class="tabMintImg" :src="icoUrl+'tabbar/min-but.png'" :lazy-load="true"></image>
+						<text class="tabbar-item-text"
+							:style="{ color: tabbarType == 'allAdd' ? themeStore.themeColors.$primaryColor : '#909599' }">速小猴</text>
+					</view>
+				</view>
+			</view>
+			
+			
+			<view class="tabbars" :style="{ '--safebottom': safeAreaInsetsBottom }" v-if="redpagestatus == '1'">
+				<view class="tabbars_4" :style="{background: 'linear-gradient( to bottom, #FEFEFE 0%, #FFFBFB 100%)'}">
+					<view class="tabbar-item" @click="changeTab('index')">
+						<image v-if="tabbarType == 'index'" class="tabbar_icon_image"
+							:src="imgUrl+'redindex/tabbar-home-active.png'" :lazy-load="true"></image>
+						<image v-else class="tabbar_icon_image" :src="imgUrl+'redindex/tabbar-home-active.png'" :lazy-load="true">
+						</image>
+						<text class="tabbar-item-text"
+							:style="{ color: tabbarType == 'index' ? '#FD3924' : '#909599' }">首页</text>
+					</view>
+					<view class="tabbar-item" @click="changeTab('service')">
+						<image v-if="tabbarType == 'service'" class="tabbar_icon_image"
+							:src="imgUrl+'redindex/tabbar-service-active.png'" :lazy-load="true"></image>
+						<image v-else class="tabbar_icon_image" :src="imgUrl+'redindex/tabbar-service-active.png'" :lazy-load="true">
+						</image>
+						<text class="tabbar-item-text"
+							:style="{ color: tabbarType == 'service' ? '#FD3924' : '#909599' }">服务</text>
+					</view>
+					<view class="tabbar-item"></view>
+					<view class="tabbar-item" @click="changeTab('points')">
+						<image v-if="tabbarType == 'points'" class="tabbar_icon_image"
+							:src="imgUrl+'redindex/tabbar-points-active.png'" :lazy-load="true"></image>
+						<image v-else class="tabbar_icon_image":src="imgUrl+'redindex/tabbar-points-active.png'" :lazy-load="true">
+						</image>
+						<text class="tabbar-item-text"
+							:style="{ color: tabbarType == 'points' ? '#FD3924' : '#909599' }">积分商城</text>
+					</view>
+					<view class="tabbar-item" @click="changeTab('mine')">
+						<image v-if="tabbarType == 'mine'" class="tabbar_icon_image"
+							:src="imgUrl+'redindex/tabbar-mine-active.png'" :lazy-load="true"></image>
+						<image v-else class="tabbar_icon_image" :src="imgUrl+'redindex/tabbar-mine-active.png'" :lazy-load="true">
+						</image>
+						<text class="tabbar-item-text"
+							:style="{ color: tabbarType == 'mine' ? '#FD3924' : '#909599' }">我的</text>
+					</view>
+				</view>
+				<view class="tabbar_cen">
+					<view class="tabbar_item_center" @click="changeTab('allAdd')">
+						<image class="tabMintImg" :src="imgUrl+'redindex/min-but.png'" :lazy-load="true"> </image>
+						<text class="tabbar-item-text"
+							:style="{ color: tabbarType == 'allAdd' ? themeStore.themeColors.$primaryColor : '#909599' }">速小猴</text>
+					</view>
+				</view>
+			</view>
+			<up-gap height="90"></up-gap>
+		</template>
+		
+		<template v-else>
+			<oldIndex></oldIndex>
+			<view class="oldtabbar" :style="{ '--safebottom': safeAreaInsetsBottom, background: themeStore.themeColors.$tabbarBg }">
+				<view class="oldtabbar_box" @click="changeTab('allAdd')">
+					<image class="oldtabbar_img" :src="icoUrl + 'tabbar/min-but.png'" :lazy-load="true"> </image>
+					<text class="oldtabbar_text">智能伴行</text>
+				</view>
+			</view>
+		</template>
+		
+		<view v-if="show">
+			<OpenAiHuman ref="openHuman" @close="close"></OpenAiHuman>
+		</view>
+
+		<up-popup :show="versionShow" bgColor="transparent" mode="center" round="10">
+			<view>
+				<view class="gxBox">
+					<image class="gxBox-bg" :src="imgUrl + 'gxPress-bg1.png'" :lazy-load="true" mode=""></image>
+					<view class="gxBox-Item">
+						<view class="gxBox-Item-Center">
+							<text class="gxBox-Item-title">新版本升级V{{ verData.versionName }}</text>
+							<text class="gxBox-Item-text">{{ verData.updateContent }}</text>
+						</view>
+						<view class="gxBox-Item-button">
+							<view class="progressBox" style="margin-bottom: 30rpx">
+								<view class="progressBox-item"
+									:style="{ background: themeStore.themeColors.$primaryColor, width: percWidth + 'rpx' }">
+								</view>
+								<text class="progressBox-text">{{ formatNumber(percentage * 100) || 0 }}/100</text>
+							</view>
+							<text class="gxBox-Item-button-1" @click="downloadClick">立即更新</text>
+							<!-- <text class="gxBox-Item-button-2" @click="versionShow = false">下次再说</text> -->
+						</view>
+					</view>
+				</view>
+				<view class="closeBox">
+					<up-icon name="close-circle" color="#FFFFFF" size="32" @click="versionShow = false"></up-icon>
+				</view>
+			</view>
+
+			<!-- <view class="verBox">
+				<view>
+					<text class="verBox-title">有新版本：{{verData.versionName}}</text>
+					<text class="verBox-text" v-if="verData.updateContent">更新内容：{{verData.updateContent}}</text>
+				</view>
+				<view class="verBox-bot">
+					<view class="progressBox">
+						<view class="progressBox-item" :style="{background:themeStore.themeColors.$primaryColor,width:percWidth+'rpx'}"></view>
+						<text class="progressBox-text">{{ formatNumber(percentage * 100) || 0}}/100</text>
+					</view>
+					<text class="verBox-button" :style="{background:themeStore.themeColors.$primaryColor}" @click="downloadClick">更新</text>
+				</view>
+			</view> -->
+		</up-popup>
+		<!-- 模型下载弹窗 -->
+		<up-popup :show="manShow" bgColor="transparent" mode="center" round="10">
+			<view>
+				<view class="gxBox">
+					<image class="gxBox-bg" :src="imgUrl + 'gxPress-bg2.png'" mode="" :lazy-load="true"></image>
+					<view class="gxBox-Item">
+						<view class="gxBox-Item-Center">
+							<text class="gxBox-Item-title">请下载数字人资源包，{{ modulText }}</text>
+						</view>
+						<view class="gxBox-Item-button" style="bottom: 90rpx">
+							<view class="progressBox" style="margin-bottom: 30rpx">
+								<view class="progressBox-item"
+									:style="{ background: themeStore.themeColors.$primaryColor, width: manPercWidth + 'rpx' }">
+								</view>
+								<text class="progressBox-text">{{ manPress || 0 }}/100</text>
+							</view>
+							<text class="gxBox-Item-button-1" @click="downloadDmModel">立即下载</text>
+							<!-- <text class="gxBox-Item-button-2" @click="manShow = false">下次再说</text> -->
+						</view>
+					</view>
+				</view>
+				<view class="closeBox">
+					<up-icon name="close-circle" color="#FFFFFF" size="32" @click="manShow = false"></up-icon>
+				</view>
+			</view>
+		</up-popup>
+
+		<!-- 新人礼 -->
+		<homePopup :show="xrlshow" :bg="userType == 1 ? `${imgUrl}static/home_xrl.png` : `${imgUrl}static/home_sjl.png`"
+			:btnBg="imgUrl + 'static/home_sjl_btn.png'" width="540rpx" height="1000rpx" btnWidth="296rpx"
+			btnHeight="88rpx" btnLeft="122rpx" @confirm="receiveGiftFun" @close="receiveGiftFun">
+		</homePopup>
+		<!-- 新人礼 - 查看 -->
+		<homePopup :show="xrlCardshow" :bg="imgUrl + 'static/home_sjl_view.png'"
+			:btnBg="imgUrl + 'static/home_sjl_view_btn.png'" width="710rpx" height="1120rpx" btnWidth="384rpx"
+			btnHeight="100rpx" btnLeft="163rpx" @confirm="xrlCardshow = false" @close="xrlCardshow = false">
+			<view class="content-card" style="left: 116rpx">
+				<scroll-view scroll-y :style="{ height: scrollHeight }">
+					<view v-for="(item, index) in couponList" class="coupon-bar">
+						<image class="coupon-bar-bg" :src="imgUrl + 'static/home_view_carrd_bg.png'" mode=""></image>
+						<view class="coupon-bar-box">
+							<view class="coupon-left">
+								<!-- <text class="coupon-num">50</text> 
+							<text class="coupon-unit">元</text> -->
+								<text class="coupon-title u-line-1">{{ item.name }}</text>
+							</view>
+							<view class="coupon-box-right">
+								<text @click="toNav('/pages_C/coupon/index')" class="coupon-right">立即查看</text>
+							</view>
+						</view>
+					</view>
+					<view class="coupon-bar">
+						<image class="coupon-bar-bg" :src="imgUrl + 'static/home_view_carrd_bg.png'" mode=""></image>
+						<view class="coupon-bar-box">
+							<view class="coupon-left">
+								<text class="coupon-title">获得积分</text>
+								<text class="coupon-num">{{ givePoints || 0 }}</text>
+							</view>
+							<view class="coupon-box-right">
+								<text @click="toRec('/pages_A/pointslist/index')" class="coupon-right">立即查看</text>
+							</view>
+						</view>
+					</view>
+				</scroll-view>
+
+				<text class="coupon-content">
+					新人礼领取成功！{{ givePoints || 0 }}积分已存入您的积分账户可以前往积分商城兑换喜欢的礼品~加油券包可前往【我的】【我的卡券】中使用哦~
+				</text>
+			</view>
+		</homePopup>
+		<!-- 积分季 -->
+		<homePopup v-model:show="jfjshow" :bg="`${imgUrl}static/home_jfj.png`"
+			:btnBg="imgUrl + 'static/home_jfj_btn.png'" width="750rpx" height="1000rpx" btnWidth="372rpx"
+			btnHeight="178rpx" btnLeft="189rpx" @confirm="jfjshow = false" @close="jfjshow = false">
+			<view class="content-card">
+				<view class="jfj-content">
+					<view class="jfj-content-tetx">
+						<text class="jfj-title">绑车即可得</text>
+						<text class="fs-48 jfj-titl2">{{ jfjData.doublePointsRuleName }}</text>
+						<text class="jfj-title">里程积分！</text>
+					</view>
+					<scroll-view class="m-t-100" scroll-y :style="{ height: scrollHeight1 }">
+						<text class="jfj-text">规则：</text>
+						<text class="jfj-text"> 平台上线2个月内里程积分{{ jfjData.doublePointsRuleName }}发放，其余积分不变。 </text>
+						<text class="jfj-text fs-20 col3 fw-500">
+							活动时间{{ jfjData.activityStartTime }}-{{ jfjData.activityEndTime }} 可在“我的”积分明细中查看详细积分记录哦~
+						</text>
+					</scroll-view>
+				</view>
+			</view>
+		</homePopup>
+	</view>
+</template>
+<script setup lang="ts">
+	import { ref, onMounted,computed,watch } from 'vue';
+	import { onLoad, onReady, onShow, onHide, onTabItemTap, onPageScroll } from '@dcloudio/uni-app';
+	import { requestMicrophonePermission, permission } from '@/utils/usePermission';
+	import OpenAiHuman from '@/components/OpenAiHuman/OpenAiHuman.nvue';
+	import homePopup from './components/homePopup.nvue';
+	const tabbarType = ref('');
+	import IndexPage from './index.nvue';
+	import MinePage from '@/pages/individual/individual.nvue';
+	import PointsPage from '@/pages/points/index.nvue';
+	import ServicePage from '@/pages/service/index.nvue';
+	import oldIndex from '@/pages_E/oldindex/index.nvue';
+	import redIndex from '@/pages_E/redindex/index.nvue';
+	import { toNav, toRec } from '@/utils/route';
+	import { getLocation,getAddress } from '@/utils/util';
+	import { getThemeData } from '@/api/config';
+	import { checkGiftType, receiveGift, recordIntegral, getredindex } from '@/api/home';
+	import { getByUserIdAndVehicleAll, recordPasswordChangeShow, shouldShowPasswordChange } from '@/api/user';
+	import { ChatStore } from '@/store/modules/chat';
+	// 主题 使用 （主题颜色 var( --theme-color)）（组件 componentColor.$pageBgColor） 图标地址（icoUrl）
+	import { useTheme } from '@/composables/useTheme';
+	import { getCheckVersion } from '@/api/config';
+	import { toast } from '@/utils/common';
+	import { imgUrl } from '@/config';
+	import { geoconvLab, reverseGeocoding } from '@/api/address';
+	import { useMqttStore } from '@/store/modules/mqtt';
+	import { useThemeStore } from '@/stores/theme';
+	import { getMiniUserInfo } from '@/api/login';
+	import { useAppStore } from '@/store/modules/app';
+	import { jpushService } from '@/utils/jpush';
+	const bdMapPlugin = uni.requireNativePlugin('bdMapPlugin');
+	const appStore = useAppStore();
+	const mqttStore = useMqttStore();
+	const bdDigitalManPlugin = uni.requireNativePlugin('bdDigitalManPlugin');
+	const versionShow = ref(false);
+	const percentage = ref(0); // 下载进度
+	
+	// 适老版
+	const oldpersondata = computed(() => {
+		console.log('有没有适老版的缓存', uni.getStorageSync('oldperson'));
+		return uni.getStorageSync('oldperson');
+	});
+
+	// 人像资源
+	const manShow = ref(false);
+	const modulText = ref('');
+	const manPress = ref(0);
+	const manPercWidth = computed(() => {
+		const tatle = manPress.value / 100;
+		return (tatle * 490).toFixed(2);
+	});
+	const percWidth = computed(() => {
+		return (percentage.value * 490).toFixed(2);
+	});
+	const safeAreaInsetsBottom = computed(() => {
+		console.log('安全距离下部', uni.getSystemInfoSync().safeAreaInsets.bottom);
+		return uni.getSystemInfoSync().safeAreaInsets.bottom;
+	});
+
+	const chatStore = ChatStore();
+	const bdSpeechPlugin = uni.requireNativePlugin('bdSpeechPlugin');
+	const { themeStore, pageTheme } = useTheme();
+	const icoUrl = ref(themeStore.imgUrl);
+	const scrollTop = ref(1);
+	const show = ref(false);
+	const openHuman = ref(null);
+
+	const verData = ref({});
+	const isLogin = computed(() => {
+		return appStore.checkLogin();
+	});
+	
+	onPageScroll((e) => {
+		scrollTop.value = e.scrollTop;
+		// console.log('距离home', e.scrollTop)
+	});
+
+	// 监听themeStore.imgUrl的变化并更新icoUrl
+	watch(
+		() => themeStore.imgUrl,
+		(newVal) => {
+			icoUrl.value = newVal;
+		}
+	);
+	const getUserInfo = async () => {
+		const res = await getMiniUserInfo();
+		console.log('用户信息', res);
+		appStore.updateUserInfo(res.clazz);
+	};
+	// 获取组件颜色
+	const componentColor = themeStore.themeColors;
+	const changeTab = async (type : string) => {
+		if (type == 'allAdd') {
+			if(!isLogin.value){
+				uni.showToast({ title: '登录后使用，请先登录', icon: 'none' });
+			}else{
+				// console.log(uni.getSystemInfoSync());
+				// return
+				// #ifdef MP-WEIXIN || APP-HARMONY
+				toNav('/pages_E/digitalHuman/index');
+				// #endif
+				// #ifdef APP-PLUS
+				const hasPermission = await checkRecordAuth();
+				const result = await getModul();
+				if (!result || !hasPermission) {
+				} else {
+					toNav('/pages_E/digitalHuman/openAi');
+					// toNav('/pages_E/digitalHuman/address');
+				}
+				// toNav('/pages_E/digitalHuman/openAi');
+				// toNav('/pages_E/digitalHuman/address');
+			}
+			
+
+			// #endif
+		} else {
+			tabbarType.value = type;
+		}
+		getpagecolorval()
+	};
+
+	const xrlshow = ref(false);
+	const xrlCardshow = ref(false);
+	const jfjshow = ref(false);
+	const bgStyle = computed(() => ({
+		width: '490rpx',
+		height: '160rpx',
+		margin: '0 auto',
+		padding: '0 42rpx',
+		boxSizing: 'border-box',
+		backgroundImage: `url(${imgUrl + 'static/home_view_carrd_bg.png'})`,
+		backgroundSize: '100% 100%',
+		backgroundRepeat: 'no-repeat',
+		backgroundPosition: 'center',
+	}));
+	const scrollHeight = ref('340rpx');
+	const scrollHeight1 = ref('200rpx');
+	const couponList = ref([]);
+	const givePoints = ref(0);
+	const userType = ref('');
+	const isExternal = ref(false);
+	const checkGiftTypeFun = async () => {
+		const userInfo = uni.getStorageSync('userInfo').id;
+		if (!userInfo) return;
+		const params = {
+			sourcePlatform: 1,
+		};
+
+		try {
+			const res : any = await checkGiftType(isExternal.value ? params : {});
+			console.log('app新人礼弹窗v', res);
+			if (res.data.userType == 1 || res.data.userType == 2) {
+				xrlshow.value = true;
+			}
+			userType.value = res.data.userType;
+		} catch (err) {
+			console.log('-------------------isExternal-err---------------------', res);
+		}
+	};
+	const receiveGiftFun = async () => {
+		const userInfo = uni.getStorageSync('userInfo').id;
+		if (!userInfo) return;
+		xrlshow.value = false;
+		const res : any = await receiveGift({ giftType: Number(userType.value) });
+		// const res: any = await receiveGift({ giftType: Number(1) });
+		if (res.code == 200) {
+			xrlCardshow.value = true;
+			couponList.value = res.data.giftCouponList;
+			givePoints.value = res.data.givePoints;
+		}
+	};
+	const jfjData = ref({});
+	// 积分
+	const recordIntegralFun = async () => {
+		const userInfo = uni.getStorageSync('userInfo').id;
+		if (!userInfo) return;
+		const res : any = await recordIntegral();
+		if (res.code == 200 && res.data) {
+			jfjshow.value = true;
+			jfjData.value = res.data;
+		}
+	};
+
+	async function checkRecordAuth(type=true) {
+		console.log('-------1----------');
+		const platform = uni.getSystemInfoSync().platform;
+		let granted = false;
+		console.log('-------2----------', platform);
+		if (platform === 'android') {
+			// 麦克风权限
+			try {
+				const PackageManager = plus.android.importClass("android.content.pm.PackageManager");
+				const main = plus.android.runtimeMainActivity();
+				const ContextCompat = plus.android.importClass("androidx.core.content.ContextCompat");
+				let resuelt = ContextCompat.checkSelfPermission(main, 'android.permission.RECORD_AUDIO');
+				// objPrt.isMicOpen = (resuelt === PackageManager.PERMISSION_GRANTED);
+				if(resuelt === PackageManager.PERMISSION_GRANTED){
+					console.log('-0-0-0-0-0-0--0-0--00--0,1111');
+					granted = true;
+				}else{
+					if(type){
+						const result = await permission.requestAndroidPermission('android.permission.RECORD_AUDIO');
+						granted = result === 1; // 1 允许  0 拒绝  -1 永久拒绝
+					}
+					console.log('-0-0-0-0-0-0--0-0--00--0,2222');
+				}
+			} catch {
+				if(type){
+					const result = await permission.requestAndroidPermission('android.permission.RECORD_AUDIO');
+					granted = result === 1; // 1 允许  0 拒绝  -1 永久拒绝
+				}
+				console.log('-0-0-0-0-0-0--0-0--00--0,44444');
+			}
+			
+		} else if (platform === 'ios') {
+			granted = permission.judgeIosPermission('record');
+		}
+
+		if (!granted) {
+			// uni.showToast({ title: '未获取麦克风权限，需手动开启', icon: 'none' });
+			// uni.showModal({
+			// 	title: '需要麦克风权限,用于唤醒小猴',
+			// 	content: '是否前往设置手动开启？',
+			// 	success: (res) => res.confirm && permission.gotoAppPermissionSetting(),
+			// });
+		}
+		return granted;
+	}
+	const openAiHuman = async () => {
+		console.log('----------------openAiHuman------------------');
+		// 空的
+		const hasPermission = await checkRecordAuth();
+		const result = await getModul(true);
+		if (!result) return
+		if (!hasPermission) {
+			// uni.showToast({ title: '未获取麦克风权限', icon: 'none' });
+			return;
+		} else {
+			show.value = true;
+		}
+	};
+	const startWakeUp = async () => {
+		console.log('=====');
+		const hasPermission = await checkRecordAuth(false);
+		const result = await getModul(false); 
+		console.log('-=-=', hasPermission);
+		if (!hasPermission) {
+			// uni.showToast({ title: '未获取麦克风权限', icon: 'none' });
+			return;
+		} else {
+			if (!result) return
+			if (!result) return uni.showToast({ title: '请先下载数字人资源包', icon: 'none' });
+			bdSpeechPlugin.startWakeUp((res) => {
+				res = JSON.parse(res);
+				console.log('唤醒===', res);
+				if (res.code == 0) {
+					show.value = true;
+					console.log('0-----', show.value);
+				}
+				if (res.code == 3 || res.code == 1) {
+					// getPermission();
+				}
+			});
+		}
+	};
+	const stopWakeUp = () => {
+		bdSpeechPlugin.stopWakeUp((res) => {
+			console.log('语音唤醒停止收到的回调： ', res);
+		});
+	};
+	const getPermission = async () => {
+		console.log('-----2------');
+		const hasPermission = await checkRecordAuth();
+		console.log('-----------', hasPermission);
+		if (!hasPermission) {
+			uni.showToast({ title: '未获取麦克风权限', icon: 'none' });
+			return;
+		}
+	};
+
+	const close = () => {
+		show.value = false;
+	};
+	const getVersion = async () => {
+		const systemInfo = uni.getSystemInfoSync();
+		const appVersion = systemInfo.appWgtVersion || systemInfo.appVersion;
+		const appVersionCode = systemInfo.appVersionCode || systemInfo.appVersionCode;
+		console.log('------------', appVersionCode);
+		console.log('-------------getVersion-----------', systemInfo);
+		try {
+			let res = await getCheckVersion(appVersionCode);
+			console.log('更新', res);
+			if (res.code == 200) {
+				if (res.data) {
+					versionShow.value = true;
+					verData.value = res.data;
+				}
+			} else {
+				toast(res.msg);
+			}
+		} catch (err) {
+			console.log('-------------err-----------------', err);
+		}
+	};
+	const downloadClick = () => {
+		const url = verData.value.packagePath;
+		const type = verData.value.packagePath.indexOf('.wgt') == -1 ? 'apk' : 'wgt';
+		const isWgt = type === 'wgt';
+
+		// uni.showLoading({
+		//     title: '下载中...'
+		// })
+		if (verData.value.fileSize) {
+			startDownload(url, isWgt);
+		} else {
+			// 先获取文件信息
+			uni.request({
+				url: url,
+				method: 'HEAD',
+				success: (res) => {
+					if (res.statusCode === 200) {
+						const fileSize = parseInt(res.header['Content-Length']);
+						console.log('----------fileSize----------', fileSize);
+						if (fileSize > 0) {
+							verData.value.fileSize = fileSize;
+							startDownload(url, isWgt);
+						} else {
+							uni.hideLoading();
+							uni.showToast({
+								title: '无法获取文件大小',
+								icon: 'none',
+							});
+						}
+					} else {
+						uni.hideLoading();
+						uni.showToast({
+							title: '文件信息获取失败',
+							icon: 'none',
+						});
+					}
+				},
+				fail: () => {
+					uni.hideLoading();
+					uni.showToast({
+						title: '网络请求失败',
+						icon: 'none',
+					});
+				},
+			});
+		}
+	};
+
+	const startDownload = (url : string, isWgt : boolean) => {
+		// versionShow.value = false;
+		let dtask = plus.downloader.createDownload(url, {}, (d, status) => {
+			if (status == 200) {
+				uni.hideLoading();
+				plus.runtime.install(
+					d.filename,
+					{
+						force: false,
+					},
+					() => {
+						console.log('安装成功');
+						if (isWgt) {
+							plus.runtime.restart();
+						} else {
+							plus.runtime.quit();
+						}
+					},
+					(e) => {
+						console.log('安装失败', e);
+						uni.showModal({
+							content: e.message,
+							showCancel: false,
+						});
+					}
+				);
+			} else {
+				uni.hideLoading();
+				uni.showToast({
+					title: '下载失败',
+					icon: 'none',
+				});
+				plus.downloader.clear();
+			}
+		});
+
+		dtask.addEventListener('statechanged', (task) => {
+			if (!dtask) return;
+			switch (task.state) {
+				case 1:
+					console.log('开始下载');
+					break;
+				case 2:
+					console.log('连接到服务器...');
+					break;
+				case 3:
+					const progress = task.downloadedSize / verData.value.fileSize;
+					percentage.value = progress;
+					console.log('下载进度：' + formatNumber(progress, 2) + '%');
+					break;
+				case 4:
+					console.log('下载完成');
+					break;
+			}
+		});
+
+		dtask.start();
+	};
+
+	const formatNumber = (num : number, decimals : number = 2) => {
+		if (isNaN(num)) return '0';
+		const str = num.toString();
+		const index = str.indexOf('.');
+		if (index === -1) {
+			return str + '.' + '0'.repeat(decimals);
+		}
+		const decimal = str.substring(index + 1);
+		if (decimal.length < decimals) {
+			return str + '0'.repeat(decimals - decimal.length);
+		}
+		return str.substring(0, index + decimals + 1);
+	};
+
+	const carNumber = ref('');
+	const getcarData = async () => {
+		try {
+			const userId = uni.getStorageSync('userInfo')?.id;
+			if (!userId) return;
+			const params = {
+				userId: userId,
+			};
+			const res : any = await getByUserIdAndVehicleAll(params);
+			carNumber.value = res.data[0] ? res.data[0].licensePlate : '请绑定车辆';
+			uni.setStorageSync('carNumber', carNumber.value);
+		} catch (e) {
+			carNumber.value = '请绑定车辆';
+		}
+	};
+	const geoconvLabAd = async (logAndlat) => {
+		let res = await geoconvLab(logAndlat);
+	};
+	// 逆地理解析
+	const getAdddress = () => {
+		bdMapPlugin.getCurrentLocation((event) => {
+			console.log('当前位置', JSON.parse(event));
+			const res = JSON.parse(event);
+			if (res.z) {
+				const result = res.z;
+				let address = {
+					lat: res.c,
+					lng: res.d,
+					city: result.city,
+					cityCode: result.adcode.substring(0, 4) + '00',
+					province: result.province,
+					provinceCode: result.adcode.substring(0, 2) + '0000',
+					district: result.district,
+					districtCode: result.adcode,
+					standardAddress: result.address,
+				};
+				uni.setStorageSync('address', address);
+			}
+		});
+	};
+	const getPass = async () => {
+		try {
+			let res = await shouldShowPasswordChange();
+			if (res.code == 200) {
+				if (res.data) {
+					uni.showModal({
+						title: '提示',
+						content: '是否去设置新密码？',
+						cancelText: '取消',
+						confirmText: '确定',
+						success: function (ress) {
+							if (ress.confirm) {
+								toNav('/pages_E/passwordSettings/index');
+							} else if (ress.cancel) {
+							}
+						},
+					});
+					await recordPasswordChangeShow();
+				}
+			}
+		} catch (err) { }
+	};
+	// 查询模型是否加载
+	const getModul = (type = true) => {
+		return new Promise((resolve, reject) => {
+			bdDigitalManPlugin.checkDigitalManModelFile((res) => {
+				console.log('检查数字人模型文件：', res);
+				res = JSON.parse(res);
+				console.log('-0--0---0-00-------', type);
+				if (res.code != 0) {
+					if (type) {
+						manPress.value = 0;
+						manShow.value = true;
+						modulText.value = res.msg;
+					}
+
+					resolve(false);
+				} else {
+					resolve(true);
+				}
+			});
+		});
+	};
+	// 模型下载
+	const downloadDmModel = () => {
+		const url = 'https://tranalioss.shanyitong.com/tongyipingtai/images/app-static/BdDigitalMan/case/case-coco-20251128.zip';
+		// manShow.value = false;
+
+		bdDigitalManPlugin.downloadDigitalManModel(url, (res) => {
+			const obj = JSON.parse(res);
+			if (obj.code == 12) {
+				manPress.value = obj.data;
+			}
+			if (obj['code'] === 0) {
+				manShow.value = false;
+				uni.showToast({
+					title: '数字人模型下载成功',
+				});
+				startWakeUp();
+				// manShow.value = false;
+			}
+			console.log('下载数字人模型：  ', obj);
+		});
+	};
+
+	// 吉祥物数据
+	const themeInfoList = ref({
+		cardImg: 'https://services.sxjk-cloud.com:32570/test/38bf9498-37c4-4d63-8da0-03b0edcbd78b.png',
+		description: '小主～快选我做你的专属吉祥物呀～',
+		id: '2009594965780353026',
+		isDefault: 1,
+		mascotBtn: 'https://services.sxjk-cloud.com:32570/test/44018a99-5522-4c55-95ca-6e8d210685ea.png',
+		mascotGit: 'https://services.sxjk-cloud.com:32570/test/7d9ef8be-34ad-4c73-aa38-16cfee873aa7.gif',
+		mascotIcon: 'https://services.sxjk-cloud.com:32570/test/9cb18e21-cbc3-4f56-b551-23bd52c75a9d.png',
+		name: '金丝猴·金灵捷卡',
+	});
+	const vipCardType = ref(0);
+	// 查询主题数据
+	const getThemeinfo = async () => {
+		try {
+			const res = await getThemeData();
+			console.log('我的页面查询的主题', res);
+			const list = res.data.list;
+			if (list.length) {
+				uni.setStorageSync('themlist', list);
+				if (typeof uni.getStorageSync('vipCardType') === 'number') {
+					vipCardType.value = uni.getStorageSync('vipCardType');
+				} else {
+					vipCardType.value = list.findIndex((e) => e.isDefault === 1);
+					uni.setStorageSync('vipCardType', vipCardType.value);
+				}
+				themeInfoList.value = list[vipCardType.value || 0];
+			}
+		} catch (err) {
+			console.log('查询主题数据报错了', err);
+			uni.setStorageSync('themlist', [themeInfoList.value]);
+			uni.setStorageSync('vipCardType', 0);
+		}
+	};
+	const isExternalLinkSimple = (url : string) : boolean => {
+		if (!url) return false;
+		const s = String(url).trim().toLowerCase();
+		return s.startsWith('http://') || s.startsWith('https://') || s.startsWith('//');
+	};
+	
+	onLoad((options) => {
+		jpushService.completeInit((res) => {
+		  console.log('JPush Event:', res.eventName, res.eventData);
+		});
+		
+		bdMapPlugin.initBdMap()
+		// 清空上次未登录401缓存
+		uni.removeStorageSync('oldShowModel');
+		console.log(options.type);
+		uni.$on('updatevipcardtype', (data) => {
+			console.log('监听到事件来自 update ，携带参数 msg 为：', data);
+			themeInfoList.value = uni.getStorageSync('themlist')[data.index];
+		});
+		const link = options?.link || '';
+		console.log('监听到link', link);
+		if (isExternalLinkSimple(link)) {
+			isExternal.value = true;
+		} else {
+			isExternal.value = false;
+		}
+		if (options.type) {
+			tabbarType.value = options.type;
+		} else {
+			tabbarType.value = 'index';
+		}
+		getVersion();
+		// getModul();
+		
+		
+		if(uni.getStorageSync('userInfo')?.id){
+			getAddress()
+			jpushService.setAlias(uni.getStorageSync('userInfo')?.id*1,uni.getStorageSync('userInfo')?.id)
+		}else{
+			if(!uni.getStorageSync('address')){
+				let address = {
+					lat: 34.2778,
+					lng: 108.953098,
+					city: '西安市',
+					cityCode: '610100',
+					province: '陕西省',
+					provinceCode: '610000',
+					district: '雁塔区',
+					districtCode: '610104',
+					standardAddress:"陕西省西安市雁塔区"
+				};
+				uni.setStorageSync('address', address);
+			}
+		}
+		
+	});
+	
+	// 获取红色状态  1: 红色首页  0：正常页面
+	const redpagestatus = ref('0')
+	const getpagecolorval = async () =>{
+		try{
+			const res = await getredindex()
+			redpagestatus.value = res.data
+			console.log("查询的红色状态",res)
+		}catch(err){
+			redpagestatus.value = "0"
+		}
+	}
+	
+	onShow(() => {
+		checkGiftTypeFun();
+		recordIntegralFun();
+		getThemeinfo();
+		
+		if (uni.getStorageSync('userInfo')?.id) {
+			getUserInfo();
+			getPass();
+			// mqttStore.initMqtt()
+			// getcarData();
+		}
+		startWakeUp();
+		chatStore.getConfig();
+		getpagecolorval();
+		appStore.fetchOnlineData()
+	});
+	onHide(() => {
+		uni.$off('updatevipcardtype');
+		// 	console.log("----onHide----");
+		show.value = false;
+		stopWakeUp()
+	});
+</script>
+
+<style scoped lang="scss">
+	.closeBox {
+		padding-top: 40rpx;
+		align-items: center;
+	}
+
+	.gxBox {
+		width: 630rpx;
+		height: 778rpx;
+		position: relative;
+
+		.gxBox-bg {
+			position: absolute;
+			top: 0;
+			right: 0;
+			left: 0;
+			bottom: 0;
+			width: 630rpx;
+			height: 778rpx;
+		}
+
+		.gxBox-Item {
+			position: absolute;
+			top: 0;
+			right: 0;
+			left: 0;
+			bottom: 0;
+			width: 630rpx;
+			height: 778rpx;
+		}
+
+		.gxBox-Item-Center {
+			position: absolute;
+			top: 314rpx;
+			left: 52rpx;
+			right: 52rpx;
+		}
+
+		.gxBox-Item-title {
+			font-weight: 500;
+			font-size: 30rpx;
+			color: #333333;
+			line-height: 48rpx;
+		}
+
+		.gxBox-Item-text {
+			font-weight: 400;
+			font-size: 28rpx;
+			color: #666666;
+			line-height: 48rpx;
+		}
+
+		.gxBox-Item-button {
+			position: absolute;
+			bottom: 40rpx;
+			left: 70rpx;
+			right: 70rpx;
+
+			.gxBox-Item-button-1 {
+				flex: 1;
+				height: 76rpx;
+				line-height: 76rpx;
+				background: #00bebe;
+				border-radius: 48rpx 48rpx 48rpx 48rpx;
+				font-weight: 500;
+				font-size: 28rpx;
+				color: #ffffff;
+				line-height: 76rpx;
+				text-align: center;
+				margin-bottom: 20rpx;
+			}
+
+			.gxBox-Item-button-2 {
+				flex: 1;
+				font-weight: 500;
+				font-size: 28rpx;
+				color: #00bebe;
+				line-height: 76rpx;
+				text-align: center;
+			}
+		}
+	}
+
+	.progressBox {
+		width: 490rpx;
+		height: 30rpx;
+		background: #ececec;
+		position: relative;
+		border-radius: 30rpx;
+
+		.progressBox-item {
+			width: 40rpx;
+			height: 30rpx;
+			border-radius: 30rpx;
+		}
+
+		.progressBox-text {
+			width: 540rpx;
+			font-size: 26rpx;
+			color: #ffffff;
+			line-height: 30rpx;
+			text-align: center;
+			position: absolute;
+			top: 0;
+			right: 0;
+			left: 0;
+			bottom: 0;
+		}
+	}
+
+	.verBox {
+		width: 600rpx;
+		// min-height: 400rpx;
+		border-radius: 20rpx;
+		padding: 30rpx;
+
+		.verBox-title {
+			font-size: 32rpx;
+		}
+
+		.verBox-text {
+			font-size: 26rpx;
+			color: #666666;
+		}
+
+		.verBox-bot {
+			margin-top: 40rpx;
+			width: 540rpx;
+			align-items: center;
+		}
+
+		.verBox-button {
+			margin-top: 30rpx;
+			width: 540rpx;
+			height: 90rpx;
+			line-height: 90rpx;
+			border-radius: 40rpx;
+			color: #ffffff;
+			text-align: center;
+			font-size: 30rpx;
+		}
+	}
+
+	.tabbars {
+		position: fixed;
+		left: 0;
+		bottom: 0;
+		z-index: 99;
+		width: 750rpx;
+		height: 170rpx;
+		justify-content: flex-end;
+		margin-bottom: calc(var(--safebottom) * 1px);
+
+		.tabbars_4 {
+			width: 750rpx;
+			height: 98rpx;
+			padding-left: 20rpx;
+			padding-right: 20rpx;
+			flex-direction: row;
+			align-items: flex-end;
+			background: linear-gradient(to bottom, #fefefe, #ebf8ee);
+			box-shadow: 0rpx -2rpx 9rpx 0rpx rgba(211, 231, 209, 0.43);
+			border-top-right-radius: 32rpx;
+			border-top-left-radius: 32rpx;
+
+			.tabbar-item {
+				flex: 1;
+				height: 98rpx;
+				align-items: center;
+				justify-content: center;
+
+				.tabbar_icon_image {
+					width: 48rpx;
+					height: 48rpx;
+					margin-bottom: 8rpx;
+				}
+			}
+		}
+
+		.tabbar_cen {
+			width: 750rpx;
+			height: 170rpx;
+			align-items: center;
+			justify-content: center;
+			position: absolute;
+			bottom: 0;
+			left: 0;
+			right: 0;
+			z-index: 3;
+
+			.tabbar_item_center {
+				width: 136rpx;
+				height: 170rpx;
+				align-items: center;
+				justify-content: center;
+				padding-bottom: 5rpx;
+
+				.tabMintImg {
+					width: 136rpx;
+					height: 136rpx;
+				}
+			}
+		}
+
+		.tabbar-item-text {
+			font-size: 26rpx;
+		}
+	}
+	
+	.oldtabbar {
+		position: fixed;
+		left: 0;
+		bottom: 0;
+		z-index: 99;
+		width: 750rpx;
+		height: calc(95rpx + var(--safebottom) * 1px);
+		align-items: center;
+		justify-content: center;
+		padding-bottom: calc(var(--safebottom) * 1px);
+		box-sizing: border-box;
+		border-radius: 32rpx 32rpx 0rpx 0rpx;
+		.oldtabbar_box {
+			flex-direction: row;
+			align-items: center;
+			.oldtabbar_img {
+				width: 95rpx;
+				height: 95rpx;
+				margin-right: 12rpx;
+			}
+			.oldtabbar_text {
+				font-weight: 400;
+				font-size: 32rpx;
+				color: #333333;
+			}
+		}
+	}
+
+	.page-container {
+		width: 750rpx;
+		// min-height: 100vh;
+		background: #f5f5f4;
+		background: transparent;
+	}
+
+	.iconTab {
+		margin-top: -40rpx;
+		width: 120rpx;
+		// height: 120rpx;
+		// background: #fff;
+		// border-radius: 50%;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+
+		// justify-content: center;
+		.iconTab-img {
+			width: 40rpx;
+			height: 40rpx;
+			border-radius: 50%;
+			// display: flex;
+			// align-items: center;
+			// justify-content: center;
+
+			// background:linear-gradient(to bottom, #5AD6D6, #069FA4) ;
+			// image {
+			// 	width: 90rpx;
+			// 	height: 90rpx;
+			// }
+		}
+
+		.iconTab-text {
+			font-size: 12px;
+			color: #999999;
+		}
+	}
+
+	.tabbar {
+		width: 90%;
+		height: 80rpx;
+		background: salmon;
+		margin: 0 auto;
+		border-radius: 40rpx;
+	}
+
+	.content-card {
+		// position: absolute;
+		top: 380rpx;
+		left: 158rpx;
+		width: 750rpx;
+		height: 1000rpx;
+
+		// overflow: hidden;
+		// z-index: 1;
+		// background:red;
+	}
+
+	.coupon-bar {
+		margin-bottom: 20rpx;
+		position: relative;
+		width: 490rpx;
+		height: 160rpx;
+
+		.coupon-bar-bg {
+			width: 490rpx;
+			height: 160rpx;
+			position: absolute;
+			top: 0;
+			left: 0;
+			right: 0;
+			bottom: 0;
+		}
+
+		.coupon-bar-box {
+			width: 490rpx;
+			height: 160rpx;
+			position: absolute;
+			top: 0;
+			left: 0;
+			right: 0;
+			bottom: 0;
+			flex-direction: row;
+			align-items: center;
+			justify-content: space-between;
+		}
+	}
+
+	.coupon-left {
+		flex-direction: row;
+		align-items: center;
+		padding: 0 25rpx;
+	}
+
+	.coupon-num {
+		font-weight: 700;
+		font-size: 40rpx;
+		margin-right: 6rpx;
+		color: #80a653;
+	}
+
+	.coupon-unit {
+		font-weight: 600;
+		margin-right: 6rpx;
+	}
+
+	.coupon-title {
+		font-weight: 600;
+		color: #80a653;
+		font-size: 32rpx;
+	}
+
+	.u-line-1 {
+		width: 272rpx;
+	}
+
+	.coupon-box-right {
+		width: 110rpx;
+	}
+
+	.coupon-right {
+		width: 70rpx;
+		font-size: 32rpx;
+		font-weight: 700;
+		color: #fff;
+		text-align: right;
+	}
+
+	.coupon-content {
+		width: 466rpx;
+		margin: 38rpx auto 0;
+		font-weight: 400;
+		font-size: 24rpx;
+		color: #333333;
+		line-height: 36rpx;
+	}
+
+	.jfj-content {
+		width: 466rpx;
+		margin: 38rpx auto 0;
+		font-weight: 400;
+		font-size: 24rpx;
+		color: #333333;
+		line-height: 36rpx;
+	}
+
+	.jfj-content-tetx {
+		flex-direction: row;
+		align-items: center;
+		justify-content: center;
+		padding-left: 30rpx;
+	}
+
+	.jfj-titl2 {
+		font-size: 48rpx;
+		color: #f72c25;
+	}
+
+	.jfj-title {
+		font-weight: 700;
+		font-size: 32rpx;
+		color: #f72c25;
+		text-align: right;
+	}
+
+	.jfj-text {
+		font-weight: 500;
+		font-size: 24rpx;
+		color: #333333;
+		padding: 0 20rpx;
+	}
+
+	.m-t-100 {
+		margin-top: 100rpx;
+	}
+</style>
